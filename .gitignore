@@ -1,0 +1,10 @@
+venv/
+.backups/
+__pycache__/
+*.pyc
+.env
+.vscode/
+.dev-checklist.md
+.doc-checklist.md
+memory/
+settings/settings.json
