@@ -138,9 +138,8 @@
 없으면 → 하네스 훅은 no-op (체크리스트·백업 등 기존 글로벌 훅은 그대로 동작)
 ```
 
-> 기존 글로벌 훅 중 wiki-index-guard.sh, graphify-reminder.sh도
-> Phase 0에서 `.harness.yml` opt-in 검사 로직을 추가한다.
-> 즉, opt-in하지 않은 프로젝트에서는 이 두 훅도 no-op이 된다.
+> 선택 기능 훅은 `.harness.yml`이 있고 해당 `features.*` 값이 true일 때만 동작한다.
+> opt-in하지 않은 프로젝트와 feature가 false인 프로젝트에서는 no-op이다.
 
 ```yaml
 # .harness.yml 예시
@@ -159,8 +158,8 @@ warn_metadata: false
 strict_metadata: false
 ```
 
-> **현재 구현 상태**: 훅은 `.harness.yml` 존재 여부만 검사하며, 개별 `features` 플래그는 참조하지 않는다.
-> 즉, `.harness.yml`이 있으면 모든 하네스 훅이 동작한다. features별 세분화 제어는 향후 구현 예정.
+> **현재 구현 상태**: `wiki-index-guard.sh`, `graphify-reminder.sh`, `code-doc-sync.sh`, `doc-template-guard.sh`는 `.harness.yml`의 `features.*` 값을 참조한다.
+> optional feature의 기본값은 false이므로, 명시적으로 true를 둔 기능만 켜진다.
 
 > 왜 opt-in인가: 훅이 글로벌(~/.claude/settings.json)에 등록되므로, 모든 프로젝트에 적용됨.
 > OneDrive 아래 다른 문서 작업까지 막는 오탐 방지를 위해, 프로젝트가 명시적으로 선택해야 함.
@@ -481,17 +480,17 @@ related_docs: []
 ```
 전제:
   - .harness.yml opt-in 대상: doc-template-guard, wiki-index-guard, code-doc-sync, graphify-reminder
-  - 기존 글로벌 정책 (opt-in 무관): block-write-docs, doc-checklist-guard, dev-checklist-guard, auto-backup, venv-guard
+  - 기존 글로벌 정책 (opt-in 무관): doc-protection, doc-checklist-guard, dev-checklist-guard, auto-backup
   - 아래 흐름은 문서 하네스 관련 훅 위주로 표시. 실제로는 글로벌 훅(dev-checklist-guard 등)도 함께 실행됨
 
 에이전트가 docs/design/new-feature.md를 Write로 생성:
 
-  block-write-docs.sh → 기존 파일이면 차단 (통과: 신규) [글로벌]
+  doc-protection.sh → 기존 파일 Write 덮어쓰기와 Bash 문서 직접 수정 차단 [글로벌]
   doc-template-guard.sh → 메타데이터 없으면 차단 (신규 Write) [opt-in]
   wiki-index-guard.sh → index.md 미등록이면 경고 (차단 아님) [opt-in]
   doc-checklist-guard.sh → 체크리스트 확인 [글로벌]
 
-  → block-write-docs + doc-template-guard + doc-checklist-guard 통과해야 문서 생성 가능
+  → doc-protection + doc-template-guard + doc-checklist-guard 통과해야 문서 생성 가능
   → wiki-index-guard는 경고만 — lint에서 최종 검증
 
 에이전트가 기존 docs/design/auth.md를 Edit:

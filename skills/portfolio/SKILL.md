@@ -1,7 +1,9 @@
 ---
 name: portfolio
 description: 현재 프로젝트를 심층 분석하여 포트폴리오용 표준 MD 문서를 생성. "왜(Why)" 중심의 기술적 깊이 + 설계 근거 + 문제 해결 과정을 명사형 종결로 정리.
-user_invocable: true
+trigger: /portfolio
+user-invocable: true
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 # 포트폴리오 프로젝트 정리 스킬

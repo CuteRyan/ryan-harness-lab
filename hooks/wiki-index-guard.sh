@@ -6,7 +6,10 @@
 # - 예외: index.md, log.md, HISTORY.md, TEMPLATE.md 자체 수정은 통과
 
 # 공통 함수 로드 (opt-in 검사 + 로그)
-source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
+source "$SCRIPT_DIR/_harness_common.sh" 2>/dev/null || source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+harness_timer_start
+trap 'harness_timer_stop "wiki-index-guard"' EXIT
 
 INPUT=$(cat)
 if command -v jq &>/dev/null; then
@@ -22,6 +25,9 @@ fi
 
 # .harness.yml opt-in 검사 — 없으면 no-op
 if ! find_harness_yml "$FILE_PATH"; then
+  exit 0
+fi
+if ! harness_feature_enabled "wiki" "false"; then
   exit 0
 fi
 

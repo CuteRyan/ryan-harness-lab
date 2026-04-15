@@ -2,6 +2,9 @@
 name: project-structure
 description: 프로젝트 하네스 구조 진단(audit), 초기화(init), 위키 린트(lint), 역색인 생성(reindex)
 trigger: /project-structure
+argument-hint: "[audit|init|lint|reindex]"
+user-invocable: true
+allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 ---
 
 # /project-structure

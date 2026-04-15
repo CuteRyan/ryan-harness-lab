@@ -1,0 +1,133 @@
+{
+    "env":  {
+                "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS":  "1"
+            },
+    "permissions":  {
+                        "allow":  [
+                                      "WebFetch",
+                                      "WebSearch",
+                                      "Bash(git status:*)",
+                                      "Bash(git diff:*)",
+                                      "Bash(git log:*)",
+                                      "Bash(git show:*)",
+                                      "Bash(git branch:*)",
+                                      "Bash(rg:*)",
+                                      "Bash(ls:*)",
+                                      "Bash(find:*)",
+                                      "Bash(wc:*)",
+                                      "Bash(pip show:*)",
+                                      "Bash(tasklist:*)"
+                                  ],
+                        "additionalDirectories":  [
+                                                      "C:\\Python\\btc_futures_trading_bot\\.git",
+                                                      "c:\\Users\\rlgns\\OneDrive\\문서\\논문\\참고자료",
+                                                      "C:\\Python\\election_simulator\\agents",
+                                                      "C:\\Python\\election_simulator\\simulation",
+                                                      "C:\\Python\\election_simulator"
+                                                  ]
+                    },
+    "hooks":  {
+                  "PreToolUse":  [
+                                     {
+                                         "hooks":  [
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'check-streamlit.sh'\""
+                                                       }
+                                                   ]
+                                     },
+                                     {
+                                         "matcher":  "Bash",
+                                         "hooks":  [
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'pre-commit-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-doublecheck-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'deploy-version-guard.sh'\""
+                                                       }
+                                                   ]
+                                     },
+                                     {
+                                         "matcher":  "Edit",
+                                         "hooks":  [
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'auto-backup.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-checklist-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'dev-checklist-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'wiki-index-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-template-guard.sh'\""
+                                                       }
+                                                   ]
+                                     },
+                                     {
+                                         "matcher":  "Write",
+                                         "hooks":  [
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'dev-checklist-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-checklist-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'wiki-index-guard.sh'\""
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-template-guard.sh'\""
+                                                       }
+                                                   ]
+                                     }
+                                 ],
+                  "PostToolUse":  [
+                                      {
+                                          "matcher":  "Edit",
+                                          "hooks":  [
+                                                        {
+                                                            "type":  "command",
+                                                            "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'post-edit-verify.sh'\""
+                                                        }
+                                                    ]
+                                      },
+                                      {
+                                          "matcher":  "Write",
+                                          "hooks":  [
+                                                        {
+                                                            "type":  "command",
+                                                            "command":  "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'post-edit-verify.sh'\""
+                                                        }
+                                                    ]
+                                      }
+                                  ]
+              },
+    "autoUpdatesChannel":  "latest"
+}

@@ -2,6 +2,9 @@
 name: graphify-windows
 description: any input (code, docs, papers, images) → knowledge graph → clustered communities → HTML + JSON + audit report
 trigger: /graphify
+argument-hint: "[path] [--mode deep] [--update] [--cross-ref] [--query question]"
+user-invocable: true
+allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebFetch
 ---
 
 # /graphify

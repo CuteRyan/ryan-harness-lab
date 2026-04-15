@@ -1,3 +1,11 @@
+---
+name: daily-report
+description: 하루 작업 내용을 대표나 팀원이 이해하기 쉬운 진행 공유 노티로 정리.
+trigger: /daily-report
+user-invocable: true
+allowed-tools: Read, Grep, Glob
+---
+
 # Daily Report (진행 노티)
 
 하루 작업을 마무리할 때, 대표/팀원에게 공유할 수 있는 진행 노티를 생성하는 스킬입니다.

@@ -1,3 +1,12 @@
+---
+name: project-history
+description: 프로젝트 개발 히스토리를 폴더 기반 인덱스로 조회, 갱신, 마이그레이션, 검색.
+trigger: /project-history
+argument-hint: "[update|migrate|search] [키워드]"
+user-invocable: true
+allowed-tools: Bash, Read, Write, Edit, Grep, Glob
+---
+
 # Project History Manager
 
 프로젝트 개발 히스토리를 폴더 기반 인덱싱으로 관리하는 글로벌 스킬.
@@ -76,18 +85,18 @@ docs/history/
 1. `docs/history/` 전체 파일에서 Grep
 2. 매칭된 날짜 + 컨텍스트 표시
 
-## 훅 회피 전략
+## 훅 정책
 
-이 스킬은 `docs/` 하위에 대량 파일을 생성/수정하므로 훅과 충돌할 수 있다.
+히스토리 파일도 프로젝트 문서이므로 일반 문서 안전 규칙을 우회하지 않는다.
 
-| 명령 | 파일 수 | 방법 | 이유 |
+| 명령 | 파일 수 | 방법 | 원칙 |
 |------|---------|------|------|
-| `migrate` | 수십 개 | **Bash(Python 스크립트)** | Write/Edit 안 거치므로 훅 미적용 |
-| `update` (신규 파일) | 1~2개 | **Bash(cat heredoc)** | doc-checklist-guard 회피 |
-| `update` (기존 파일 수정) | 1~2개 | **Edit** | 체크리스트 있으면 Edit, 없으면 Bash |
-| `search` / 조회 | 0 | **Read/Grep** | 읽기 전용, 훅 무관 |
+| `migrate` | 수십 개 | 승인 후 일괄 작업 | 실행 전 영향 범위와 백업 위치를 보고 |
+| `update` (신규 파일) | 1~2개 | Write | 신규 문서 양식과 인덱스 갱신 준수 |
+| `update` (기존 파일 수정) | 1~2개 | Edit | 기존 문서 전체 덮어쓰기 금지 |
+| `search` / 조회 | 0 | Read/Grep | 읽기 전용 |
 
-**원칙**: `docs/history/` 파일은 히스토리 기록물이므로, 체크리스트 없이 Bash로 생성/수정한다. 프로젝트 코드나 설계 문서가 아니기 때문.
+대량 마이그레이션이 훅과 충돌하면 훅을 우회하지 말고, 예외 범위를 문서화한 뒤 주인님 승인 후 진행한다.
 
 ## Rules
 - **index.md는 200줄 이내 유지** — 메모리 인덱스와 동일 원칙

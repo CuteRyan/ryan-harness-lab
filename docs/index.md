@@ -7,6 +7,8 @@
 ## 설계
 
 - [프로젝트 하네스 아키텍처 설계안](project_harness_architecture.md) — Phase 0~4 전체 설계, 훅/스킬/위키 체계
+- [하네스 리팩터링 실행 계획](harness_refactor_plan.md) — 얕은 훅 정리, 권한 축소, 체크리스트 품질 검증, PostToolUse 도입 계획
+- [Codex 하네스 리팩터링 작업 기록](codex_harness_refactor_2026-04-15.md) — 2026-04-15 Codex 작업 전체 기록, 전역 배포, 검증, 후속 리스크
 - [하네스 훅 우회 가이드](harness_bypass_guide.md) — opt-in 해제, 훅별 우회, 오탐 로그 확인
 
 ## 워크플로우 가이드

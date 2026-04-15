@@ -6,7 +6,10 @@
 # - 코드 파일 10개 미만 프로젝트는 무시
 
 # 공통 함수 로드 (opt-in 검사 + 로그)
-source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
+source "$SCRIPT_DIR/_harness_common.sh" 2>/dev/null || source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+harness_timer_start
+trap 'harness_timer_stop "graphify-reminder"' EXIT
 
 INPUT=$(cat)
 if command -v jq &>/dev/null; then
@@ -24,18 +27,16 @@ fi
 if ! find_harness_yml "$FILE_PATH"; then
   exit 0
 fi
+if ! harness_feature_enabled "graphify" "false"; then
+  exit 0
+fi
 
 # 코드 파일 확장자인지 확인
 if ! echo "$FILE_PATH" | grep -qE '\.(py|js|ts|tsx|jsx|go|java|rs|rb|php|swift|kt|c|cpp|h|hpp|cs)$'; then
   exit 0
 fi
 
-# 프로젝트 루트 찾기 (git root 또는 파일의 디렉토리)
-PROJECT_DIR=$(cd "$(dirname "$FILE_PATH")" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null)
-if [ -z "$PROJECT_DIR" ]; then
-  # git 프로젝트가 아니면 통과
-  exit 0
-fi
+PROJECT_DIR="$PROJECT_ROOT"
 
 # 이미 GRAPH_REPORT.md가 있으면 통과
 if [ -f "$PROJECT_DIR/graphify-out/GRAPH_REPORT.md" ]; then

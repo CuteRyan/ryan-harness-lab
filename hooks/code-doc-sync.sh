@@ -3,11 +3,14 @@
 # - 코드 파일 Edit → 관련 문서 리마인더
 # - docs/ 문서 Edit → 관련 코드 리마인더
 # - .harness.yml opt-in 필수
-# - 역색인(docs/.harness-index.json) 기반. 없으면 경고만.
+# - 역색인(docs/.harness-index.json) 기반. 없으면 사용자 출력 없이 통과.
 # - 강도: 리마인더 (exit 0 — 차단 안함)
 
 # 공통 함수 로드
-source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
+source "$SCRIPT_DIR/_harness_common.sh" 2>/dev/null || source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+harness_timer_start
+trap 'harness_timer_stop "code-doc-sync"' EXIT
 
 INPUT=$(cat)
 
@@ -32,6 +35,9 @@ fi
 if ! find_harness_yml "$FILE_PATH"; then
   exit 0
 fi
+if ! harness_feature_enabled "code_doc_sync" "false"; then
+  exit 0
+fi
 
 # 역색인 경로
 INDEX_JSON="$PROJECT_ROOT/docs/.harness-index.json"
@@ -52,12 +58,9 @@ if [ "$IS_CODE" = false ] && [ "$IS_DOC" = false ]; then
   exit 0
 fi
 
-# 역색인이 없으면 경고만
+# 역색인이 없으면 아직 준비되지 않은 프로젝트로 보고 완전 무음 처리
 if [ ! -f "$INDEX_JSON" ]; then
-  if [ "$IS_CODE" = true ] || [ "$IS_DOC" = true ]; then
-    harness_log "code-doc-sync" "warn" "no index: $INDEX_JSON"
-    echo "[harness/sync] 역색인이 없습니다. \`/project-structure reindex\`로 생성하면 코드↔문서 연결을 확인할 수 있습니다." >&2
-  fi
+  harness_log "code-doc-sync" "skip" "no index: $INDEX_JSON"
   exit 0
 fi
 

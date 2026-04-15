@@ -1,6 +1,7 @@
 ---
 name: agent-team
 description: 에이전트 팀을 구성, 저장, 불러오기, 실행, 관리하는 범용 스킬. 새 팀을 만들거나 기존 팀을 실행할 때 사용. "팀 만들어줘", "에이전트 팀 실행", "팀 목록" 등의 요청에 반응.
+trigger: /agent-team
 argument-hint: "[create|run|list|delete] [팀이름] [추가 인자...]"
 user-invocable: true
 allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch

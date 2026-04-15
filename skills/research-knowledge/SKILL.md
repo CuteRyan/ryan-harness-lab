@@ -1,7 +1,10 @@
 ---
 name: research-knowledge
 description: 주제를 웹 서칭하여 비개발자도 이해할 수 있는 수준으로 팩트체크 포함 문서화. 지식 폴더(문서/지식/docs/)에 저장.
-user_invocable: true
+trigger: /research-knowledge
+argument-hint: "<주제>"
+user-invocable: true
+allowed-tools: WebSearch, WebFetch, Read, Write, Edit, Grep, Glob
 ---
 
 # 지식 리서치 & 문서화 스킬

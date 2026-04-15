@@ -1,7 +1,9 @@
 ---
 name: memory-manager
 description: 프로젝트 메모리 구조를 초기화·정리·최적화하는 스킬. CLAUDE.md/rules/memory 3계층 아키텍처 기반.
-user_invocable: true
+trigger: /memory-manager
+user-invocable: true
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 # 메모리 관리 스킬

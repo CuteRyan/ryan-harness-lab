@@ -7,7 +7,10 @@
 # - 예외: index.md, log.md, HISTORY.md, templates/ 하위 파일
 
 # 공통 함수 로드
-source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
+source "$SCRIPT_DIR/_harness_common.sh" 2>/dev/null || source ~/.claude/hooks/_harness_common.sh 2>/dev/null || exit 0
+harness_timer_start
+trap 'harness_timer_stop "doc-template-guard"' EXIT
 
 INPUT=$(cat)
 
@@ -29,6 +32,9 @@ fi
 
 # .harness.yml opt-in 검사
 if ! find_harness_yml "$FILE_PATH"; then
+  exit 0
+fi
+if ! harness_feature_enabled "doc_templates" "false"; then
   exit 0
 fi
 
