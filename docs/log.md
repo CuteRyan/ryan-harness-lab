@@ -4,6 +4,12 @@
 
 ---
 
+- 2026-04-16 | rules 병합 | `communication.md` + `workflow.md` → `work-style.md`, `deployment.md` 포인터화. rules 12→9개
+- 2026-04-16 | 훅 병목 제거 | check-streamlit universal 삭제, auto-backup 삭제, feature-gated 훅 배선 제거. Edit당 7→3개 훅
+- 2026-04-16 | 중복 rules 축소 | dev-checklist, document-safety, wiki, graphify를 1줄 포인터로. CLAUDE.md graphify 중복 제거
+- 2026-04-16 | Codex 후속 수정 | skipDangerousModePermissionPrompt 실제 제거, dead hooks 3개 삭제, MEMORY.md 스테일 포인터 정리
+- 2026-04-16 | Codex 작업 전체 커밋 | 35개 파일 커밋 (ac9f6ce). 전역에만 반영되어 있던 Codex 작업을 repo에 보존
+- 2026-04-16 | `claude_code_harness_overhead_2026.md` 복사 | 지식 프로젝트에서 작성한 하네스 과부하 리서치 문서를 하네스 프로젝트에 복사. Rules·Hooks·Memory·Skills 4대 병목, 컨텍스트 예산, 다이어트 전략
 - 2026-04-15 | `.claude/` audit 로그 ignore 추가 | 훅 실행 중 생성되는 `.claude/harness-audit.log`가 커밋 잡음이 되지 않도록 `.gitignore`에 `.claude/` 추가
 - 2026-04-15 | `run-hook.ps1` stdin/한글 경로 결함 수정 | 마무리 더블체크에서 `-File` 호출의 PowerShell pipeline/인코딩 문제를 확인하고 raw stdin + `-Command` 방식으로 전역 settings 재배포
 - 2026-04-15 | `codex_harness_refactor_2026-04-15.md` 생성 | Codex가 수행한 P0/P1/P2 하네스 리팩터링, 전역 배포, 검증 결과를 상세 기록

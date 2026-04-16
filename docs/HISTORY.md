@@ -76,3 +76,27 @@
 - **실행 검증**: 전역 settings command 경유로 한글 경로 `docs/index.md` Write 차단, Codex 기록 문서 PostToolUse 통과, 전체 훅 테스트 통과 확인
 - **로그 ignore 추가**: 훅 실행 중 생성되는 `.claude/harness-audit.log`가 커밋 잡음이 되지 않도록 `.gitignore`에 `.claude/` 추가
 - 왜: 하네스가 설치되어 있어도 `bash` PATH 문제로 훅이 무력화되는 상태를 방지하기 위함
+
+## Day 1 (2026-04-16)
+
+### Codex 작업 검증 + 후속 수정
+- **skipDangerousModePermissionPrompt 제거**: Codex가 P0에서 제거했다고 기록했지만 전역 settings에 남아있던 것을 발견하여 실제 제거
+- **전역 dead hooks 삭제**: `lint-guard.sh`, `pre-commit-test.sh`, `venv-guard.sh` — settings에서 미참조 파일 3개 제거
+- **MEMORY.md 스테일 포인터**: 존재하지 않는 `presentation.md` 참조 제거
+- **Codex 작업 전체 커밋**: 35개 파일, +3265/-296줄 (`ac9f6ce`)
+- 왜: Codex가 전역에 배포만 하고 repo 커밋을 안 했으므로, 검증 후 보존
+
+### 훅 병목 제거 (성능 최적화)
+- **check-streamlit.sh 제거**: matcher 없이 모든 도구(Read/Glob/Grep 포함)에 발동하던 universal 훅 삭제
+- **auto-backup.sh 제거**: git이 이미 버전관리하므로 매 Edit마다 cp하는 훅 불필요
+- **feature-gated 훅 기본 배선 제거**: `wiki-index-guard.sh`, `doc-template-guard.sh` — 매번 프로세스 생성 후 flag만 보고 exit하던 훅을 기본 배선에서 제거
+- **결과**: Edit당 훅 7→3개, 프로세스 생성 14→6개 (57% 감소)
+- 왜: Windows에서 프로세스 생성 비용이 높아 훅 하나당 200~500ms. Edit 한 번에 2~3초 소요되던 것을 1초 이하로
+
+### Rules 최적화
+- **중복 rules 축소**: `dev-checklist.md`, `document-safety.md`, `wiki.md`, `graphify.md` — 훅이 이미 강제하므로 1줄 포인터로 축소
+- **rules 병합**: `communication.md` + `workflow.md` → `work-style.md` (협업 스타일 통합)
+- **deployment.md 포인터화**: `deploy-version-guard.sh` 훅이 강제하므로 1줄 포인터로 축소
+- **CLAUDE.md graphify 중복 제거**: 스킬 frontmatter와 동일한 안내 삭제
+- **결과**: rules 12→9개 (실질 4개 + 포인터 5개), 총 ~600줄 → ~80줄
+- 왜: 리서치 문서(하네스 과부하 문제)의 분석 — 훅이 강제하는 규칙을 rules에서 또 서술하면 컨텍스트 토큰만 낭비
