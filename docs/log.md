@@ -4,6 +4,7 @@
 
 ---
 
+- 2026-04-16 | 훅→스킬 전환 | `/checklist` 스킬 신규, doc-protection 백업 추가, deploy-version-guard CI 체크 추가, 체크리스트 훅 2개+doublecheck 훅 제거, settings 11→7 훅
 - 2026-04-16 | rules 병합 | `communication.md` + `workflow.md` → `work-style.md`, `deployment.md` 포인터화. rules 12→9개
 - 2026-04-16 | 훅 병목 제거 | check-streamlit universal 삭제, auto-backup 삭제, feature-gated 훅 배선 제거. Edit당 7→3개 훅
 - 2026-04-16 | 중복 rules 축소 | dev-checklist, document-safety, wiki, graphify를 1줄 포인터로. CLAUDE.md graphify 중복 제거

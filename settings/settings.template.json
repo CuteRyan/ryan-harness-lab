@@ -19,11 +19,7 @@
       "Bash(tasklist:*)"
     ],
     "additionalDirectories": [
-      "C:\\Python\\btc_futures_trading_bot\\.git",
-      "c:\\Users\\rlgns\\OneDrive\\문서\\논문\\참고자료",
-      "C:\\Python\\election_simulator\\agents",
-      "C:\\Python\\election_simulator\\simulation",
-      "C:\\Python\\election_simulator"
+      "<!-- 프로젝트별 추가 디렉토리 -->"
     ]
   },
   "hooks": {
@@ -41,10 +37,6 @@
           },
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-doublecheck-guard.sh'\""
-          },
-          {
-            "type": "command",
             "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'deploy-version-guard.sh'\""
           }
         ]
@@ -54,11 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-checklist-guard.sh'\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'dev-checklist-guard.sh'\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
           }
         ]
       },
@@ -68,14 +56,6 @@
           {
             "type": "command",
             "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'dev-checklist-guard.sh'\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-checklist-guard.sh'\""
           }
         ]
       }

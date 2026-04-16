@@ -1,7 +1,8 @@
 #!/bin/bash
-# Claude Code PreToolUse hook: 문서/설정 파일 직접 덮어쓰기 보호
+# Claude Code PreToolUse hook: 문서/설정 파일 보호 + 자동 백업
 # - Write로 기존 문서/설정 파일을 전체 덮어쓰는 작업 차단
 # - Bash로 문서/설정 파일을 직접 수정하는 우회 경로 차단
+# - Edit 시 기존 문서를 .backups/에 자동 백업
 # - 신규 파일 Write는 허용하고, 내용 변경은 Edit 도구 사용을 유도
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
@@ -34,6 +35,19 @@ is_doc_path() {
   echo "$path" | grep -qiE "$DOC_EXT"
 }
 
+backup_doc() {
+  local filepath="$1"
+  if [ -z "$filepath" ] || [ ! -f "$filepath" ]; then
+    return 0
+  fi
+  local dir=$(dirname "$filepath")
+  local name=$(basename "$filepath")
+  local backup_dir="$dir/.backups"
+  local timestamp=$(date '+%Y%m%d_%H%M%S')
+  mkdir -p "$backup_dir" 2>/dev/null
+  cp "$filepath" "$backup_dir/${name}.${timestamp}.bak" 2>/dev/null
+}
+
 block() {
   local reason="$1"
   local target="$2"
@@ -53,8 +67,16 @@ if [ -n "$FILE_PATH" ]; then
 fi
 
 case "$TOOL_NAME" in
+  Edit)
+    # Edit은 허용하되, 기존 문서 파일이면 자동 백업
+    if [ -n "$FILE_PATH" ] && is_doc_path "$FILE_PATH" && [ -f "$FILE_PATH" ]; then
+      backup_doc "$FILE_PATH"
+    fi
+    exit 0
+    ;;
   Write)
     if [ -n "$FILE_PATH" ] && is_doc_path "$FILE_PATH" && [ -f "$FILE_PATH" ]; then
+      backup_doc "$FILE_PATH"
       block "기존 문서/설정 파일에 Write 사용" "$FILE_PATH"
     fi
     exit 0

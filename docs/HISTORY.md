@@ -100,3 +100,16 @@
 - **CLAUDE.md graphify 중복 제거**: 스킬 frontmatter와 동일한 안내 삭제
 - **결과**: rules 12→9개 (실질 4개 + 포인터 5개), 총 ~600줄 → ~80줄
 - 왜: 리서치 문서(하네스 과부하 문제)의 분석 — 훅이 강제하는 규칙을 rules에서 또 서술하면 컨텍스트 토큰만 낭비
+
+## Day 2 (2026-04-16, 오후)
+
+### 훅→스킬 아키텍처 전환
+- **설계 원칙 전환**: 훅은 "사고 방지"만, 나머지는 스킬(온디맨드)로
+- **`/checklist` 스킬 신규**: `dev-checklist-guard` + `doc-checklist-guard` 이원화를 하나의 통합 스킬로 대체. 코드/문서 자동 감지, 6단계 워크플로 (선언→백업→체크→구현→검증→보고)
+- **`doc-protection` 백업 추가**: Edit 시 기존 문서를 `.backups/{name}.{timestamp}.bak`에 자동 복사. 코드는 git이 담당하므로 문서만
+- **`deploy-version-guard` CI 체크 추가**: 기존 버전업/HISTORY 체크에 GitHub Actions CI 상태(gh run list) 확인 추가. CI 실패/실행 중이면 배포 차단
+- **훅 대폭 축소**: settings 연결 11→7개 (Bash 4→3, Edit 2→1, Write 3→1, PostToolUse 2 유지)
+- **dead hook 정리**: `dev-checklist-guard.sh`, `doc-checklist-guard.sh`, `doc-doublecheck-guard.sh`, `auto-backup.sh`, `check-streamlit.sh` 글로벌에서 삭제
+- **`skipDangerousModePermissionPrompt` 재제거**: Day 1에서 제거했으나 다시 남아있던 것을 최종 제거
+- **CLAUDE.md 프리플라이트 단순화**: dev/doc 이원화 안내 → `/checklist` 단일 안내로
+- 왜: Windows에서 훅 하나 = 프로세스 2개(PS+Bash). 체크리스트를 훅으로 강제하면 매 Edit/Write마다 비용 발생. 스킬은 필요할 때만 호출하므로 0 비용
