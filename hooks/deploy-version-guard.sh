@@ -31,24 +31,35 @@ HISTORY_CHANGED=$(git diff HEAD~1 --name-only 2>/dev/null | grep "HISTORY.md")
 
 # --- 체크 3: GitHub CI 상태 ---
 CI_STATUS="unknown"
-CI_DETAIL=""
+CI_DETAIL="gh CLI 없음"
 if command -v gh &>/dev/null; then
+  CI_DETAIL="gh 인증 실패 또는 네트워크 오류"
   CURRENT_SHA=$(git rev-parse HEAD 2>/dev/null)
   if [ -n "$CURRENT_SHA" ]; then
     CI_JSON=$(gh run list --commit "$CURRENT_SHA" --json conclusion,status,name --limit 5 2>/dev/null)
     if [ -n "$CI_JSON" ] && [ "$CI_JSON" != "[]" ]; then
-      RUNNING=$(echo "$CI_JSON" | jq -r '[.[] | select(.status != "completed")] | length' 2>/dev/null)
-      FAILED=$(echo "$CI_JSON" | jq -r '[.[] | select(.conclusion == "failure")] | length' 2>/dev/null)
-      FAILED_NAMES=$(echo "$CI_JSON" | jq -r '[.[] | select(.conclusion == "failure") | .name] | join(", ")' 2>/dev/null)
-
-      if [ "${RUNNING:-0}" -gt 0 ]; then
-        CI_STATUS="running"
-        CI_DETAIL="CI가 아직 실행 중입니다"
-      elif [ "${FAILED:-0}" -gt 0 ]; then
-        CI_STATUS="failed"
-        CI_DETAIL="실패한 워크플로: $FAILED_NAMES"
+      if ! command -v jq &>/dev/null; then
+        CI_STATUS="unknown"
+        CI_DETAIL="jq가 없어 CI 결과를 파싱할 수 없습니다"
       else
-        CI_STATUS="passed"
+        RUNNING=$(echo "$CI_JSON" | jq -r '[.[] | select(.status != "completed")] | length' 2>/dev/null)
+        # success만 통과 — failure, cancelled, timed_out, action_required 등 전부 실패 처리
+        NOT_SUCCESS=$(echo "$CI_JSON" | jq -r '[.[] | select(.status == "completed" and .conclusion != "success")] | length' 2>/dev/null)
+        NOT_SUCCESS_NAMES=$(echo "$CI_JSON" | jq -r '[.[] | select(.status == "completed" and .conclusion != "success") | "\(.name)(\(.conclusion))"] | join(", ")' 2>/dev/null)
+
+        # jq 파싱 실패 시 (빈 결과) fail-closed
+        if [ -z "$RUNNING" ] || [ -z "$NOT_SUCCESS" ]; then
+          CI_STATUS="unknown"
+          CI_DETAIL="CI 결과 파싱 실패"
+        elif [ "${RUNNING:-0}" -gt 0 ]; then
+          CI_STATUS="running"
+          CI_DETAIL="CI가 아직 실행 중입니다"
+        elif [ "${NOT_SUCCESS:-0}" -gt 0 ]; then
+          CI_STATUS="failed"
+          CI_DETAIL="비성공 워크플로: $NOT_SUCCESS_NAMES"
+        else
+          CI_STATUS="passed"
+        fi
       fi
     else
       CI_STATUS="none"
@@ -69,7 +80,8 @@ if [ "$HAS_TOML" = true ] && { [ -z "$TOML_CHANGED" ] || [ -z "$HISTORY_CHANGED"
   BLOCKED=true
 fi
 
-if [ "$CI_STATUS" = "failed" ] || [ "$CI_STATUS" = "running" ]; then
+# fail-closed: passed 외 모든 CI 상태에서 차단 (unknown, none, running, failed)
+if [ "$CI_STATUS" != "passed" ]; then
   BLOCKED=true
 fi
 
@@ -106,7 +118,10 @@ if [ "$BLOCKED" = true ]; then
       echo "  [-] GitHub CI — $CI_DETAIL"
       ;;
     unknown)
-      echo "  [-] GitHub CI — gh CLI 없음 (수동 확인 필요)"
+      echo "  [-] GitHub CI — $CI_DETAIL"
+      if [ -z "$CI_DETAIL" ]; then
+        echo "  [-] GitHub CI — 확인 불가 (gh CLI/jq 부재 또는 인증 실패)"
+      fi
       ;;
   esac
 

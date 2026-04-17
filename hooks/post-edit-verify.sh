@@ -23,7 +23,7 @@ else
 fi
 
 case "$TOOL_NAME" in
-  Edit|Write) ;;
+  Edit|Write|MultiEdit) ;;
   *) exit 0 ;;
 esac
 
@@ -94,7 +94,7 @@ case "$FILE_PATH" in
       */docs/*|*/rules/*.md|*/.claude/rules/*)
         if [ "$TOOL_NAME" = "Write" ] && command -v harness_feature_enabled >/dev/null 2>&1 && harness_feature_enabled "doc_templates" "false"; then
           case "$BASENAME" in
-            index.md|log.md|HISTORY.md|TEMPLATE.md|.dev-checklist.md|.doc-checklist.md)
+            index.md|log.md|HISTORY.md|TEMPLATE.md|.dev-checklist.md|.doc-checklist.md|.checklist.md)
               REQUIRE_FRONTMATTER=false
               ;;
             *)
@@ -248,6 +248,8 @@ if path.name == ".dev-checklist.md":
     validate_checked_file_items("dev")
 elif path.name == ".doc-checklist.md":
     validate_checked_file_items("doc")
+elif path.name == ".checklist.md":
+    validate_checked_file_items("dev")
 
 if problems:
     print("Post edit markdown verification failed:")

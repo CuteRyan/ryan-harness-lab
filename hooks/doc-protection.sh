@@ -67,8 +67,8 @@ if [ -n "$FILE_PATH" ]; then
 fi
 
 case "$TOOL_NAME" in
-  Edit)
-    # Edit은 허용하되, 기존 문서 파일이면 자동 백업
+  Edit|MultiEdit)
+    # Edit/MultiEdit은 허용하되, 기존 문서 파일이면 자동 백업
     if [ -n "$FILE_PATH" ] && is_doc_path "$FILE_PATH" && [ -f "$FILE_PATH" ]; then
       backup_doc "$FILE_PATH"
     fi
@@ -92,12 +92,62 @@ if [ -z "$COMMAND" ]; then
   exit 0
 fi
 
-# 백업/버전관리/조회성 명령은 보호 훅 대상에서 제외
-if echo "$COMMAND" | grep -q '\.backups'; then
-  exit 0
+# 백업 디렉토리 자체 조작(ls, cat 등)만 허용 — 대상 경로가 .backups/ 아래인 경우만
+# 주의: 명령 문자열에 .backups가 포함되었다고 전체 면제하면 우회됨
+# .backups 디렉토리 관련 명령 허용:
+#   - 조회(ls, cat 등): .backups 경로 포함이면 허용
+#   - cp/mv → .backups: 목적지가 .backups 아래이면 허용 (백업 목적)
+if echo "$COMMAND" | grep -qE '\.backups[/\\]'; then
+  # cp/mv 명령이면 마지막 인자(목적지)가 .backups 아래인지 확인
+  if echo "$COMMAND" | grep -qiE '(^|[[:space:];|&])(cp|copy|mv|move)[[:space:]]'; then
+    # 목적지(.backups)가 포함되어 있으므로 백업 목적 허용
+    exit 0
+  fi
+  # 그 외 조회 명령(.backups 경로 포함, 문서 확장자 없음)
+  if ! echo "$COMMAND" | grep -qiE "$DOC_EXT_IN_COMMAND" || echo "$COMMAND" | grep -qE '\.backups[/\\][^[:space:]]*'"$DOC_EXT_IN_COMMAND"; then
+    exit 0
+  fi
 fi
-if echo "$COMMAND" | grep -qE '^[[:space:]]*git[[:space:]]'; then
-  exit 0
+
+# --- git 명령 처리 ---
+# 파괴적 git 명령은 즉시 차단 (확장자/경로 무관)
+if echo "$COMMAND" | grep -qE '(^|[[:space:];|&])git[[:space:]]+(checkout|restore|rm|reset|clean|push)'; then
+  block "git 파괴적 명령 차단 (checkout/restore/rm/reset/clean/push)" ""
+fi
+
+# git 읽기 전용 명령 허용 조건:
+#   1. redirect(>), 체인(;&&||), 파이프(|), newline, command substitution($( `) 없음
+#   2. 위험 옵션(--output, --ext-diff) 없음
+#   3. 서브커맨드까지 읽기 전용
+if echo "$COMMAND" | grep -qE '^[[:space:]]*git[[:space:]]' && \
+   ! echo "$COMMAND" | grep -qE '[;|&>]' && \
+   ! echo "$COMMAND" | grep -qF $'\n' && \
+   ! echo "$COMMAND" | grep -qE '(\$\(|`)' && \
+   ! echo "$COMMAND" | grep -qE '\-\-output' && \
+   ! echo "$COMMAND" | grep -qE '\-\-ext-diff'; then
+  # 단순 조회 명령 (인자 자유)
+  if echo "$COMMAND" | grep -qE '^[[:space:]]*git[[:space:]]+(status|diff|log|show|blame)([[:space:]]|$)'; then
+    exit 0
+  fi
+  # branch: 읽기만 (뒤에 -D/-d/-m 등 파괴 옵션 없어야 함)
+  if echo "$COMMAND" | grep -qE '^[[:space:]]*git[[:space:]]+branch([[:space:]]|$)' && \
+     ! echo "$COMMAND" | grep -qE '\-[DdmM]'; then
+    exit 0
+  fi
+  # tag: 읽기만
+  if echo "$COMMAND" | grep -qE '^[[:space:]]*git[[:space:]]+tag([[:space:]]|$)' && \
+     ! echo "$COMMAND" | grep -qE '\-[dfs]'; then
+    exit 0
+  fi
+  # remote: 읽기만
+  if echo "$COMMAND" | grep -qE '^[[:space:]]*git[[:space:]]+remote([[:space:]]|$)' && \
+     ! echo "$COMMAND" | grep -qiE '(add|remove|rename|set-url|set-head|prune)'; then
+    exit 0
+  fi
+  # stash list
+  if echo "$COMMAND" | grep -qE '^[[:space:]]*git[[:space:]]+stash[[:space:]]+list'; then
+    exit 0
+  fi
 fi
 
 BLOCKED=false
@@ -136,6 +186,16 @@ fi
 if echo "$COMMAND" | grep -qiE "(^|[[:space:];|&])(mv|move|cp|copy)[[:space:]].*${DOC_EXT_IN_COMMAND}"; then
   BLOCKED=true
   REASON="mv/cp로 문서/설정 파일 덮어쓰기 가능성"
+fi
+
+if echo "$COMMAND" | grep -qiE "(^|[[:space:];|&])(rm|del|erase|truncate)[[:space:]].*${DOC_EXT_IN_COMMAND}"; then
+  BLOCKED=true
+  REASON="rm/truncate로 문서/설정 파일 삭제/절삭"
+fi
+
+if echo "$COMMAND" | grep -qiE "(^|[[:space:];|&])(python|python3|node|ruby)[[:space:]].*${DOC_EXT_IN_COMMAND}" && echo "$COMMAND" | grep -qiE "(write_text|write_bytes|writeFile|open\(|WriteAllText)"; then
+  BLOCKED=true
+  REASON="스크립트 언어로 문서/설정 파일 직접 쓰기"
 fi
 
 if [ "$BLOCKED" = true ]; then
