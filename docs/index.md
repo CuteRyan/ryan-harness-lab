@@ -19,6 +19,10 @@
 - [위키 관리 워크플로우](workflows/wiki-management.md) — index/log 포맷, lint 절차
 - [Graphify 가이드](workflows/graphify-guide.md) — 지식 그래프 생성/업데이트 가이드
 
+## 피드백
+
+- [피드백 인덱스](feedback/index.md) — Codex/Gemini 크로스 리뷰 이력
+
 ## 관리 파일
 
 - [HISTORY.md](HISTORY.md) — 프로젝트 히스토리

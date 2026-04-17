@@ -4,6 +4,8 @@
 
 ---
 
+- 2026-04-17 | 3라운드 크로스 리뷰 반영 | Codex/Gemini 3라운드 리뷰로 18개 문제 수정. doc-protection git 보호 전면 재설계, MultiEdit 배선, fail-closed, skipDangerous 제거
+- 2026-04-17 | docs/feedback/ 신규 | 피드백 문서 7개 + index.md 생성. `/feedback` 스킬 체계화 (docs/feedback/ 저장 필수, 맥락 주입 규칙)
 - 2026-04-16 | 훅→스킬 전환 | `/checklist` 스킬 신규, doc-protection 백업 추가, deploy-version-guard CI 체크 추가, 체크리스트 훅 2개+doublecheck 훅 제거, settings 11→7 훅
 - 2026-04-16 | rules 병합 | `communication.md` + `workflow.md` → `work-style.md`, `deployment.md` 포인터화. rules 12→9개
 - 2026-04-16 | 훅 병목 제거 | check-streamlit universal 삭제, auto-backup 삭제, feature-gated 훅 배선 제거. Edit당 7→3개 훅

@@ -113,3 +113,42 @@
 - **`skipDangerousModePermissionPrompt` 재제거**: Day 1에서 제거했으나 다시 남아있던 것을 최종 제거
 - **CLAUDE.md 프리플라이트 단순화**: dev/doc 이원화 안내 → `/checklist` 단일 안내로
 - 왜: Windows에서 훅 하나 = 프로세스 2개(PS+Bash). 체크리스트를 훅으로 강제하면 매 Edit/Write마다 비용 발생. 스킬은 필요할 때만 호출하므로 0 비용
+
+## Day 3 (2026-04-17)
+
+### Codex/Gemini 크로스 리뷰 3라운드 — 18개 문제 수정
+- **방법**: `/feedback` 스킬로 Codex(GPT-5.4)와 Gemini(2.5)에 병렬 리뷰 요청, 3라운드 반복
+- **1차 리뷰 → 6개 수정**:
+  - rules↔settings 정합성 충돌: rules 4개에서 '훅 강제' → '스킬 권장, 훅 강제 아님' 명시
+  - post-edit-verify `.checklist.md` 인식 추가
+  - doc-protection `.backups` blanket allow → 경로 기반 허용
+  - doc-protection git 전체 면제 → 읽기 전용만 허용
+  - MultiEdit 배선 추가 (settings Pre+Post)
+  - `skipDangerousModePermissionPrompt` 제거
+- **2차 리뷰 → 6개 수정**:
+  - MultiEdit 훅 본문 미처리 → `Edit|MultiEdit)` 분기 추가
+  - git 화이트리스트 redirect/체인 우회 → `[;|&>]` 포함 시 거부
+  - git 파괴적 명령 확장자 의존 → 확장자 무관 즉시 차단
+  - git whitelist 서브커맨드 미제한 → 파괴 옵션 부정 체크
+  - `.backups` Windows 백슬래시 → `[/\\]` 대응
+  - 배포 가드 jq 부재/파싱 실패 → unknown → fail-closed
+- **3차 리뷰 → 6개 수정**:
+  - **치명: BLOCKED=false 재초기화** → 파괴적 git 즉시 `block()` (exit 1)
+  - **치명: newline/$() 우회** → 금지 문자에 `\n`, `$(`, 백틱 추가
+  - git `--output`/`--ext-diff` 옵션 우회 → 차단 추가
+  - branch/tag/remote prefix 매치 → 파괴 옵션(-D/-d, add/remove) 별도 부정 체크
+  - `.backups` cp 의도 충돌 → 목적지가 .backups인 cp/mv는 백업 목적 허용
+  - 배포 가드 unknown 메시지 → gh 없음/jq 없음/파싱 실패 세분화
+- **결과**: settings 7→9 발동 (MultiEdit 추가), doc-protection git 보호 전면 재설계
+- **Gemini 최종 평가**: "Production Ready"
+- 왜: 하네스 훅은 보안 경계이므로 단일 모델 자체 검증으로는 blind spot 발생. 크로스 리뷰로 제어 흐름 버그(BLOCKED 재초기화) 같은 치명적 문제 발견
+
+### 피드백 스킬 체계화
+- **`/feedback` 스킬 수정**: 결과를 `docs/feedback/`에 저장 (기존 선택→필수)
+- **파일명 규칙**: `{날짜}_{작성자}_{피드백-대상}.md` (작성자: codex/gemini/claude)
+- **Claude 종합 문서**: 두 피드백 분석·종합한 별도 파일 생성
+- **인덱스**: `docs/feedback/index.md`로 피드백 이력 관리
+- **맥락 주입 규칙 추가**: Codex/Gemini는 싱글턴이므로 매번 충분한 배경+변경+코드를 프롬프트에 포함
+- 왜: 피드백이 대화 안에서만 소비되고 사라지면 재활용 불가. 문서화해서 이력 추적
+
+→ 피드백 상세: `docs/feedback/index.md`
