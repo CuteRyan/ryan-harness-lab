@@ -4,6 +4,8 @@
 
 ---
 
+- 2026-04-17 | 히스토리 폴더 마이그레이션 | 단일 `docs/HISTORY.md` → `docs/history/index.md` + 일별 파일 3개(2026-04-15/16/17). index.md 최상단 "🔄 진행 중" 섹션이 세션 인계 SSOT. 원본은 `.backups/HISTORY.md.20260417_pre-migration.bak`로 백업. 양식: `[시작일] 상태 | 작업 | 다음 | 미결`. 한계: 7개 OR 14일
+- 2026-04-17 | 세션 인계 도입 (Phase 1 → 즉시 Phase 2) | project-history 스킬에 handoff 명령 + Phase 1/2 단계 + 7개/14일 한계 + 역방향 SSOT(index 상단) 규칙 추가
 - 2026-04-17 | 3라운드 크로스 리뷰 반영 | Codex/Gemini 3라운드 리뷰로 18개 문제 수정. doc-protection git 보호 전면 재설계, MultiEdit 배선, fail-closed, skipDangerous 제거
 - 2026-04-17 | docs/feedback/ 신규 | 피드백 문서 7개 + index.md 생성. `/feedback` 스킬 체계화 (docs/feedback/ 저장 필수, 맥락 주입 규칙)
 - 2026-04-16 | 훅→스킬 전환 | `/checklist` 스킬 신규, doc-protection 백업 추가, deploy-version-guard CI 체크 추가, 체크리스트 훅 2개+doublecheck 훅 제거, settings 11→7 훅

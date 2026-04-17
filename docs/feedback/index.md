@@ -9,6 +9,11 @@ created: 2026-04-17
 
 ## 2026-04-17
 
+### 4차: 세션 인계 / project-history 스킬 확장 설계
+- 1차: [Codex](2026-04-17_codex_세션인계-history스킬-확장.md) | [Gemini](2026-04-17_gemini_세션인계-history스킬-확장.md) — SSOT 위치 논쟁 (일별 vs index)
+- 2차: [Codex](2026-04-17_codex_세션인계-history스킬-확장-2차.md) | [Gemini](2026-04-17_gemini_세션인계-history스킬-확장-2차.md) — 누적 방지 + 형식 + 전환 기준
+- [종합](2026-04-17_claude_세션인계-history스킬-확장-종합.md) — 역방향 SSOT 채택 + 7개/14일 한계 + 단계별 적용
+
 ### 3차: doc-protection git 보호 로직
 - [Codex](2026-04-17_codex_doc-protection-git보호-3차.md) — 치명 2(BLOCKED 재초기화, newline 우회) + 높음 2 + 중간 1 + 낮음 1
 - [Gemini](2026-04-17_gemini_하네스-최종상태-3차.md) — Production Ready, 전 컴포넌트 Pass
