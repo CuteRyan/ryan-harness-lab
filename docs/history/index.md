@@ -9,7 +9,7 @@
 
 - [2026-04-17] 진행 중 | 세션 인계 + 폴더 마이그레이션(Phase 2 직행) | 다음: 1주 운영 후 회고 (양식/한계 규칙이 실제로 작동하는지) | 미결: 없음
 - [2026-04-17] 보류(보존) | /checklist 스킬 5차 피드백 반영 | 다음: venv+sync 작업 후 복원 여부 판단 | 미결: Q1~Q3 (`.backups/.checklist.md.승인대기_checklist5차_2026-04-17.md`에 보존)
-- [2026-04-18] 진행 중 | venv 규칙 개정 + VS Code Sync 하이브리드 + /feedback 스킬 개정 (커밋 9152f21) | 다음: VS Code 재시작·Settings Sync UI 재설정(B5) + `~/.claude/vscode/` git init + B7 금지 키 allowlint 훅(후속) | 미결: 없음 (Q1~Q5 결정 완료, 4차 dogfood 반영 완료)
+- [2026-04-18] 진행 중 | venv 규칙 개정 + VS Code Sync 하이브리드 + /feedback 스킬 개정 (커밋 1840cec) | 다음: **수작업 7단계** — 인계 상세는 `docs/history/2026-04-18.md` 11번 섹션 (단계 1 인터프리터 에러 확인 → 2 Settings Sync UI 재설정 → 3 `~/.claude/vscode/` git init → 4 B7 allowlint 훅 설계 → 5 5차 체크리스트 복원 판단 → 6 참고 문서 → 7 장기 후속) | 미결: 없음 (Q1~Q5 결정 완료)
 
 ---
 
