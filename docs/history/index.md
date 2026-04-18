@@ -9,7 +9,7 @@
 
 - [2026-04-17] 진행 중 | 세션 인계 + 폴더 마이그레이션(Phase 2 직행) | 다음: 1주 운영 후 회고 (양식/한계 규칙이 실제로 작동하는지) | 미결: 없음
 - [2026-04-17] 보류(보존) | /checklist 스킬 5차 피드백 반영 | 다음: venv+sync 작업 후 복원 여부 판단 | 미결: Q1~Q3 (`.backups/.checklist.md.승인대기_checklist5차_2026-04-17.md`에 보존)
-- [2026-04-18] 진행 중 | venv 규칙 개정 + VS Code Sync 하이브리드 | 다음: VS Code 재시작 후 에러 비재현 확인 + Settings Sync UI 재설정(B5) + `~/.claude/vscode/` git init + B7 후속 린트 훅 설계 | 미결: 없음 (Q1~Q5 결정 완료)
+- [2026-04-18] 진행 중 | venv 규칙 개정 + VS Code Sync 하이브리드 + /feedback 스킬 개정 (커밋 9152f21) | 다음: VS Code 재시작·Settings Sync UI 재설정(B5) + `~/.claude/vscode/` git init + B7 금지 키 allowlint 훅(후속) | 미결: 없음 (Q1~Q5 결정 완료, 4차 dogfood 반영 완료)
 
 ---
 
@@ -25,7 +25,7 @@
 
 | 날짜 | Day | 요약 | 파일 |
 |------|-----|------|------|
-| 2026-04-18 | 4 | venv 규칙 개정(CLAUDE.md 포인터화 + coding.md 재작성 + deployment.md 배포 체크리스트) + VS Code Settings Sync 하이브리드 전환(Settings만 Git, `~/.claude/vscode/` 신설) | [상세](2026-04-18.md) |
+| 2026-04-18 | 4 | venv 규칙 개정 + VS Code Sync 하이브리드 전환 + /feedback 스킬 개정 (Codex/Gemini 4차 크로스 리뷰 + dogfood 검증, 프롬프트 1/10 압축) | [상세](2026-04-18.md) |
 | 2026-04-17 | 3 | Codex/Gemini 3라운드 크로스 리뷰(18개 수정) + 피드백 스킬 체계화 + 세션 인계 도입 + /checklist 5차 피드백(승인 대기) | [상세](2026-04-17.md) |
 | 2026-04-16 | 1-2 | Codex 검증 + 훅 병목 제거 + rules 최적화 + 훅→스킬 아키텍처 전환 | [상세](2026-04-16.md) |
 | 2026-04-15 | 0 | 프로젝트 분리 + P0~P2 하네스 리팩터링 + Windows 훅 안정화 | [상세](2026-04-15.md) |
