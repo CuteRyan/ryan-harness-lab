@@ -11,4 +11,4 @@
 - `docs/project_harness_architecture.md` — 하네스 아키텍처 설계안 (Phase 0~4)
 - `docs/harness_bypass_guide.md` — 훅 우회 가이드
 - `docs/workflows/` — 워크플로 상세 절차 (dev-checklist, document-work, wiki-management, graphify-guide)
-- `docs/HISTORY.md` — 프로젝트 히스토리
+- `docs/history/` — 프로젝트 히스토리 (일별 파일 + `index.md` SSOT, 진행 중 섹션 포함)
