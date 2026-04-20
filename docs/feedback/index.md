@@ -7,6 +7,13 @@ created: 2026-04-17
 
 # 피드백 인덱스
 
+## 2026-04-19
+
+### /feedback 스킬 비판 검토 기능 강화 (메타 리뷰)
+- [Codex](2026-04-19_codex_feedback스킬-비판검토-강화.md) — **FAILED** (3회 전 실패, 한글 경로 + PowerShell Constrained Language + 정책 rejection 삼중 악재). 실패 자체가 Phase 0 프리플라이트 확장 필요 finding
+- [Gemini](2026-04-19_gemini_feedback스킬-비판검토-강화.md) — 방향 전면 지지 + 보완 3(의무적 비판·근거 없는 ✅=🔍·검증 요약 1줄) + 리스크 3(동반 환각·도구 제약 혼동·Claude 독자 발견 섹션)
+- [종합](2026-04-19_claude_feedback스킬-비판검토-강화-종합.md) — **제안 A+B+C 포맷을 자기 적용한 dogfood**. 치명 2(G2 실측 증거 필수, R1 공통 지적 엄격 실측) + 높음 3 포함 10개 반영 순위. 파이프라인이 1자로 축소된 상태 자체를 finding으로 기록. 미반영: 없음
+
 ## 2026-04-18
 
 ### 4차: /feedback 커맨드 개정 (dogfood — 개정본으로 자기 리뷰)
