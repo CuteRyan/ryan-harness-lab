@@ -7,19 +7,15 @@ created: 2026-04-17
 
 # 피드백 인덱스
 
-## 2026-04-19
+## /feedback 스킬 관련 피드백 (archive)
 
-### /feedback 스킬 비판 검토 기능 강화 (메타 리뷰)
-- [Codex](2026-04-19_codex_feedback스킬-비판검토-강화.md) — **FAILED** (3회 전 실패, 한글 경로 + PowerShell Constrained Language + 정책 rejection 삼중 악재). 실패 자체가 Phase 0 프리플라이트 확장 필요 finding
-- [Gemini](2026-04-19_gemini_feedback스킬-비판검토-강화.md) — 방향 전면 지지 + 보완 3(의무적 비판·근거 없는 ✅=🔍·검증 요약 1줄) + 리스크 3(동반 환각·도구 제약 혼동·Claude 독자 발견 섹션)
-- [종합](2026-04-19_claude_feedback스킬-비판검토-강화-종합.md) — **제안 A+B+C 포맷을 자기 적용한 dogfood**. 치명 2(G2 실측 증거 필수, R1 공통 지적 엄격 실측) + 높음 3 포함 10개 반영 순위. 파이프라인이 1자로 축소된 상태 자체를 finding으로 기록. 미반영: 없음
+> 2026-04-18 ~ 2026-04-20 동안 /feedback 스킬 자체에 대한 피드백이 3단계 누적(4차 개정 → 비판 검토 강화 → MVP 반영 검증 → B옵션 3차 개정). 2026-04-21 수렴 시점에 전부 `drafts/2026-04-20_proposal_feedback-skill-rewrite.md`(v4)로 흡수됨 (~85% 직접 반영, 나머지 9건 중 4건은 v4 패치 예정·5건은 후속/폐기).
+>
+> **원문 13개 파일**: `.backups/feedback-skill-archive_2026-04/` (2026-04-18 feedback 개정 종합·Codex·Gemini / 2026-04-19 비판검토 종합·Codex·Gemini·MVP 종합·Codex·Gemini / 2026-04-20 B옵션 3차 종합·Codex·Gemini·Claude-Sub).
+>
+> **다음 세션 진입점**: 이 index가 아니라 제안서 v4 + `docs/history/2026-04-20.md`를 먼저 읽을 것.
 
 ## 2026-04-18
-
-### 4차: /feedback 커맨드 개정 (dogfood — 개정본으로 자기 리뷰)
-- [Codex](2026-04-18_codex_feedback스킬-개정.md) — 실측 검증(codex-cli 0.120.0 / gemini 0.37.1), 높음 3(PS bare 실패, 읽기 전용 가드 부재, 출력 포맷 모순) + 중간 3 + 낮음 1. Phase 0 프리플라이트 제안
-- [Gemini](2026-04-18_gemini_feedback스킬-개정.md) — "바로 적용 무방", 높음 2(경로 해석, 읽기 실패 폴백) + 중간 1 + 낮음 1. Pre-check·Diff 기반 리뷰 아이디어
-- [종합](2026-04-18_claude_feedback스킬-개정-종합.md) — dogfood 검증 성공(프롬프트 600자로 1/10 감축, 품질 유지). 공통 3 + 주인님 한글 인코딩 지적 반영, 11개 개선안 정리
 
 ### 3차: Phase A/B/C 구현 결과 리뷰
 - [Codex](2026-04-18_codex_구현결과-리뷰.md) — 치명 0, 높음 2(deployment.md 순서 위험, B5 미완 상태의 Accept 방향 주의) + 중간 7. 공식 문서 대조 + 실측 검증. 이전 피드백 10/10 중 8반영/1부분/1미반영(B7 연기)
