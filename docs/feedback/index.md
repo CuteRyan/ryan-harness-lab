@@ -15,6 +15,16 @@ created: 2026-04-17
 >
 > **다음 세션 진입점**: 이 index가 아니라 제안서 v4 + `docs/history/2026-04-20.md`를 먼저 읽을 것.
 
+## 2026-04-23
+
+### /checklist 혼동 제거 체크리스트 v2 리뷰
+- 대상: `.checklist.md` (v2, 혼동 제거 + 5차 피드백 Q1~Q3 종결)
+- Validation: **1/3 VALID** (Claude Sub 태깅 완비 / Codex·Gemini 태깅 누락으로 rubber-stamp 의심)
+- [Claude Sub](2026-04-23_claude-sub_.checklist_20260423-084406.md) — H-1 venv-guard 이동 모순, H-2 frontmatter 구분자 누락, M-1 롤백경로 실측 누락, M-2 workflows 갱신 누락, M-3 4번 항목 혼재, L-1/L-2
+- [Codex](2026-04-23_codex_.checklist_20260423-084406.md) — (태깅 누락, 실질 5건) **치명급: `.checklist.md` 자체가 `git stash --include-untracked` 로 사라질 위험** + 글로벌 파일 롤백 백업 누락 + venv-guard 이중 지시 + 기존 변경 3건과 최종 1:1 검증 충돌
+- [Gemini](2026-04-23_gemini_.checklist_20260423-084406.md) — (태깅 누락, rubber-stamp 경향) 장점 나열 + Win32 경로 원론
+- [종합](2026-04-23_claude_.checklist_20260423-084406-종합.md) — Top 3: ①stash 위험 ②글로벌 사전 백업 ③venv-guard 선제 실측. v3 작성 9개 항목 정리
+
 ## 2026-04-18
 
 ### 3차: Phase A/B/C 구현 결과 리뷰
