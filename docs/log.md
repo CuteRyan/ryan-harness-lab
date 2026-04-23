@@ -4,6 +4,7 @@
 
 ---
 
+- 2026-04-23 | `docs/research/feedback-encoding-fix/` 신규 | /feedback 한글 mojibake 반복 재발 원인 규명. 01_root-cause(3 레이어: stdout/argv/Start-Job) + 02_web-evidence(hy2k.dev, MS Learn, gemini-cli#20186, codex#4498 등 10건) + 03_fix-plan(Step A 최소 / B 중간 / C Gemini argv 우회 / D PS7 이주) 3편. 후속: /checklist 로 구현 체크리스트 생성 예정
 - 2026-04-17 | 히스토리 폴더 마이그레이션 | 단일 `docs/HISTORY.md` → `docs/history/index.md` + 일별 파일 3개(2026-04-15/16/17). index.md 최상단 "🔄 진행 중" 섹션이 세션 인계 SSOT. 원본은 `.backups/HISTORY.md.20260417_pre-migration.bak`로 백업. 양식: `[시작일] 상태 | 작업 | 다음 | 미결`. 한계: 7개 OR 14일
 - 2026-04-17 | 세션 인계 도입 (Phase 1 → 즉시 Phase 2) | project-history 스킬에 handoff 명령 + Phase 1/2 단계 + 7개/14일 한계 + 역방향 SSOT(index 상단) 규칙 추가
 - 2026-04-17 | 3라운드 크로스 리뷰 반영 | Codex/Gemini 3라운드 리뷰로 18개 문제 수정. doc-protection git 보호 전면 재설계, MultiEdit 배선, fail-closed, skipDangerous 제거

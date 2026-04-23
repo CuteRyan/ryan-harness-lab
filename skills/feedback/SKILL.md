@@ -127,7 +127,8 @@ description: 대상 파일을 Claude Sub / Codex / Gemini 3개 CLI에 병렬로 
 
 ## 스크립트 파일 목록
 
-- `scripts/prepare-isolation.ps1` — 격리 디렉토리 생성
+- `scripts/_encoding.ps1` — UTF-8 I/O 인코딩 고정 헬퍼 (dot-source 전용, PS 5.1 CP949 우회)
+- `scripts/prepare-isolation.ps1` — 격리 디렉토리 생성 (`$HOME\codex-cwd\<slug>` 영문 경로 고정)
 - `scripts/run-claude-sub.ps1` — Claude Sub 호출
 - `scripts/run-codex.ps1` — Codex 호출
 - `scripts/run-gemini.ps1` — Gemini 호출 (Push/Pop-Location 내장)

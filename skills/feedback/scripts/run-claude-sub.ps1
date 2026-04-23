@@ -31,10 +31,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# UTF-8 인코딩 강제 — PS 5.1에서 claude stdout을 CP949로 디코딩하는 이슈 방어
-# (Task A 2026-04-22 실측: 동일 스크립트가 타깃에 따라 mojibake 발생. 예방적 고정.)
-try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
-$OutputEncoding = [System.Text.Encoding]::UTF8
+# UTF-8 I/O 고정 — PS 5.1 CP949 기본값 우회 (L1 stdout + L2 argv/pipe + 파일 저장).
+# 근거: docs/research/feedback-encoding-fix/02_web-evidence.md (hy2k.dev, MS Learn).
+. (Join-Path $PSScriptRoot '_encoding.ps1')
 
 $jsonOut = claude -p $Prompt `
     --permission-mode plan `

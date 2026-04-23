@@ -23,6 +23,11 @@
 
 - [피드백 인덱스](feedback/index.md) — Codex/Gemini 크로스 리뷰 이력
 
+## 리서치
+
+- [/feedback 인코딩 깨짐 근본 원인 분석](research/feedback-encoding-fix/01_root-cause.md) — PS 5.1 3 레이어(stdout/argv/Start-Job) 진단, 웹 근거, 수정안
+- [agent-team-manager 스킬 v2 재설계](research/agent-team-skill-redesign/HANDOFF.md) — 공식/커뮤니티/실측 기반 리서치·스펙 (진행 중)
+
 ## 관리 파일
 
 - [히스토리 인덱스](history/index.md) — 진행 중 섹션(SSOT) + 일별 파일 인덱스. 세션 인계는 항상 여기 최상단부터

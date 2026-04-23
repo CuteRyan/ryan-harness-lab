@@ -35,6 +35,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# UTF-8 I/O 고정 — PS 5.1 CP949 기본값 우회 (L1 stdout + L2 argv/pipe + 파일 저장).
+# 근거: docs/research/feedback-encoding-fix/02_web-evidence.md (hy2k.dev, MS Learn).
+# Gemini는 -p 한글 argv 버그(gemini-cli #20186)가 별도 존재 — Step C에서 보류.
+. (Join-Path $PSScriptRoot '_encoding.ps1')
+
 Push-Location -LiteralPath $IsolatedDir
 try {
     $output = gemini.cmd -p $Prompt -o text --approval-mode plan

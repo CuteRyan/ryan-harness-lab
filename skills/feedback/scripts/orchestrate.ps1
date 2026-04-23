@@ -16,6 +16,11 @@ $ErrorActionPreference = 'Stop'
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+# UTF-8 I/O 고정 — 부모 세션에도 적용 (Set-Content fallback 경로 + Step 7 retry 직접 호출 커버).
+# 근거: docs/research/feedback-encoding-fix/02_web-evidence.md.
+. (Join-Path $scriptDir '_encoding.ps1')
+Write-Verbose ("Parent encoding: Console={0} Output={1}" -f [Console]::OutputEncoding.WebName, $OutputEncoding.WebName)
+
 if (-not $FeedbackDir) {
     $FeedbackDir = Join-Path (Get-Location) 'docs\feedback'
 }
@@ -68,12 +73,15 @@ $cliScripts['codex']      = Join-Path $scriptDir 'run-codex.ps1'
 $cliScripts['gemini']     = Join-Path $scriptDir 'run-gemini.ps1'
 
 # Step 5: parallel Start-Job
+# Start-Job ScriptBlock은 별도 runspace — 부모 인코딩 설정 상속 X (PS #4681, #14945).
+# 자식 진입 즉시 _encoding.ps1을 dot-source해야 CLI stdout 디코딩이 UTF-8로 고정됨.
 $jobs = @{}
 foreach ($cli in $cliNames) {
     $jobs[$cli] = Start-Job -Name $cli -ScriptBlock {
-        param($ScriptPath, $Isolated, $P, $Out)
+        param($ScriptPath, $Isolated, $P, $Out, $ScriptsDir)
+        . (Join-Path $ScriptsDir '_encoding.ps1')
         & $ScriptPath -IsolatedDir $Isolated -Prompt $P -OutputFile $Out
-    } -ArgumentList $cliScripts[$cli], $isolated, $prompt, $outputs[$cli]
+    } -ArgumentList $cliScripts[$cli], $isolated, $prompt, $outputs[$cli], $scriptDir
 }
 
 # Step 6: wait with configurable timeout (default 300s)

@@ -32,6 +32,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# UTF-8 I/O 고정 — PS 5.1 CP949 기본값 우회 (L1 stdout + L2 argv/pipe + 파일 저장).
+# 근거: docs/research/feedback-encoding-fix/02_web-evidence.md (hy2k.dev, MS Learn).
+. (Join-Path $PSScriptRoot '_encoding.ps1')
+
 $output = $null | codex.cmd exec --skip-git-repo-check -C $IsolatedDir $Prompt
 
 if ($LASTEXITCODE -ne 0) {
