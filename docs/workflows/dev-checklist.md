@@ -1,5 +1,7 @@
 # 개발 체크리스트 워크플로우
 
+> **⚠️ 2026-04-23 이후**: 현 워크플로는 `/checklist` **스킬**로 통합 (코드·문서 `.checklist.md` 단일 파일). 실제 워크플로 SSOT는 `~/.claude/skills/checklist/SKILL.md`. 이 문서는 **훅 기반 옛 이원화 절차의 역사 기록**이며, 현행 규칙은 `~/.claude/rules/dev-checklist.md` 를 참조. 전면 재작성은 H-group 이월 (→ `docs/history/index.md` 진행 중).
+
 > rules/dev-checklist.md의 상세 절차. 규칙(강제)은 rules/에, 절차(어떻게)는 여기에.
 
 ---

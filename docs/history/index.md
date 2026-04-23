@@ -8,9 +8,9 @@
 > **SSOT**: 이 섹션이 진행 중 정보의 유일한 원본. 다른 파일에 동일 정보 두지 않음.
 
 - [2026-04-17] 진행 중 | 세션 인계 + 폴더 마이그레이션(Phase 2 직행) | 다음: 1주 운영 후 회고 (양식/한계 규칙이 실제로 작동하는지) | 미결: 없음
-- [2026-04-17] 보류(보존) | /checklist 스킬 5차 피드백 반영 | 다음: venv+sync 작업 후 복원 여부 판단 | 미결: Q1~Q3 (`.backups/.checklist.md.승인대기_checklist5차_2026-04-17.md`에 보존)
 - [2026-04-18] 부분 종결 (Day 6에 체크리스트 종결) | venv 규칙 개정 + VS Code Sync 하이브리드 + /feedback 스킬 개정 | 다음: **B5 Settings Sync UI 재설정(주인님 수작업)** + **B7 금지 키 allowlint 훅 설계(별도 세션)** | 미결: 없음 (Day 6 완료분 — vscode git init 73d8b93, 하네스 프로젝트 venv 마이그레이션, C3 "불필요" 종결)
-- [2026-04-22] 종결 | /feedback 스킬 **구조 승격** (Day 9) — md 1장 → SKILL.md + scripts/ 6 PS1 구조 (octopus Validation Gate Pattern 채택), 3 CLI 스모크 2건 실측 성공, 자체 메타 리뷰로 4건 공통 지적 100% 반영 | 다음: **주인님 원래 요청이었던 /checklist + /todo 스킬 제작** (이번 방법론 재사용) | 미결: 없음 (Phase 2 항목은 별도 세션)
+- [2026-04-22] 종결 | /feedback 스킬 **구조 승격** (Day 9) — md 1장 → SKILL.md + scripts/ 6 PS1 구조 (octopus Validation Gate Pattern 채택), 3 CLI 스모크 2건 실측 성공, 자체 메타 리뷰로 4건 공통 지적 100% 반영 | 다음: **/todo 스킬 제작** (/checklist는 Day 10에 혼동 제거 + Q1~3 종결 완료) | 미결: 없음 (Phase 2 항목은 별도 세션)
+- [2026-04-23] 진행 중 | **Day 10 이월**: ① /checklist 5차 피드백 나머지 (C1 승인 허점 차단 · H1 mode 분기 · H2 tiny 의미 조건 · H3 Phase 3 증거 의무 · M1~M3 기준선·롤백·HISTORY) / ② /feedback 스킬 중요도 태깅 강화 (Codex/Gemini 태깅 누락 rubber-stamp 리스크) / ③ docs/workflows/dev-checklist.md 전면 재작성 (스킬 기반) | 다음: 각 항목을 별도 체크리스트로 재개 | 미결: 근거 `.backups/.checklist.md.종결_Q1~3결정반영_2026-04-23.md` + 오늘 종합 피드백 `docs/feedback/2026-04-23_claude_.checklist_20260423-084406-종합.md`
 
 ---
 
@@ -26,6 +26,7 @@
 
 | 날짜 | Day | 요약 | 파일 |
 |------|-----|------|------|
+| 2026-04-23 | 10 | **/checklist 혼동 제거 + 5차 피드백 Q1~Q3 종결** — 주인님 지적("글로벌에 스킬 지시는 있는데 실제 파일이 없어서 혼동")에서 출발 → 원인 실측(글로벌은 이미 정리됨, 스킬 파일만 비어있음) → Q1.A(훅 제거)/Q2.A(스테이징·운영 분리)/Q3 보수 유지 결정 → 체크리스트 v1→v2(자체 비판)→v3(/feedback 3 CLI 반영: 치명 3건 포함 10개 개선) → Phase 2 실행 (글로벌 스킬 복원 SHA MATCH, SSOT 규칙 신설, 프로젝트 drift 정리 — dead 5개 이동·`doc-doublecheck-guard` 실측으로 ALIVE 확정해 보존) | [상세](2026-04-23.md) |
 | 2026-04-22 | 9 | **/feedback 스킬 구조 승격** — md 1장(135줄) → SKILL.md + scripts/ 6 PS1 분리 (octopus Validation Gate 채택) → PowerShell 5.1 BOM 이슈 실측 해결 → 3 CLI 스모크 2건 성공 → 자체 메타 리뷰 공통 지적 4건 100% 반영 | [상세](2026-04-22.md) |
 | 2026-04-21 | 8 | **/feedback 스킬 v4 승격** — 과거 피드백 13개 archive + Day 7 2-Tier 제안서 폐기 → 단순 3-CLI 병렬로 재설계(77→135줄) → 3차 dogfood 3/3 성공 + 공통 지적 6건 수렴 → 플래그 2건 실측 + 6건 반영 → 217→135줄(-38%) 승격 | [상세](2026-04-21.md) |
 | 2026-04-20 | 7 | **/feedback 스킬 B옵션 3차 개정 → dogfood 실패 → 제로베이스 재설계 제안** — 오전: 4축 리서치 + A+B+C 개정(217줄, 실측 V1~V4 통과). 오후: 자기 dogfood 6회 실패(Windows 고유 60%), Claude Code 서브인스턴스 1회 성공($0.20, 유효 지적 7개 중 치명 1), 2-Tier 아키텍처 재설계 제안서 작성 | [상세](2026-04-20.md) |
