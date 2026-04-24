@@ -11,6 +11,7 @@
 - [2026-04-18] 부분 종결 (Day 6에 체크리스트 종결) | venv 규칙 개정 + VS Code Sync 하이브리드 + /feedback 스킬 개정 | 다음: **B5 Settings Sync UI 재설정(주인님 수작업)** + **B7 금지 키 allowlint 훅 설계(별도 세션)** | 미결: 없음 (Day 6 완료분 — vscode git init 73d8b93, 하네스 프로젝트 venv 마이그레이션, C3 "불필요" 종결)
 - [2026-04-22] 종결 | /feedback 스킬 **구조 승격** (Day 9) — md 1장 → SKILL.md + scripts/ 6 PS1 구조 (octopus Validation Gate Pattern 채택), 3 CLI 스모크 2건 실측 성공, 자체 메타 리뷰로 4건 공통 지적 100% 반영 | 다음: **/todo 스킬 제작** (/checklist는 Day 10에 혼동 제거 + Q1~3 종결 완료) | 미결: 없음 (Phase 2 항목은 별도 세션)
 - [2026-04-23] 진행 중 | **Day 10 이월**: ① /checklist 5차 피드백 나머지 (C1·H1·H2·H3·M1~M3) / ③ docs/workflows/dev-checklist.md 전면 재작성 (스킬 기반) / ④ **Gemini rubber-stamp 성향 근본 해결** (Part 2 에서 Gate 로 방어했으나 CLI 성격 한계 잔존 — 강경 프롬프트/CLI 교체 검토) / ⑤ **CLI 연속 호출 stateful 누적 실패** (Part 3 V-3 발견 — Codex stdin 점유 + Gemini IDE client 리크, Start-Sleep 간격/정리 정책 필요) / ⑥ **L4 — `prepare-isolation.ps1` 격리 복사 시 BOM 삽입** (Codex 내부 spawn PS 의 CP949 파일 읽기 회복 단계 skip) | 다음: 각 항목을 별도 체크리스트로 재개 | 미결: ①③ 근거 `.backups/.checklist.md.종결_Q1~3결정반영_2026-04-23.md`, ④ 근거 `docs/feedback/2026-04-23_gemini_SKILL_20260423-100623.md`, ⑤ 근거 `docs/feedback/2026-04-23_{codex,gemini}_2026-04-22_20260423-{173731,174318,174824}.md` 6건, ⑥ 근거 `docs/research/feedback-encoding-fix/03_fix-plan.md` L4 섹션 추가 예정 (※ Day 10 이월 ② 는 Part 2 에서 종결)
+- [2026-04-24] 진행 중 | **9 프로젝트 CLAUDE.md 보강** (템플릿·스킬 인프라는 `a9cd3b3` 로 종결) | 다음: 🔴 긴급 3개(논문 및 하위 2개) 보강 착수 — 논문 하위 2개 활성 여부 확인 → 최소 3섹션(개요·개발명령·워크플로) 추가 | 미결: 없음 (우선순위는 `2026-04-24.md` §3 참조)
 
 ---
 
@@ -26,6 +27,7 @@
 
 | 날짜 | Day | 요약 | 파일 |
 |------|-----|------|------|
+| 2026-04-24 | 11 | **CLAUDE.md 표준화 P0~P2** — PAA 위치 정상화(`7667134`), `/claude-md` 스킬+템플릿 신설(`a9cd3b3`, 헌법블록 5원칙), 9 프로젝트 전수 audit 리포트(🔴3·⚠️1·🟡5). 공식 `/init` 과 병존 관계 명시 | [상세](2026-04-24.md) |
 | 2026-04-23 | 10 | **Part 1: /checklist 혼동 제거 + 5차 피드백 Q1~Q3 종결** — 글로벌 스킬 복원 SHA MATCH, SSOT 규칙 신설, dead 훅 5개 이동 (`doc-doublecheck-guard` ALIVE 실측 보존). **Part 2: /feedback 태깅 강화 + 줄 시작 앵커화** (Day 10 이월 ② 종결) — 프롬프트에 `[태그]` 접두사 강제 + Validation 정규식 앵커화 `(?m)^\s*...\[태그\]` (ATX 헤더 허용), 스모크 1/3 → 2/3 VALID 실측, Gemini 본문 인용 우회 차단. Gemini rubber-stamp 성향 자체는 이월 ④ 로 분리. **Part 3: /feedback 인코딩 3 레이어 패치** — `docs/research/feedback-encoding-fix/` 3편 근거 문서 선행 (외부 근거 10건), `_encoding.ps1` 헬퍼 + 전 CLI dot-source + Start-Job 자식 runspace 재설정. V-1 한글 정상 3/3 + mojibake 0, V-3 Claude Sub 정상 but Codex/Gemini 연속 호출 실패(이월 ⑤) | [상세](2026-04-23.md) |
 | 2026-04-22 | 9 | **/feedback 스킬 구조 승격** — md 1장(135줄) → SKILL.md + scripts/ 6 PS1 분리 (octopus Validation Gate 채택) → PowerShell 5.1 BOM 이슈 실측 해결 → 3 CLI 스모크 2건 성공 → 자체 메타 리뷰 공통 지적 4건 100% 반영 | [상세](2026-04-22.md) |
 | 2026-04-21 | 8 | **/feedback 스킬 v4 승격** — 과거 피드백 13개 archive + Day 7 2-Tier 제안서 폐기 → 단순 3-CLI 병렬로 재설계(77→135줄) → 3차 dogfood 3/3 성공 + 공통 지적 6건 수렴 → 플래그 2건 실측 + 6건 반영 → 217→135줄(-38%) 승격 | [상세](2026-04-21.md) |
