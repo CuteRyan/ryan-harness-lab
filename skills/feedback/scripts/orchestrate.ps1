@@ -9,7 +9,14 @@ param(
 
     [string]$FeedbackDir,
 
-    [int]$TimeoutSeconds = 300
+    [int]$TimeoutSeconds = 300,
+
+    # Step 7 retry 직전 cleanup 대기 (sec). Codex stdin 점유 / Gemini IDE client 리크 해소 목적.
+    # V-3 (3회 연속) 실패 추적 결과 — Start-Job 종료 후 자식 CLI 핸들 정리에 시간이 필요.
+    [int]$WaitSec = 10,
+
+    # Start-Job 병렬 대신 순차 실행. stateful 누적 회피용 안전 모드.
+    [switch]$Sequential
 )
 
 $ErrorActionPreference = 'Stop'
@@ -72,38 +79,68 @@ $cliScripts['claude-sub'] = Join-Path $scriptDir 'run-claude-sub.ps1'
 $cliScripts['codex']      = Join-Path $scriptDir 'run-codex.ps1'
 $cliScripts['gemini']     = Join-Path $scriptDir 'run-gemini.ps1'
 
-# Step 5: parallel Start-Job
+# Step 5/6/7: 병렬(Start-Job) 또는 순차(-Sequential) 실행 + retry
 # Start-Job ScriptBlock은 별도 runspace — 부모 인코딩 설정 상속 X (PS #4681, #14945).
 # 자식 진입 즉시 _encoding.ps1을 dot-source해야 CLI stdout 디코딩이 UTF-8로 고정됨.
-$jobs = @{}
-foreach ($cli in $cliNames) {
-    $jobs[$cli] = Start-Job -Name $cli -ScriptBlock {
-        param($ScriptPath, $Isolated, $P, $Out, $ScriptsDir)
-        . (Join-Path $ScriptsDir '_encoding.ps1')
-        & $ScriptPath -IsolatedDir $Isolated -Prompt $P -OutputFile $Out
-    } -ArgumentList $cliScripts[$cli], $isolated, $prompt, $outputs[$cli], $scriptDir
-}
 
-# Step 6: wait with configurable timeout (default 300s)
-$null = $jobs.Values | Wait-Job -Timeout $TimeoutSeconds
+# 병렬 결과를 (needRetry, failReason) 형태로 모아둘 해시. 순차 모드에서는 그대로 비워둠.
+$jobResults = @{}
 
-# Step 7: collect results, sync retry once on failure
-foreach ($cli in $cliNames) {
-    $job = $jobs[$cli]
-    $out = $outputs[$cli]
-    $cliScript = $cliScripts[$cli]
-
-    $needRetry = $false
-    $failReason = ""
-
-    if ($job.State -ne 'Completed') {
-        $needRetry = $true
-        $failReason = "async job state: " + $job.State + " (likely timeout)"
-        Stop-Job $job -ErrorAction SilentlyContinue
+if (-not $Sequential) {
+    # Step 5 (병렬): Start-Job 으로 3개 동시 spawn.
+    $jobs = @{}
+    foreach ($cli in $cliNames) {
+        $jobs[$cli] = Start-Job -Name $cli -ScriptBlock {
+            param($ScriptPath, $Isolated, $P, $Out, $ScriptsDir)
+            . (Join-Path $ScriptsDir '_encoding.ps1')
+            & $ScriptPath -IsolatedDir $Isolated -Prompt $P -OutputFile $Out
+        } -ArgumentList $cliScripts[$cli], $isolated, $prompt, $outputs[$cli], $scriptDir
     }
-    else {
+
+    # Step 6: wait with configurable timeout (default 300s)
+    $null = $jobs.Values | Wait-Job -Timeout $TimeoutSeconds
+
+    # 1차 수집: 각 job 의 성공/실패만 판정하고 정리. retry 는 cleanup 대기 후 일괄.
+    foreach ($cli in $cliNames) {
+        $job = $jobs[$cli]
+        $out = $outputs[$cli]
+
+        $needRetry = $false
+        $failReason = ""
+
+        if ($job.State -ne 'Completed') {
+            $needRetry = $true
+            $failReason = "async job state: " + $job.State + " (likely timeout)"
+            Stop-Job $job -ErrorAction SilentlyContinue
+        }
+        else {
+            try {
+                Receive-Job $job -ErrorAction Stop | Out-Null
+                if (-not (Test-Path -LiteralPath $out -PathType Leaf)) {
+                    $needRetry = $true
+                    $failReason = "output file not created"
+                }
+            }
+            catch {
+                $needRetry = $true
+                $failReason = "async error: " + $_.Exception.Message
+            }
+        }
+        Remove-Job $job -Force -ErrorAction SilentlyContinue
+
+        $jobResults[$cli] = @{ needRetry = $needRetry; failReason = $failReason }
+    }
+}
+else {
+    # 순차 모드: Start-Job 우회. 각 CLI 를 직렬로 호출하고 실패 시 retry 표시.
+    foreach ($cli in $cliNames) {
+        $cliScript = $cliScripts[$cli]
+        $out = $outputs[$cli]
+
+        $needRetry = $false
+        $failReason = ""
         try {
-            Receive-Job $job -ErrorAction Stop | Out-Null
+            & $cliScript -IsolatedDir $isolated -Prompt $prompt -OutputFile $out
             if (-not (Test-Path -LiteralPath $out -PathType Leaf)) {
                 $needRetry = $true
                 $failReason = "output file not created"
@@ -111,36 +148,58 @@ foreach ($cli in $cliNames) {
         }
         catch {
             $needRetry = $true
-            $failReason = "async error: " + $_.Exception.Message
+            $failReason = "sequential error: " + $_.Exception.Message
+        }
+
+        $jobResults[$cli] = @{ needRetry = $needRetry; failReason = $failReason }
+    }
+}
+
+# Step 7: retry — 실패한 CLI 가 있을 때만 cleanup 대기 후 동기 재호출.
+$anyRetry = $false
+foreach ($cli in $cliNames) {
+    if ($jobResults[$cli].needRetry) { $anyRetry = $true; break }
+}
+
+if ($anyRetry -and $WaitSec -gt 0) {
+    # Codex stdin 점유 / Gemini IDE client 핸들 정리 시간 부여.
+    # 근거: V-3 (3회 연속) 실패 추적 — Start-Job 종료 직후 즉시 동기 호출하면
+    # 이전 자식 CLI 의 파이프 핸들이 살아있어 "Reading additional input from stdin..." /
+    # "[ERROR] [IDEClient] Failed to connect to IDE companion extension" 발생.
+    Write-Verbose ("Retry cleanup wait: {0}s" -f $WaitSec)
+    Start-Sleep -Seconds $WaitSec
+}
+
+foreach ($cli in $cliNames) {
+    if (-not $jobResults[$cli].needRetry) { continue }
+
+    $cliScript = $cliScripts[$cli]
+    $out = $outputs[$cli]
+    $failReason = $jobResults[$cli].failReason
+
+    $retrySuccess = $false
+    try {
+        & $cliScript -IsolatedDir $isolated -Prompt $prompt -OutputFile $out
+        if (Test-Path -LiteralPath $out -PathType Leaf) {
+            $retrySuccess = $true
         }
     }
-    Remove-Job $job -Force -ErrorAction SilentlyContinue
+    catch {
+        $failReason += " | retry also failed: " + $_.Exception.Message
+    }
 
-    if ($needRetry) {
-        $retrySuccess = $false
-        try {
-            & $cliScript -IsolatedDir $isolated -Prompt $prompt -OutputFile $out
-            if (Test-Path -LiteralPath $out -PathType Leaf) {
-                $retrySuccess = $true
-            }
-        }
-        catch {
-            $failReason += " | retry also failed: " + $_.Exception.Message
-        }
-
-        if (-not $retrySuccess) {
-            $now = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-            $msgLines = @(
-                ('# ' + $cli + ' 실행 실패'),
-                '',
-                ('**사유**: ' + $failReason),
-                '',
-                ('**격리 디렉토리**: ' + $isolated),
-                ('**대상 파일**: ' + $sourceFileName),
-                ('**시각**: ' + $now)
-            )
-            Set-Content -LiteralPath $out -Value ($msgLines -join "`n") -Encoding UTF8
-        }
+    if (-not $retrySuccess) {
+        $now = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+        $msgLines = @(
+            ('# ' + $cli + ' 실행 실패'),
+            '',
+            ('**사유**: ' + $failReason),
+            '',
+            ('**격리 디렉토리**: ' + $isolated),
+            ('**대상 파일**: ' + $sourceFileName),
+            ('**시각**: ' + $now)
+        )
+        Set-Content -LiteralPath $out -Value ($msgLines -join "`n") -Encoding UTF8
     }
 }
 

@@ -36,14 +36,39 @@ $ErrorActionPreference = 'Stop'
 # 근거: docs/research/feedback-encoding-fix/02_web-evidence.md (hy2k.dev, MS Learn).
 . (Join-Path $PSScriptRoot '_encoding.ps1')
 
-$output = $null | codex.cmd exec --skip-git-repo-check -C $IsolatedDir $Prompt
+# 지수 백오프 retry (1→2→4s, 최대 3회) — Codex stdin 점유로 인한 일시적 실패 회복용.
+# 영구 실패(인증 등)는 3회 모두 같은 에러로 끝나므로 추가 비용은 최대 7s.
+$maxAttempts = 3
+$delays = @(1, 2, 4)
+$lastError = $null
+$output = $null
 
-if ($LASTEXITCODE -ne 0) {
-    throw "codex CLI exited with code $LASTEXITCODE"
+for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+    try {
+        $output = $null | codex.cmd exec --skip-git-repo-check -C $IsolatedDir $Prompt
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "codex CLI exited with code $LASTEXITCODE"
+        }
+        if ([string]::IsNullOrWhiteSpace($output)) {
+            throw "codex returned empty output"
+        }
+
+        $lastError = $null
+        break
+    }
+    catch {
+        $lastError = $_
+        if ($attempt -lt $maxAttempts) {
+            $sleep = $delays[$attempt - 1]
+            Write-Verbose ("codex attempt {0}/{1} failed: {2} — retry in {3}s" -f $attempt, $maxAttempts, $_.Exception.Message, $sleep)
+            Start-Sleep -Seconds $sleep
+        }
+    }
 }
 
-if ([string]::IsNullOrWhiteSpace($output)) {
-    throw "codex returned empty output"
+if ($lastError) {
+    throw $lastError
 }
 
 Set-Content -LiteralPath $OutputFile -Value $output -Encoding UTF8

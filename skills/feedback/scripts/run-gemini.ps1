@@ -40,16 +40,41 @@ $ErrorActionPreference = 'Stop'
 # Gemini는 -p 한글 argv 버그(gemini-cli #20186)가 별도 존재 — Step C에서 보류.
 . (Join-Path $PSScriptRoot '_encoding.ps1')
 
+# 지수 백오프 retry (1→2→4s, 최대 3회) — Gemini IDE companion client 일시적 리크 회복용.
+# Push-Location 은 try 외부, retry 루프는 내부에 둠 — Pop-Location 은 finally 에서 1회만.
+$maxAttempts = 3
+$delays = @(1, 2, 4)
+$lastError = $null
+$output = $null
+
 Push-Location -LiteralPath $IsolatedDir
 try {
-    $output = gemini.cmd -p $Prompt -o text --approval-mode plan
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        try {
+            $output = gemini.cmd -p $Prompt -o text --approval-mode plan
 
-    if ($LASTEXITCODE -ne 0) {
-        throw "gemini CLI exited with code $LASTEXITCODE"
+            if ($LASTEXITCODE -ne 0) {
+                throw "gemini CLI exited with code $LASTEXITCODE"
+            }
+            if ([string]::IsNullOrWhiteSpace($output)) {
+                throw "gemini returned empty output"
+            }
+
+            $lastError = $null
+            break
+        }
+        catch {
+            $lastError = $_
+            if ($attempt -lt $maxAttempts) {
+                $sleep = $delays[$attempt - 1]
+                Write-Verbose ("gemini attempt {0}/{1} failed: {2} — retry in {3}s" -f $attempt, $maxAttempts, $_.Exception.Message, $sleep)
+                Start-Sleep -Seconds $sleep
+            }
+        }
     }
 
-    if ([string]::IsNullOrWhiteSpace($output)) {
-        throw "gemini returned empty output"
+    if ($lastError) {
+        throw $lastError
     }
 
     Set-Content -LiteralPath $OutputFile -Value $output -Encoding UTF8

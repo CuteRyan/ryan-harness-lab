@@ -36,6 +36,13 @@ if (Test-Path -LiteralPath $isolated) {
 }
 
 New-Item -ItemType Directory -Path $isolated | Out-Null
-Copy-Item -LiteralPath $SourceFile -Destination $isolated
+
+# BOM 삽입 복사 (Day 10 Part 3 V-1 내부 관찰 → L4 회복 단계 skip)
+# Codex 내부 spawn PowerShell 이 격리본을 Get-Content 기본 CP949 로 읽어도
+# BOM 이 있으면 UTF-8 로 즉시 인식 → mojibake → 재시도 1단계 절약 + stdout 진단성 향상.
+# 근거: docs/research/feedback-encoding-fix/03_fix-plan.md L4
+$dst = Join-Path $isolated $sourceItem.Name
+$content = Get-Content -LiteralPath $SourceFile -Raw -Encoding UTF8
+[System.IO.File]::WriteAllText($dst, $content, [System.Text.UTF8Encoding]::new($true))
 
 Write-Output $isolated
