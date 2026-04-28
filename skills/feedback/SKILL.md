@@ -27,6 +27,8 @@ description: 대상 파일을 Claude Sub / Codex / Gemini 3개 CLI에 병렬로 
 - N파일 처리는 파일당 1회 호출 (병렬로 여러 호출 가능)
 - `-FeedbackDir` 인자로 저장 디렉토리 재정의 가능 (기본: 현재 경로의 `docs/feedback`)
 - `-TimeoutSeconds` 인자로 병렬 대기 타임아웃 재정의 가능 (기본 300초 = 5분). hang 방지용 안전장치이므로 제거는 비추 — 큰 파일은 `-TimeoutSeconds 900` 등으로 늘려서 사용
+- Gemini 호출 시 `GEMINI_SYSTEM_MD` 환경변수로 시스템 프롬프트를 critic 모드로 교체 (`scripts/gemini-system.md`). `run-gemini.ps1`이 try/finally로 set·cleanup 자동 처리 — sycophancy 우회 (근거: GitHub gemini-cli #13801, `docs/research/2026-04-27_gemini_sycophancy.md` §8.2)
+- **B 방식 (2026-04-28~)**: 사용자 prompt SSOT 는 `prompts/review.md`. `prepare-isolation.ps1`이 격리 디렉토리에 대상 파일과 함께 복사. CLI 는 자기 read 도구로 review.md 를 직접 읽고 그 안의 형식·규칙을 따름. orchestrate.ps1 은 짧은 메타 지시("이 폴더의 review.md 읽고 따르라")만 argv 로 전달. Why: PowerShell argv 로 긴 한글 prompt 를 옮기는 인코딩 위험 회피 + prompt 수정 시 코드 무수정.
 
 ### Step 2. Validation Gate
 
@@ -39,17 +41,112 @@ description: 대상 파일을 Claude Sub / Codex / Gemini 3개 CLI에 병렬로 
 - JSON 반환: `{summary, valid_count, total, results: [{file, path, status, reason}]}`
 - `status = VALID` 조건 (모두 만족): 파일 존재 + 크기 > 0 + 실패 마커 없음 + 중요도 태깅 접두사 `[치명]`·`[높음]`·`[중간]`·`[낮음]` 중 1개 이상이 **줄 시작 위치**(선택적 불릿 `-`/`*`, 번호 `1.`, ATX 헤더 `#`~`######` 허용)에 존재. 본문 인용 형태는 우회로 판정.
 
-### Step 3. 종합 작성 (LLM 본 작업)
+### Step 3. 종합 작성 (LLM 본 작업) — **5게이트 강제**
 
 `valid_count ≥ 1` 이면 종합 작성. `valid_count = 0` 이면 "리뷰 불가, 수동 리뷰 필요"로 보고.
 
 종합 파일: `docs/feedback/{YYYY-MM-DD}_claude_{슬러그}-종합.md`
 
-종합 구조:
-- 3개 원문 비교 요약
-- 각 지적에 대한 [반영] / [유보] / [반박] 판정 + 사유
-- Top 3 반영 우선순위
-- 실패한 CLI는 "실패 — 사유: X"로 명시 (Validation Gate의 reason 활용)
+#### Why 5게이트?
+
+LLM(메인 Claude 포함)은 RLHF·확률분포 영향으로 **종합 단계에서 sycophancy로 회귀할 위험**이 상존. 의지가 아니라 "표 채워야 끝남"을 강제하는 시스템 게이트로 분포를 비판 모드 쪽으로 강제 이동시킴. 게이트 형식만 채우고 실질 검증 안 하는 것도 자체 검열 항목으로 막음.
+
+#### 게이트 1 — 라인 실측 검증 (환각 차단)
+
+각 지적의 라인 번호를 **원본 파일과 직접 대조**. 다음 경우 자동 `[반박] 환각`:
+- 인용 라인 번호가 원본 파일 총 라인 수 초과
+- 인용 라인의 실제 내용과 지적 내용이 무관
+
+종합 파일에 별도 섹션 `## 환각 검증` 강제. 형식: `CLI별 환각 N건 / 총 지적 N건`. 0건이어도 "0건 (라인 번호 1:1 대조 완료)" 명시.
+
+#### 게이트 2 — 반박/유보 최소 1건
+
+전체 지적이 모두 `[반영]`이면 **자기 검열 의무**. LLM 3개가 우연히 모두 valid한 지적만 한 경우는 드뭄. 진짜 다 valid면 종합 파일에 다음 한 줄 강제:
+
+> "전 지적 [반영] 사유: <왜 [반박]·[유보] 후보가 없었는지 1줄 설명>"
+
+이 줄이 없으면 **게으름 신호** — 다시 검토.
+
+#### 게이트 3 — 근거 강도 표시
+
+각 지적에 `근거 강도: 강/중/약` 부착:
+- **강** = 실측 코드 라인 직접 인용 + 구체 결함 (예: SQL 파라미터 미검증 + 인용)
+- **중** = 일반 원리·표준 위반 (예: bcrypt 라운드 NIST 미준수)
+- **약** = 추상 권고·이식성 우려 (예: "환경변수 사용 권장")
+
+"약" ≥ 50% 면 종합 헤더에 다음 경고 강제:
+
+> ⚠️ 근거 강도 약: 전체 N건 중 N건. 추상 권고 비중 높음 — 후속 실측 권장.
+
+#### 게이트 4 — 통계 표 강제
+
+종합 파일 **첫 블록**에 다음 표 무조건 박기:
+
+```
+## 통계
+- 전체 합집합 지적: N건
+- [반영]: N건
+- [유보]: N건
+- [반박]: N건
+- [환각]: N건 (게이트 1 결과)
+- 근거 강도 분포: 강 N / 중 N / 약 N
+- VALID CLI: N/3
+```
+
+`[유보] 0 / [반박] 0 / [환각] 0` 이면 게이트 2 의무 발동 (자기 검열 사유 1줄).
+
+#### 게이트 5 — 자기 비판 한 줄
+
+종합 파일 **마지막 블록**에 강제:
+
+```
+## 이번 종합에서 제가 놓쳤을 가능성
+
+<구체 1줄 — "없음" 답변 금지>
+```
+
+답변 후보 예시:
+- "Gemini가 잡은 라인 N의 근거 강도 평가가 자의적일 수 있음 (기준 명문화 미흡)"
+- "맥락 부족으로 X 영역의 추가 결함 평가 부재 가능성"
+- "3 CLI 모두 못 본 사각지대(예: 인터페이스 계약·동시성)에 대한 능동 탐색 부재"
+
+"없음"·"전반적 잘 됨" 류 답변은 **게이트 5 위반** — 다시 작성.
+
+#### 종합 파일 골격
+
+```markdown
+# 종합 리뷰: <대상 파일>
+
+## 통계 (게이트 4)
+[표]
+
+## 환각 검증 (게이트 1)
+- Codex: N건 환각 / N건 지적
+- Gemini: N건 환각 / N건 지적
+- Claude Sub: N건 환각 / N건 지적
+
+## 합집합 지적 (각 행에 CLI별 ✓ + 판정 + 근거 강도)
+| 지적 | Codex | Gemini | Claude | 판정 | 근거강도 | 사유 |
+|---|---|---|---|---|---|---|
+| ... | ✓ | ✓ |    | [반영] | 강 | ... |
+
+## Top 3 반영 우선순위
+1. [치명] ...
+2. [높음] ...
+3. [중간] ...
+
+## 실패한 CLI
+(있다면 "CLI명 — 사유: X" 명시. Validation Gate reason 활용)
+
+## 이번 종합에서 제가 놓쳤을 가능성 (게이트 5)
+<구체 1줄>
+
+## (게이트 2 발동 시) 전 지적 [반영] 사유
+<왜 반박·유보 후보가 없었는지 1줄>
+
+## (게이트 3 발동 시) ⚠️ 근거 강도 약 경고
+<해당 지적 N건 / 후속 실측 권장 항목>
+```
 
 ### Step 4. 인덱스 갱신
 
@@ -59,9 +156,11 @@ description: 대상 파일을 Claude Sub / Codex / Gemini 3개 CLI에 병렬로 
 
 ## 프롬프트 템플릿
 
-**SSOT**: `scripts/orchestrate.ps1` Step 3 의 `$promptLines` 배열이 유일한 원본. 수정 시 그 파일만 편집.
+**SSOT**: `prompts/review.md` (B 방식, 2026-04-28~). 수정 시 그 파일만 편집.
 
-여기에 템플릿 전문 복사 금지 — 두 곳 관리 시 필연적으로 어긋남 (2026-04-22 메타 리뷰 공통 지적).
+`scripts/orchestrate.ps1` Step 3 의 `$promptLines` 는 짧은 메타 지시("이 폴더의 review.md 읽고 따르라")만 담음. 사용자 prompt 본문은 review.md 에 있음.
+
+여기에 review.md 전문 복사 금지 — 두 곳 관리 시 필연적으로 어긋남 (2026-04-22 메타 리뷰 공통 지적).
 
 ---
 
@@ -127,8 +226,10 @@ description: 대상 파일을 Claude Sub / Codex / Gemini 3개 CLI에 병렬로 
 
 ## 스크립트 파일 목록
 
+- `prompts/review.md` — **사용자 prompt SSOT** (B 방식, 2026-04-28~). CLI 가 격리 디렉토리에서 직접 읽음.
 - `scripts/_encoding.ps1` — UTF-8 I/O 인코딩 고정 헬퍼 (dot-source 전용, PS 5.1 CP949 우회)
-- `scripts/prepare-isolation.ps1` — 격리 디렉토리 생성 (`$HOME\codex-cwd\<slug>` 영문 경로 고정)
+- `scripts/gemini-system.md` — Gemini 시스템 프롬프트 (critic 모드 강제, GEMINI_SYSTEM_MD 환경변수로 주입)
+- `scripts/prepare-isolation.ps1` — 격리 디렉토리 생성 + 대상 파일 + `prompts/review.md` 복사
 - `scripts/run-claude-sub.ps1` — Claude Sub 호출
 - `scripts/run-codex.ps1` — Codex 호출
 - `scripts/run-gemini.ps1` — Gemini 호출 (Push/Pop-Location 내장)

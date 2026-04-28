@@ -40,6 +40,13 @@ $ErrorActionPreference = 'Stop'
 # Gemini는 -p 한글 argv 버그(gemini-cli #20186)가 별도 존재 — Step C에서 보류.
 . (Join-Path $PSScriptRoot '_encoding.ps1')
 
+# GEMINI_SYSTEM_MD: Gemini 기본 시스템 프롬프트를 critic 모드로 통째 교체.
+# 근거: GitHub gemini-cli discussion #13801 ("night and day") + sycophancy 리서치 (2026-04-27).
+# cleanup 은 외부 finally 에서 보장 (다른 세션·다른 호출 영향 차단).
+$env:GEMINI_SYSTEM_MD = (Join-Path $PSScriptRoot 'gemini-system.md')
+
+try {
+
 # 지수 백오프 retry (1→2→4s, 최대 3회) — Gemini IDE companion client 일시적 리크 회복용.
 # Push-Location 은 try 외부, retry 루프는 내부에 둠 — Pop-Location 은 finally 에서 1회만.
 $maxAttempts = 3
@@ -51,7 +58,17 @@ Push-Location -LiteralPath $IsolatedDir
 try {
     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
         try {
-            $output = gemini.cmd -p $Prompt -o text --approval-mode plan
+            # PS 5.1 NativeCommandError 회피: gemini.cmd stderr ("Failed to connect to IDE companion..." 등)가
+            # RemoteException 으로 wrap 되는데 EAP='Stop' 이면 terminating error 로 승격되어 catch 발동.
+            # 실제 gemini 본체는 exit 0 + 정상 응답. 근거: 2026-04-28 실측 (Start-Job 비교 매트릭스, run-codex.ps1 동일 패턴).
+            $prevEAP = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            try {
+                $output = gemini.cmd -p $Prompt -o text --approval-mode plan
+            }
+            finally {
+                $ErrorActionPreference = $prevEAP
+            }
 
             if ($LASTEXITCODE -ne 0) {
                 throw "gemini CLI exited with code $LASTEXITCODE"
@@ -81,4 +98,9 @@ try {
 }
 finally {
     Pop-Location
+}
+
+}
+finally {
+    Remove-Item Env:GEMINI_SYSTEM_MD -ErrorAction SilentlyContinue
 }

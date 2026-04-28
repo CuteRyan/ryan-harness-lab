@@ -45,7 +45,17 @@ $output = $null
 
 for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
     try {
-        $output = $null | codex.cmd exec --skip-git-repo-check -C $IsolatedDir $Prompt
+        # PS 5.1 NativeCommandError 회피: codex.cmd stderr ("Reading additional input from stdin..." 등)가
+        # RemoteException 으로 wrap 되는데 EAP='Stop' 이면 terminating error 로 승격되어 catch 발동.
+        # 실제 codex 본체는 exit 0 + 정상 PONG 반환. 근거: 2026-04-28 실측 (Start-Job 비교 매트릭스).
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            $output = $null | codex.cmd exec --skip-git-repo-check -C $IsolatedDir $Prompt
+        }
+        finally {
+            $ErrorActionPreference = $prevEAP
+        }
 
         if ($LASTEXITCODE -ne 0) {
             throw "codex CLI exited with code $LASTEXITCODE"

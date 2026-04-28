@@ -45,4 +45,16 @@ $dst = Join-Path $isolated $sourceItem.Name
 $content = Get-Content -LiteralPath $SourceFile -Raw -Encoding UTF8
 [System.IO.File]::WriteAllText($dst, $content, [System.Text.UTF8Encoding]::new($true))
 
+# B 방식 (2026-04-28~): prompts/review.md 를 격리 디렉토리에 같이 복사.
+# CLI 가 자기 read 도구로 review.md 를 직접 읽어 그 안의 형식·규칙을 따름.
+# orchestrate.ps1 은 "이 폴더의 review.md 읽고 따라줘" 라는 짧은 메타 prompt 만 전달.
+# Why: PowerShell argv 로 긴 한글 prompt 전달 시 인코딩 위험 + 코드/프롬프트 분리.
+$promptSrc = Join-Path (Split-Path -Parent $PSScriptRoot) 'prompts\review.md'
+if (-not (Test-Path -LiteralPath $promptSrc -PathType Leaf)) {
+    throw "Prompt SSOT file not found: $promptSrc"
+}
+$promptDst = Join-Path $isolated 'review.md'
+$promptContent = Get-Content -LiteralPath $promptSrc -Raw -Encoding UTF8
+[System.IO.File]::WriteAllText($promptDst, $promptContent, [System.Text.UTF8Encoding]::new($true))
+
 Write-Output $isolated

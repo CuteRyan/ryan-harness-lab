@@ -44,22 +44,19 @@ if (-not (Test-Path -LiteralPath $FeedbackDir)) {
     New-Item -ItemType Directory -Path $FeedbackDir -Force | Out-Null
 }
 
-# Step 3: build fixed review prompt (keep in sync with SKILL.md)
+# Step 3: build short meta prompt (B 방식, 2026-04-28~)
+# 프롬프트 SSOT 는 prompts/review.md (prepare-isolation.ps1 이 격리 디렉토리에 복사).
+# CLI 한테는 "그 파일 읽고 따르라" 라는 짧은 메타 지시만 전달.
+# 긴 한글 prompt 를 PowerShell argv 로 옮기는 인코딩 위험 회피 + prompt 수정 시 PS 코드 무수정.
 $sourceFileName = Split-Path -Leaf $SourceFile
 $isolatedFilePath = Join-Path $isolated $sourceFileName
 $promptLines = @(
-    "다음 파일을 리뷰해주세요: $isolatedFilePath",
+    "이 폴더의 review.md 를 먼저 읽고, 그 안의 형식·규칙·금지사항을 그대로 적용하여",
+    "같은 폴더의 ${sourceFileName} 을 리뷰해 주세요.",
     '',
-    '요구 포맷 (엄격):',
-    '- 각 지적의 첫 줄 맨 앞(줄 시작)에 대괄호 태그 [치명] [높음] [중간] [낮음] 중 하나를 반드시 부착.',
-    '  (중요도별 섹션으로 묶어도 무방하나 섹션 제목이 아니라 각 지적 줄마다 태그 필수.',
-    '   본문 설명·예시·코드블록 안에 [태그] 문자열을 인용 형태로 쓰지 말 것 — Validation Gate가 우회로 판정.)',
-    '- 각 지적에 파일:줄 + 근거 1개 (실측 출력 / 공식 문서 URL / 파일 내용 인용 중 하나).',
-    '- 장점 나열·rubber-stamp 금지. 문제 없는 항목은 "[낮음] 없음 - 근거: X" 한 줄로만.',
-    '- 접근 실패/맥락 부족은 추측 말고 "[확인 불가] 사유: X" 로 명시.',
-    '- 마지막에 Top 3 반영 우선순위 (각 항목도 [태그] 접두사 필수).',
-    '',
-    '대상 파일만 읽고 폴더 재귀 탐색 금지.'
+    "review.md 가 정의한 거부 허용(\`[낮음] 없음 - 근거: X\`)·확인 불가(\`[확인 불가] 사유: X\`) 규칙도 그대로.",
+    "review.md 자체는 지시문이므로 리뷰 대상이 아니며, 같은 폴더의 ${sourceFileName} 만 검토.",
+    '폴더 재귀 탐색 금지.'
 )
 $prompt = $promptLines -join "`n"
 
