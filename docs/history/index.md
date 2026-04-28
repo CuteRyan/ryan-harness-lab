@@ -11,9 +11,7 @@
 - [2026-04-18] 부분 종결 (Day 6에 체크리스트 종결) | venv 규칙 개정 + VS Code Sync 하이브리드 + /feedback 스킬 개정 | 다음: **B5 Settings Sync UI 재설정(주인님 수작업)** + **B7 금지 키 allowlint 훅 설계(별도 세션)** | 미결: 없음 (Day 6 완료분 — vscode git init 73d8b93, 하네스 프로젝트 venv 마이그레이션, C3 "불필요" 종결)
 - [2026-04-22] 종결 | /feedback 스킬 **구조 승격** (Day 9) — md 1장 → SKILL.md + scripts/ 6 PS1 구조 (octopus Validation Gate Pattern 채택), 3 CLI 스모크 2건 실측 성공, 자체 메타 리뷰로 4건 공통 지적 100% 반영 | 다음: **/todo 스킬 제작** (/checklist는 Day 10에 혼동 제거 + Q1~3 종결 완료) | 미결: 없음 (Phase 2 항목은 별도 세션)
 - [2026-04-23] 부분 종결 (Day 12 Part 2 에서 ①③⑤⑥ 종결) | **Day 10 이월**: ④ **Gemini rubber-stamp 성향 근본 해결** — 주인님 ①+② 조합 채택(2026-04-26), 체크리스트 작성 완료 후 내일 이어가기 | 다음: `.checklist.md` 승인 + A~F 항목(orchestrate 자동 재호출 + few-shot + 동기화 + dogfood) 진행 | 미결: ④ 근거 `docs/feedback/2026-04-23_gemini_SKILL_20260423-100623.md`, 체크리스트 `Harness-engineering/.checklist.md` (approved: false)
-- [2026-04-24] 종결 (Day 13 에서 주인님 자체 해결) | **9 프로젝트 CLAUDE.md 보강** (Day 11 🔴 긴급 2/3 + Day 12 🟡 5/5 종결, 잔여 Knowledge-platform 축약 + candidate_orchestra 처리 방침은 주인님이 직접 해결/불필요 판정) | 다음: 없음 | 미결: 없음
-- [2026-04-27] 종결 (Day 14에 종결) | /feedback 스킬 A2 (GEMINI_SYSTEM_MD + few-shot) | 다음: 없음 | 미결: 없음 — **A2 영어 전환 효과 미미 (38% → 40%) + 부작용 발생으로 롤백 결정**, B 방식(prompt 파일 분리)으로 재설계 (Day 14)
-- [2026-04-28] 종결 | /feedback B 방식 1·2·3단계 모두 완료 — 3단계 훅(`feedback-sycophancy-check.sh`+`.py`) 신설, 7 카테고리 검출(sycophancy/환각/누락/1차전이/약한반박/충돌/약한비판), 외부 장치+SKILL.md 게이트 6 두 짝 구조, dogfood 6/6 PASS, valid 시드 즉시 보강 | 다음: 1주 사용 후 false positive 비율 관찰·키워드 사전 보강 결정 | 미결: 없음
+- [2026-04-28] 종결 | /feedback B 방식 1·2·3단계 모두 완료 — 3단계 훅(`feedback-sycophancy-check.sh`+`.py`) 신설, 7 카테고리 검출(sycophancy/환각/누락/1차전이/약한반박/충돌/약한비판), 외부 장치+SKILL.md 게이트 6 두 짝 구조, dogfood 6/6 PASS, "valid" 시드 즉시 보강(commit `d99d4fa`) | 다음: 2026-05-05경 1주 회고 — `docs/feedback/*-종합.md` 작성 시 훅 stdout 캡처해 false positive 비율 산출 → 50% 이상이면 키워드/휴리스틱 보강, 미만이면 그대로 운영 | 미결: 없음
 
 ---
 
