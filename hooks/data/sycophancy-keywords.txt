@@ -1,0 +1,32 @@
+# sycophancy keyword dictionary — feedback-sycophancy-check.sh 사용
+# 한 줄 = 한 키워드. # 주석. 빈 줄 무시.
+# 추가/삭제는 이 파일만 수정 (훅 코드 무수정).
+# false positive 폭주 시 단어 축소, 검출 미달 시 단어 추가.
+# 매칭은 단순 부분문자열 (대소문자 무시 — 영어, 한국어 그대로).
+
+# === 한국어 (15개) ===
+정확합니다
+완벽
+탁월
+훌륭
+적절
+매우 좋
+충분히
+인정
+동의
+맞습니다
+옳
+합리적
+타당
+유효
+물론입니다
+
+# === 영어 (7개) ===
+# "valid" 제거 (2026-04-28 Day 14 dogfood) — 통계 표의 "VALID CLI" 마크와 충돌해 false positive 폭주
+excellent
+perfect
+great
+spot on
+absolutely
+sound
+correct
