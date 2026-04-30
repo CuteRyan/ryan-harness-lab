@@ -1,6 +1,6 @@
 ---
 name: project-history
-description: 프로젝트 개발 히스토리를 폴더 기반 인덱스로 조회, 갱신, 마이그레이션, 검색.
+description: 프로젝트 개발 히스토리(완료 기록) 폴더 기반 관리. 조회, 갱신, 마이그레이션, 검색. 단일 세션 인계는 /handoff 사용.
 trigger: /project-history
 argument-hint: "[update|migrate|search] [키워드]"
 user-invocable: true
@@ -13,28 +13,67 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 ## Trigger
 - "히스토리", "개발 기록", "지금까지 뭐 했지", "어디까지 했지", "프로젝트 상태"
-- 새 세션 시작 시 이전 작업 맥락 파악
+- 새 세션 시작 시 완료 기록 조회 (단일 세션 인계는 `/handoff` 참조)
 - `/project-history` 직접 호출
 
 ## Commands
-- `/project-history` — 인덱스 기반 히스토리 요약 표시
-- `/project-history update` — 현재 세션 작업을 히스토리에 추가
-- `/project-history migrate` — 기존 단일 HISTORY.md → 폴더 구조로 마이그레이션
+- `/project-history` — 최근 5일 요약 + 장기 진행 중 포인터 표시
+- `/project-history update` — 현재 세션의 **완료된** 작업을 일자별 파일에 추가
+- `/project-history migrate` — 단일 HISTORY.md → 폴더 구조로 마이그레이션 (Phase 2 진입)
 - `/project-history search <키워드>` — 히스토리 전체에서 키워드 검색
 
-## 구조
+> 단일 세션 인계(진행 중 상태 전달)는 `/handoff` 스킬 사용. 본 스킬은 완료 기록만 다룬다.
 
+## 구조 (Phase 1 / Phase 2 단계 구분)
+
+### Phase 1: 단일 HISTORY.md (현재 단계)
 ```
-docs/history/
-├── index.md              ← 인덱스 (날짜 | Day N | 한줄 요약 | 링크)
-├── 2026-03-05.md         ← Day 1 상세
-├── 2026-03-06.md         ← Day 2 상세
+docs/HISTORY.md
+├── ## 🔄 진행 중 (다음 세션 인계)   ← 장기 항목 포인터 (SSOT는 HANDOFF.md)
+├── ## 프로젝트 개요
+├── ## Day 0 (YYYY-MM-DD)
+├── ## Day 1 (YYYY-MM-DD)
 └── ...
 ```
 
-### index.md 포맷
+### Phase 2: 폴더 구조 (1주 검증 후 마이그레이션)
+```
+docs/history/
+├── index.md              ← 진행 중 포인터 + 인덱스 표 (SSOT는 HANDOFF.md)
+├── 2026-03-05.md         ← Day 1 상세 (완료 아카이브)
+├── 2026-03-06.md         ← Day 2 상세 (완료 아카이브)
+└── ...
+```
+
+**Phase 1 → Phase 2 전환 기준** (다음 중 하나):
+- 진행 중 항목이 일상적으로 3개 이상 운영됨 (복잡도 임계)
+- 인계 누락 1회 발생 (실패 신호)
+- 1주 안정 운영 후 회고에서 "패턴 잡힘" 합의
+
+### 진행 중 섹션 양식 (index.md 상단 — 장기 추적용 포인터)
+```markdown
+## 🔄 진행 중 (다음 세션 인계)
+
+> 단일 세션 인계는 프로젝트 루트 HANDOFF.md (`/handoff` 스킬) 참조.
+> 이 섹션은 **14일 이상 지속되거나 여러 세션에 걸친 장기 항목**만 추적.
+> 양식: `[시작일] 상태 | 작업명 | 다음: (동사 시작) | 미결: 없음/내용`
+> 한계: 7개 초과 또는 14일 초과 시 즉시 정리
+
+- [2026-04-17] 진행 중 | 작업명 | 다음: 다음 단계 | 미결: 없음
+```
+
+**SSOT 위치 (Day 15 결정 2=C 적용)**:
+- 단일 세션 인계: `HANDOFF.md` (루트, `/handoff` 스킬 SSOT)
+- 장기 진행 항목: `docs/history/index.md` 상단 = 포인터. HANDOFF.md 와 동일 정보 중복 금지
+
+### index.md 포맷 (Phase 2)
 ```markdown
 # Project History Index
+
+## 🔄 진행 중 (다음 세션 인계)
+- [YYYY-MM-DD] 상태 | 작업명 | 다음: ... | 미결: ...
+
+---
 
 | 날짜 | Day | 요약 | 파일 |
 |------|-----|------|------|
@@ -66,12 +105,13 @@ docs/history/
 3. 상세 필요 시 해당 날짜 파일만 Read
 
 ### 업데이트 (`/project-history update`)
-1. 오늘 날짜 파일 생성 or 수정 (`docs/history/YYYY-MM-DD.md`)
-2. `index.md`에 한 줄 추가 (이미 있으면 요약 업데이트)
-3. 포맷 규칙:
+1. 오늘 날짜 파일/섹션 생성 or 수정 — **완료된 작업만 기록**
+2. 포맷 규칙:
    - 시간순 (최신이 아래)
    - 각 항목에 "왜(Why)" 포함
    - 번호 붙인 섹션 (`## 1.`, `## 2.`)
+3. **진행 중/미완 항목은 `/handoff` 가 담당** — 본 스킬은 일자별 파일에 손대지 않음
+4. 14일 이상 지속된 장기 항목만 index.md 진행 중 포인터 섹션에 등록 (7개/14일 한계 검사)
 
 ### 마이그레이션 (`/project-history migrate`)
 1. 기존 `docs/HISTORY.md` 읽기
@@ -99,12 +139,17 @@ docs/history/
 대량 마이그레이션이 훅과 충돌하면 훅을 우회하지 말고, 예외 범위를 문서화한 뒤 주인님 승인 후 진행한다.
 
 ## Rules
+- **단일 세션 인계 SSOT = `HANDOFF.md` (`/handoff` 스킬)** — index.md 진행 중 섹션은 14일 이상 장기 항목 포인터용. 동일 정보 중복 금지 (Day 15 결정 2=C)
+- **/handoff 와 책임 분리** — "지금 하다 멈춘 것"은 `/handoff`, "완료된 기록"은 본 스킬, "언제 할지 모르는 백로그"는 `/todo`
+- **진행 중 한계: 7개 OR 14일** — 둘 중 하나라도 걸리면 즉시 정리 (완료/폐기). 시각적 한계로 누적 방지
+- **양식 엄격 준수** — `[시작일] 상태 | 작업명 | 다음: (동사) | 미결: 내용`. Phase 1부터 동일 형식 사용 (Phase 2 마이그레이션 부채 회피)
 - **index.md는 200줄 이내 유지** — 메모리 인덱스와 동일 원칙
 - **일별 파일 1개 = 1일** — 같은 날 여러 세션이면 같은 파일에 append
 - **폴더 구조 우선** — `docs/history/` 있으면 단일 HISTORY.md 무시
 - **마이그레이션은 주인님 승인 후** — 자동 실행 금지
 - 히스토리 파일이 없으면 새로 생성
-- 미완료 항목은 해당 일자 파일의 `## 다음 작업`에 유지
+- 미완료 항목은 `/handoff` 로 세션 인계; 일자 파일에는 완료된 작업만 기록
+- 장기 진행 항목 종결 시 cut → 해당 일자별 파일로 paste (단기 인계는 `/handoff` 가 처리)
 
 ## File Locations
 - 히스토리 폴더: `{프로젝트}/docs/history/`

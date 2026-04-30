@@ -2,17 +2,13 @@
 
 ## 🔄 진행 중 (다음 세션 인계)
 
+> **단일 세션 인계는 프로젝트 루트 `HANDOFF.md` (`/handoff` 스킬) 참조 — 본 섹션은 14일 이상 장기 항목 포인터 전용** (Day 15 결정 2=C, 2026-04-30 Day 16 적용)
 > **양식**: `[시작일] 상태 | 작업명 | 다음: (동사 시작) | 미결: 없음/내용`
 > **선택 메타**: 대형/장기 작업에만 `(브랜치: x, 커밋: hash)` 추가
 > **한계**: 7개 초과 또는 14일 초과 시 즉시 정리 (완료 → 일자별 파일로 cut & paste, 폐기 → 삭제)
-> **SSOT**: 이 섹션이 진행 중 정보의 유일한 원본. 다른 파일에 동일 정보 두지 않음.
+> **SSOT 위치**: 단일 세션 인계 = `HANDOFF.md`. 본 섹션은 포인터 (HANDOFF.md 와 동일 정보 중복 금지)
 
-- [2026-04-17] 진행 중 | 세션 인계 + 폴더 마이그레이션(Phase 2 직행) | 다음: 1주 운영 후 회고 (양식/한계 규칙이 실제로 작동하는지) | 미결: 없음
-- [2026-04-18] 부분 종결 (Day 6에 체크리스트 종결) | venv 규칙 개정 + VS Code Sync 하이브리드 + /feedback 스킬 개정 | 다음: **B5 Settings Sync UI 재설정(주인님 수작업)** + **B7 금지 키 allowlint 훅 설계(별도 세션)** | 미결: 없음 (Day 6 완료분 — vscode git init 73d8b93, 하네스 프로젝트 venv 마이그레이션, C3 "불필요" 종결)
-- [2026-04-22] 종결 | /feedback 스킬 **구조 승격** (Day 9) — md 1장 → SKILL.md + scripts/ 6 PS1 구조 (octopus Validation Gate Pattern 채택), 3 CLI 스모크 2건 실측 성공, 자체 메타 리뷰로 4건 공통 지적 100% 반영 | 다음: **Day 15 4스킬 묶음 기획 완료** (`docs/research/2026-04-29_4skills_planning/`), 구현은 별도 turn 대기 | 미결: 없음 (Phase 2 항목은 별도 세션)
-- [2026-04-23] 부분 종결 (Day 12 Part 2 에서 ①③⑤⑥ 종결, **Day 15 critic 판정으로 ④ 종결 마킹**) | Day 10 이월 ④ **Gemini rubber-stamp** — Day 14 5게이트 + 3단계 훅(`feedback-sycophancy-check.sh`+`.py`, dogfood 6/6 PASS)이 구조적 흡수 (Day 15 critic 판정 + 메인 Claude 조건부 동의) | 다음: **2026-05-05 회고에서 false positive 비율 재확인 시 최종 종결** | 미결: ⑤ Codex/Gemini 연속 호출 실패는 별건 (Day 14 NativeCommandError fix 와 별개 검증 필요)
-- [2026-04-28] 종결 | /feedback B 방식 1·2·3단계 모두 완료 — 3단계 훅(`feedback-sycophancy-check.sh`+`.py`) 신설, 7 카테고리 검출(sycophancy/환각/누락/1차전이/약한반박/충돌/약한비판), 외부 장치+SKILL.md 게이트 6 두 짝 구조, dogfood 6/6 PASS, "valid" 시드 즉시 보강(commit `d99d4fa`) | 다음: 2026-05-05경 1주 회고 — `docs/feedback/*-종합.md` 작성 시 훅 stdout 캡처해 false positive 비율 산출 → 50% 이상이면 키워드/휴리스틱 보강, 미만이면 그대로 운영 | 미결: 없음
-- [2026-04-29] 부분 종결 (기획 완료) | **4스킬 묶음 기획** — `/todo` + `/handoff` 신설 + `/checklist` + `/project-history` 수정 책임 분리. `skill-quartet-planning` 4인 팀 병렬(skill-architect/workflow-ux/integration-auditor/critic), 산출물 9개(`docs/research/2026-04-29_4skills_planning/`), 책임 중복 2건+Gap 3건+sycophancy 1건 검출, 5게이트 7/7 통과, 주인님 결정 4건 확정 (1=A수동, 2=C최소유지+Gap2 deadline 보류, 3=④종결+5/5 재확인, 4=프로젝트별만 `.todo.md`) | 다음: **구현 (별도 turn, 별도 .checklist.md, 07_migration_plan.md Phase 0~4)** | 미결: Gap 2(자동 HANDOFF 메커니즘 — PreCompact 활용 가능) deadline 은 구현 Phase 2 진입 시 결정
+(현재 등록된 장기 항목 없음 — 2026-04-30 Day 16 turn 에서 6건 모두 정리. 백로그성 7건은 `.todo.md` 로 이전.)
 
 ---
 
@@ -28,6 +24,7 @@
 
 | 날짜 | Day | 요약 | 파일 |
 |------|-----|------|------|
+| 2026-04-30 | 16 | **4스킬 묶음 실구현 — drift 정상화 + `/todo`·`/handoff` 신설 + `/checklist`·`/project-history` 수정 + 진행 중 옵션 C 적용** — Phase A: 운영 162줄 → 스테이징 sync (옵션 A, 일회성 역방향 sync 예외) + Day 15 변경 9 hunks 적용. Phase 1: `/todo` (결정 4=프로젝트별만) + `/handoff` (결정 2=C) 스테이징 신설. Phase 2: `/checklist` 3건 수정 (Phase 2 주석·Phase 6 미완 분류·Rules 책임 분리). Phase 3: 글로벌 동기화 4 SKILL.md SHA256 MATCH 4/4. Phase 4: 진행 중 6건 정리 (자체 종결 2 + `.todo.md` 이전 5 + 종결 메모 5건 append) + Day 16 일자 파일 신설 + index.md 진행 중 섹션 포인터 전용으로 축소 (양식·한계·SSOT 위치 보존). Phase 5: HANDOFF.md → `.backups/HANDOFF.done.2026-04-29.md` 소멸 (소멸 정책 첫 검증). `.todo.md` 신설 7건 등록 | [상세](2026-04-30.md) |
 | 2026-04-29 | 15 | **4스킬 묶음 기획 — `/todo` + `/handoff` 신설 + `/checklist` + `/project-history` 수정** — `skill-quartet-planning` 4인 팀 병렬(skill-architect/workflow-ux/integration-auditor/critic), 산출물 9개(`docs/research/2026-04-29_4skills_planning/00_요약.md` + 01~08), 책임 중복 2건+Gap 3건+sycophancy 1건(05 L30) 검출, 5게이트 7/7 통과, 미결 결정 4건 주인님 확정 (1=A수동, 2=C최소유지+Gap2 deadline 보류, 3=④종결+5/5 재확인, 4=프로젝트별만 `.todo.md`). 부수 효과: [2026-04-23] ④ Gemini rubber-stamp **Day 14 흡수 종결 마킹**. 구현은 별도 turn 분리 (07_migration_plan.md Phase 0~4) | [상세](2026-04-29.md) |
 | 2026-04-28 | 14 | **/feedback B방식 1·2·3단계 + 메인 Claude 5게이트 + 3단계 외부 훅** — AM: A2 검증 종결(영어 전환 38%→40% 미미, Claude Sub G2' INVALID 회귀로 롤백) + NativeCommandError fix(EAP 격리). PM 1단계: `prompts/review.md` SSOT + 격리 디렉토리 복사 + orchestrate 짧은 메타 지시 → H 실측 3/3 VALID. 2단계: SKILL.md Step 3 **5게이트** 강제(라인실측·반박최소·근거강도·통계표·자기비판). 3단계: **`feedback-sycophancy-check.sh`+`.py` 외부 검증 훅 신설** — 7 카테고리(sycophancy/환각/누락/1차전이/약한반박/충돌/약한비판), 키워드 사전 외부화(`hooks/data/sycophancy-keywords.txt`), settings.json PostToolUse Write/Edit/MultiEdit 등록, 차단형 X 표시형 O(`exit 0` 보장), dogfood 6/6 PASS, "valid" 시드 즉시 보강(VALID 마크 충돌). 게이트 6 = 외부 훅 검수 의무 SKILL.md 추가 → 두 짝 구조 완성(내부 의무 + 외부 표시) | [상세](2026-04-28.md) |
 | 2026-04-25 | 12 | **Part 1: 5개 프로젝트 CLAUDE.md 옵션 B 보강** (`claude-md-batch5` 5인 teammate, 5/5 PASS — Agent-office 65, Harness 62, HSK 51, hsk_analyzer 73, PAA 65 🔴 보안 격리 unchanged). **Part 2: Day 10 이월 ①③⑤⑥ + Day 12 부산물 #8#9** (`issue-cleanup-day12` 4인 teammate — /feedback orchestrate WaitSec/Sequential + run-codex/gemini 지수 백오프 + prepare-isolation BOM 삽입 + /checklist SKILL 7건 + dev-checklist 382줄 + Agent-office .venv 마이그레이션 commit `6638d9b`) | [상세](2026-04-25.md) |

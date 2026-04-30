@@ -33,6 +33,7 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 ### Phase 2: 구현
 - 체크리스트 항목을 하나씩 수행하며 `[x]` 체크
 - 예상 외 이슈 발생 시 체크리스트에 항목 추가 (치명/높음 항목 변경은 재승인 필요)
+- 이번 세션 완료 가능 항목만 추가; **세션 횡단 백로그는 `/todo add` 로 이전** (책임 분리)
 
 ### Phase 3: 검증 (구현 대조 + 증거 보존)
 1. **항목별 1:1 대조** — 체크리스트 각 항목에 대해 실제 파일을 Read하여 반영 확인
@@ -62,6 +63,9 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 6. **`.checklist.md` 최종 상태** — 파일 전체를 코드블록으로 첨부 (체크박스 상태가 보이도록)
 
 ### Phase 6: 정리
+- **미완 항목 분류 (책임 분리)**:
+  - 세션 횡단 백로그성 → `/todo add [항목명]` 으로 이전
+  - 다음 세션 즉시 이어가야 할 인계성 → `/handoff create` 호출 (HANDOFF.md 생성)
 - 주인님 승인 후 `.checklist.md`를 `.backups/` 디렉토리로 **이동** (삭제 금지)
   - 권장 파일명: `.backups/.checklist.md.완료_{슬러그}_{YYYY-MM-DD}.md`
   - 근거 보존을 위해 원본은 절대 삭제하지 않는다
@@ -160,6 +164,8 @@ mode: code|doc|design|mixed
     - 데이터 마이그레이션 스크립트
 - **백업은 doc-protection 훅이 담당** — 이 스킬에서 별도 백업하지 않음
 - **체크리스트 보존** — Phase 6에서 삭제 금지, `.backups/`로 이동
+- **/todo 와 책임 분리** — 세션 완료 가능 항목만 `.checklist.md` 보관; 세션 횡단 백로그는 `/todo` 가 담당
+- **/handoff 와 책임 분리** — 세션 종료 시 미완 항목 인계는 `/handoff` 사용; 본 스킬은 단일 작업 사이클만 다룸
 
 ## File Locations
 - 체크리스트: `{프로젝트 루트}/.checklist.md`
