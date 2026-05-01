@@ -1,130 +1,129 @@
-# HANDOFF — 2026-05-01 세션 인계서
+# HANDOFF — 2026-05-01 후속3 세션 인계서
 
-> 생성: 2026-05-01 PM (Day 17 후속2 turn 종료 시점) | 소멸 조건: 다음 세션 확인 후 `/handoff done`
-> 작성자: Day 17 후속2 turn 메인 Claude
+> 생성: 2026-05-01 PM (Day 17 후속3 turn 종료 시점) | 소멸 조건: 다음 세션 확인 후 `/handoff done`
+> 작성자: Day 17 후속3 turn 메인 Claude
 
 ---
 
 ## 마지막 상태 (어디까지 했나)
 
-- 작업: **Day 17 후속2** — agent-team-manager v2 §9 의사결정 3건 (.todo.md #005) 처리 + #009 (구현 태스크) 신규 등록
+- 작업: **Day 17 후속3** — agent-team-manager v2 #009 구현 직전 토론에서 **Agent-office 비전 확장 발견** → 4인 리서치 팀 별건 진행 결정
 - 진행률:
-  - ✅ 결정 3건 수령 (1=C, 2=제안 5종 그대로, 3=YAML)
-  - ✅ `04_redesign-spec.md` §9.1/9.2/9.3 결정 마크 3건 추가 (line 469/477/485)
-  - ✅ `2026-05-01.md` §7 신규 작성 (47줄)
-  - ✅ `index.md` Day 17 행 갱신 + `.todo.md` #005 완료 + #009 신규
-  - ✅ HANDOFF/.checklist `.backups/` 소멸 (소멸 정책 세 번째 검증)
-  - ✅ 커밋 `6f006c6` 푸시 완료
-  - ✅ 메모리 갱신 2건 (agent-team-skill-redesign 결정 결과 반영 + commit+push 통합 피드백 신규)
-- 마지막 편집 파일: `~/.claude/projects/.../memory/MEMORY.md` (메모리 인덱스 4번째 항목 추가)
-- working tree: clean
+  - ✅ v2 스펙 (X1) vs Sub-agent only (X2/X4) vs 2-runtime 분리 (X5) 5 옵션 비교 토론
+  - ✅ 외부 9 사례 재확인 (`02_community-patterns.md` 4가지 결합 모델: Plugin-as-team / Runtime-split / Pattern-library / Meta-factory)
+  - ✅ 주인님 비전 추출 = **Agent-office** (큰 그림)
+    - 프로젝트별 영속 PM 에이전트 + 영속 워커
+    - 2단계 호출 (메인 Claude → PM 1인 팀 → PM 이 패턴·실행방식 동적 결정)
+    - PM 이 Sub-agent / Agent Teams 빌딩 / 외부 CLI 중 적합한 거 선택
+  - ✅ /feedback 단발성 본질 = **앵커링 회피** (검증 시 fresh 인스턴스 필수)
+  - ✅ 결정 3건 확정 (D-1/D-2/D-3 — 아래 §결정 포인트 참조)
+  - ✅ 4인 리서치 팀 구성 + 산출물 6개 파일 합의
+  - ✅ HANDOFF/.todo/히스토리/메모리 갱신 (본 turn 산출물)
+- 마지막 편집 파일: `HANDOFF.md` (본 파일)
+- working tree: 커밋 직전
 
 ## 미완 작업 (지금 하다 멈춘 것)
 
-- [ ] **#009 agent-team-manager v2 구현** — 결정 모두 수령 완료, 코드 착수만 남음. 본 turn 에 시작하지 않은 이유: 주인님이 "다음 세션에서 진행하자" 명시
-  - 범위 (대) 16+ 파일:
-    - `~/.claude/skills/agent-team-manager/SKILL.md` 교체 (v1 120줄 프로즈 → v2 약 180줄 — `04_redesign-spec.md` §11 초안 그대로)
-    - `scripts/preflight.ps1`, `resolve-preset.ps1`, `run-team.ps1`, `monitor-team.ps1`, `validate-team.ps1`, `shutdown-team.ps1` (6개 신설)
-    - `presets/review.yaml`, `debug.yaml`, `research.yaml`, `docs-research.yaml`, `harness-design.yaml` (5개 신설)
-    - `reference/patterns.md`, `anti-patterns.md`, `errors.md`, `presets.md` (4개 신설)
-    - 글로벌 `~/.claude/CLAUDE.md` Agent Preferences 섹션 예외 조항 보강 (결정 1-C 사규 측 반영)
-    - v1 백업: `SKILL.md.v1.bak`
+- [ ] **#010 agent-office 마스터플랜 4인 리서치** (신규, priority high) — 다음 세션 즉시
+- [ ] **#009 agent-team-manager v2 구현** (priority normal 유지) — 마스터플랜 산출물 §5 migration_plan 의 Phase 1 인프라로 위치 재조정 예정. 마스터플랜 미완 상태에서 단독 구현은 **금지** (큰 그림 위에 1층이 들어가야 어색하지 않음)
 
 ## 다음 세션 시작 지점
 
-1. **`HANDOFF.md` Read 후 `/handoff done`** 처리 (소멸 정책 네 번째 검증)
-2. **`.todo.md` #009 in_progress 마크** + `/checklist` 호출하여 `.checklist.md` 작성 (Day 17 자백 §5 재발 방지 약속 두 번째 검증)
-3. **결정 1 — 작업 분할 전략** (아래 미결 결정 §A 참조) 주인님께 받기
-4. **결정 2 — PowerShell 스크립트 구현 깊이** (아래 미결 결정 §B 참조) 주인님께 받기
-5. **(분할 결정 후) Phase 1 진입** — 권장 시작 순서:
-   - Phase 1a: 글로벌 `~/.claude/CLAUDE.md` Agent Preferences 예외 조항 보강 (가장 영향력 큼, 본 결정의 사규 측 반영)
-   - Phase 1b: 스테이징 디렉토리 구조 생성 (`Harness-engineering/skills/agent-team-manager/{scripts,presets,reference}`)
-   - Phase 1c: SKILL.md v2 교체 (스펙 §11 그대로 복사)
-   - Phase 1d: presets 5개 YAML 작성 (스펙 §4.1, §7.1, §7.2, §7.3 참조)
-   - Phase 1e: reference 4개 작성 (기존 리서치 md 재활용 — `01_official-docs.md`, `02_community-patterns.md`, `03_gap-analysis.md` 에서 추출)
-   - Phase 1f: scripts 6개 작성 (가장 큰 단위 — 결정 2 결과에 따라 깊이 결정)
-   - Phase 1g: 글로벌 동기화 (스테이징 → `~/.claude/skills/agent-team-manager/`)
-   - Phase 1h: SHA256 검증 (drift 0 확인)
+1. **`HANDOFF.md` Read 후 `/handoff done`** 처리 (소멸 정책 다섯 번째 검증)
+2. **`.todo.md` #010 in_progress 마크** + `/checklist` 신설 (Day 17 §5 자백 재발 방지 약속 — 이번엔 반드시 지킬 것)
+3. **4인 리서치 팀 빌딩** — 글로벌 CLAUDE.md Agent Preferences 준수 (TeamCreate + TaskCreate + Agent + SendMessage 4-step):
+   - 팀명: `agent-office-masterplan`
+   - 산출물 디렉토리: `docs/research/agent-office-masterplan/`
+   - 4 teammate (specialized):
+     - `architect-researcher` — 공식 docs 깊이 (PM 1인 팀 메커니즘, hooks, MCP·Skill teammate 전파, /resume 한계, Task isolation worktree)
+     - `external-pattern-researcher` — 외부 사례 재리서치 (revfactory/harness Meta-factory 깊이 / barkain task-completion-verifier / oh-my-claudecode 2-runtime 최신 / Anthropic blog scaling heuristic 재조사)
+     - `office-design-analyst` — Gap 분석 (v2 스펙 + /feedback 현재 + 주인님 비전 3자 비교, /feedback 단발성 vs Agent-office 영속성 분리 명시)
+     - `master-architect` — Agent-office 마스터플랜 + v2 → 마스터플랜 단계별 마이그레이션
+4. **task graph** (`addBlockedBy` 체인):
+   - Task 1 (architect-researcher) → output: `01_official-docs-deep.md`
+   - Task 2 (external-pattern-researcher) → output: `02_external-deep.md`
+   - Task 3 (office-design-analyst) — blocked_by [1, 2] → output: `03_gap-analysis.md`
+   - Task 4 (master-architect) — blocked_by [3] → output: `04_masterplan.md` + `05_migration_plan.md`
+   - Task 5 (master-architect) — blocked_by [4] → output: `00_요약.md`
+5. **4인 팀에 입력으로 전달할 결정 포인트 3개**: §결정 포인트 (D-1/D-2/D-3)
 
-## 미결 결정 (다음 세션에 결정 필요)
+## 결정 포인트 (4인 리서치 팀이 입력으로 받을 것)
 
-### A. 작업 분할 전략
+### D-1. PM 메커니즘 = Agent Teams 1인 팀
 
-| 옵션 | 내용 | 장점 | 단점 |
-|---|---|---|---|
-| A1 | **한 세션에 전부** (16+ 파일 신설/수정) | 일관성·맥락 유지 | 컨텍스트 부담 + 검증 누락 위험 |
-| A2 (권장) | **3 단계 분할** (① 글로벌 CLAUDE.md + 디렉토리 + SKILL.md, ② presets+reference, ③ scripts 6개) | 단계별 검증·커밋 가능 | 세션 3회 필요 |
-| A3 | **2 단계 분할** (① 문서·SKILL.md·presets·reference 묶음, ② scripts 묶음) | 균형 | scripts 가 너무 큰 단위 |
+- PM 호출 시: `TeamCreate` → 1인 팀 (members = [PM]) → 메인 Claude 가 lead
+- 메인 Claude ↔ PM = `SendMessage` 1:1 양방향 (= 1:1 톡)
+- **R3 (응답 안 함 / 알림 중복) 회피 메커니즘**: 멀티 teammate 가 아니라 1:1 이므로 시스템 알림과 사람 지시 충돌 없음
+- 일반 한계 (`/resume` 불가 / `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 필수 / experimental) 는 그대로 받음
+- 4인 팀이 깊이 다룰 점: PM 1인 팀의 **검증된 외부 사례 유무** + **Anthropic 공식 문서에서 1인 팀 명시 여부** + **세션 종료 시 PM 컨텍스트 영속화 메커니즘** (Agent Teams 는 `/resume` 불가 → 어떻게 다음 세션이 동일 PM 호출하는가?)
 
-→ **권장 A2** (스크립트가 가장 risky 한 단위 — 별도 turn 에서 독립 검증)
+### D-2. /feedback 통합 = 옵션 α (그대로 단발 유지)
 
-### B. PowerShell 스크립트 6개 구현 깊이
+- `/feedback` 은 Agent-office 가 호출만, **메커니즘 통합 X**
+- 사유: **/feedback 단발성의 본질은 앵커링 회피** (검증 시 fresh 인스턴스 필수, 객관성 보장)
+- Agent-office 워커는 영속 (D-3) — 단발성/영속 운영 충돌 방지
+- **하부 헬퍼는 라이브러리화 가능**: CLI 호출 (`run-codex.ps1`, `run-gemini.ps1`) / 격리 디렉토리 / 인코딩 헬퍼 (`_encoding.ps1`) — 두 스킬이 같은 라이브러리 사용
+- 4인 팀이 깊이 다룰 점: 헬퍼 라이브러리 공유 디렉토리 위치 (`~/.claude/lib/`? `~/.claude/skills/_shared/`?) + 명세 + /feedback 의 현재 격리 디렉토리 패턴이 영속 워커 워크스페이스와 어떻게 분리되는가
 
-| 옵션 | 내용 | 장점 | 단점 |
-|---|---|---|---|
-| B1 | **풀 구현** (스펙대로 한 번에) | 즉시 사용 가능 | turn 길이 부담, dogfood 검증 시간 부족 |
-| B2 (권장) | **스켈레톤 + 핵심만** (preflight·resolve-preset 우선 풀 구현, 나머지 4개는 함수 시그니처+TODO) | 점진 dogfood, 우선순위 명확 | 미완 4개 추적 필요 |
-| B3 | **bash 병행 작성** (Phase 2 후보 Ph2-6 선반영 — Linux 배포 대비) | 배포 타깃 일치 | 작업량 2배 |
+### D-3. Agent-office 워커 라이프사이클 = persistent (영속)
 
-→ **권장 B2** (feedback 스킬의 점진 dogfood 패턴 차용 — Ph2-6 bash 는 별건 유지)
-
-### C. v1 백업 위치
-
-- 옵션 C1: 운영(`~/.claude/skills/agent-team-manager/SKILL.md.v1.bak`) — 스펙 §8 Step B 그대로
-- 옵션 C2: 스테이징(`Harness-engineering/skills/agent-team-manager/SKILL.md.v1.bak`) — 운영 디렉토리 깔끔
-- → **권장 C1** (스펙 정합성 유지, 운영 디렉토리는 어차피 `.bak` 무시 가능)
+- preset YAML 에 `lifecycle: ephemeral | persistent` 필드 추가
+- **persistent**: 호출 간 컨텍스트 유지 (작업류 — PM, 개발자, 디자이너, 리서처 등)
+- **ephemeral**: 매 호출 fresh (검증류 — `/feedback` 식)
+- 본질 차이: 검증 = **객관성 (앵커링 방지)**, 작업 = **누적 (이전 작업 기억)**
+- 4인 팀이 깊이 다룰 점: persistent 워커의 **컨텍스트 영속화 구체 메커니즘** (Agent Teams 자체는 `/resume` 불가 → 어떻게 영속? 워크스페이스 파일 / status 파일 / preset YAML 의 history 필드?) + ephemeral 워커가 Agent-office 안에 존재할 필요가 있는지 (없으면 /feedback 만으로 충분)
 
 ## 컨텍스트 (배경 이해용)
 
 ### 이 작업을 하는 이유
-- 2026-04-22 (Day 9) 4인 팀이 외부 리서치+Gap 분석+v2 스펙을 완성. 이후 9일째 §9 결정 보류 → 본 5-1 turn 에서 결정 마무리. **이제 구현만 남음**
-- v1 (120줄 프로즈 only · 스크립트 0개) 은 `/feedback` 승격 전 상태와 동일. R1~R4 실측 4건이 P0 으로 모두 v2 스펙에 반영되어 있음
+
+- 9일 보류된 v2 §9 결정을 5-1 첫 후속 turn 에서 마무리 → 후속2 turn 에서 인계 → **본 후속3 turn 에서 #009 구현 들어가기 직전 주인님이 더 큰 비전 제시**
+- 주인님 비전 = **Agent-office** (프로젝트 = 회사 / PM 상시 / 영속 워커 / 동적 팀 구성)
+- v2 스펙은 이 비전의 부분집합 — 단순히 v2 만 짓고 나서 PM 얹으면 어색해짐. 처음부터 큰 집의 설계도 그리고 1층부터 짓는 게 깔끔
+- /feedback 통합 토론에서 단발성/영속성 본질 차이 발견 → 워커 라이프사이클 분류로 일반화
 
 ### 본 turn 시행착오 (재발 방지)
-- **첫 옵션 제시가 추상적** (Day 17 첫 세션) → 다음 세션 (본 후속2) 에서 비유 + 추천 의견 함께 제시 → 즉답 수령
-- **교훈**: 다음 세션 미결 결정 §A/B/C 도 비유 + 추천 함께 제시할 것
-- **commit+push 한 번에** (본 turn 후반 주인님 짜증) → 메모리 `feedback_commit_push.md` 에 저장 완료. 다음 세션도 동일 적용
-- **프리플라이트 (`/checklist`)** — 본 turn 시작 시 이미 `.checklist.md` 가 존재해서 별도 호출 안 함 (재사용). #009 시작 시는 신규 작성 필요
+
+- **첫 답변에서 X1~X5 5 옵션 표 던짐** (베타라도 쓰자 / Sub-agent only / 하이브리드 / 2-runtime 등) → 주인님 "더 쉽게" 요청 → 식당 비유로 길 ①/②/③ 3개로 압축 → 이해 도달
+- **외부 사례 다시 펼쳐달라는 요청** → 02_community-patterns.md 9개 사례를 비유로 풀어드림 → 주인님 비전 (Agent-office) 가 거기서 추출됨
+- **/feedback 단발성 이유** = 주인님이 짚으신 앵커링. 처음 답변에 못 적은 사항 — **검증 = 객관성 = 단발 / 작업 = 누적 = 영속** 본질 분리 발견
+- **교훈**: 비유 + 추천 의견 + 옵션 압축 (3개 이하) 이 결정 즉답을 끌어냄. 5 옵션 표는 부담만 줌
 
 ### 주의 사항
-1. **글로벌 CLAUDE.md 수정 시 신중** — 모든 프로젝트에 자동 적용되므로 drift 위험. 수정 hunk 는 Edit 1건만. 스테이징/운영 분리 패턴 따를 것 (본 프로젝트 CLAUDE.md `## 경로 설정` 정책)
-2. **스킬 동기화 단방향** — 편집은 스테이징(`Harness-engineering/skills/`), 동기화는 `~/.claude/skills/` 로 단방향. 본 프로젝트 CLAUDE.md "개발 명령" 의 PowerShell 1-liner 참조
-3. **agent-team-manager 운영 디렉토리 현재 상태** — v1 SKILL.md 120줄 + 외부 파일 0개. v2 교체 시 백업 필수
-4. **`agent-team-skill-redev` 팀** — 작업 완료 + shutdown 됨. teammate 복원 불가 (공식 제약). 새 팀 필요 시 신규 생성
+
+1. **글로벌 CLAUDE.md Agent Preferences 준수** — "설계·계획·분석·구현은 무조건 팀". 4인 리서치는 진짜 Agent Teams (TeamCreate + SendMessage) 사용 필수. 단순 Sub-agent 다중 호출 금지
+2. **`/checklist` 호출 본 turn 누락** — Day 17 §5 자백 재발. 다음 세션 #010 시작 전 **반드시 호출** (이번이 세 번째 검증 시그널)
+3. **PM 1인 팀 자체도 Agent Teams 라 R1~R4 일반 한계는 받음** — `/resume` 불가가 가장 큰 우려 (PM 영속화 어떻게?)
+4. **마스터플랜 산출물 §4 에 옵션 α/β/γ 결정 명시 필수** — α 권장 (단발성 본질) 이지만 4인 팀이 반박 검토 후 확정
 
 ## 관련 파일
 
 ### 핵심 시작 지점 (다음 세션 첫 Read 대상)
 - `Harness-engineering/HANDOFF.md` — 본 파일 (확인 후 `/handoff done` 처리)
-- `Harness-engineering/.todo.md` — #009 항목 (구현 태스크)
-- `Harness-engineering/docs/research/agent-team-skill-redesign/04_redesign-spec.md` — **구현 SSOT** (§9 결정 마크 + §11 SKILL.md 초안 + §4.1/§7.1/§7.3 preset 예시)
+- `Harness-engineering/.todo.md` — #010 (마스터플랜) + #009 (v2 구현, normal 유지)
+- `Harness-engineering/docs/history/2026-05-01.md` §8 — 본 토론 흐름 + Agent-office 비전 추출 과정
+- `Harness-engineering/docs/research/agent-team-skill-redesign/02_community-patterns.md` — 외부 9 사례 (4인 팀이 깊이 다룰 입력)
+- `Harness-engineering/docs/research/agent-team-skill-redesign/04_redesign-spec.md` — v2 스펙 (마스터플랜의 1층 인프라로 위치 재조정 대상)
+
+### 신규 메모리 (다음 세션 자동 로드)
+- `agent-office-vision.md` — 주인님 비전 (프로젝트별 PM YAML / 2단계 호출 / 워커 라이프사이클 / /feedback 단발 분리)
+- `agent-team-skill-redesign.md` — 갱신 (마스터플랜으로 비전 확장 명시)
 
 ### 참조 (이해 보강용)
-- `Harness-engineering/docs/research/agent-team-skill-redesign/01_official-docs.md` — reference/patterns.md 재료
-- `Harness-engineering/docs/research/agent-team-skill-redesign/02_community-patterns.md` — reference/patterns.md + anti-patterns.md 재료
-- `Harness-engineering/docs/research/agent-team-skill-redesign/03_gap-analysis.md` — reference/anti-patterns.md (A1~A15) + errors.md 재료
-- `Harness-engineering/docs/history/2026-05-01.md` §7 — 결정 결과 + 사유 (왜 그 옵션)
-- `~/.claude/CLAUDE.md` — Agent Preferences 섹션 (수정 대상, 결정 1-C 사규 측)
-- `~/.claude/skills/agent-team-manager/SKILL.md` — v1 (120줄, 교체 대상)
-- `~/.claude/skills/feedback/` — **참고 모델** (스크립트 외부화 + Validation Gate 5게이트 + 외부 훅 패턴)
+- `Harness-engineering/docs/research/agent-team-skill-redesign/01_official-docs.md` — Agent Teams 공식 docs (PM 1인 팀 명시 여부 4인 팀이 검증)
+- `Harness-engineering/docs/research/agent-team-skill-redesign/03_gap-analysis.md` — v2 의 P0/P1 gap (마스터플랜이 어떻게 흡수하는지 재평가)
+- `~/.claude/skills/feedback/SKILL.md` — 단발성 / 격리 디렉토리 / Validation Gate 5게이트 / 외부 훅 (라이브러리 공유 후보)
+- `~/.claude/CLAUDE.md` — Agent Preferences (마스터플랜 §6 에서 갱신 대상)
 
-### 메모리 (다음 세션 자동 로드)
-- `agent-team-skill-redesign.md` — 결정 결과 반영 완료 (1=C, 2=제안 5종, 3=YAML)
-- `feedback_commit_push.md` — 커밋+푸시 한 번에 (본 turn 신규)
-- `project_deployment_target.md` — Linux 최종 타깃 (Ph2-6 bash 병행 결정 참고)
-- `skill-load-scope.md` — 스테이징/운영 분리 패턴
-
-### 본 turn 산출물 (커밋됨)
-- 커밋 `6f006c6` — Day 17 후속2 (§9 결정 3건 + #009 등록 + HANDOFF 소멸)
-- `.backups/HANDOFF.done.2026-05-01.md` — 5-1 첫 인계서 소멸
-- `.backups/.checklist.md.완료_agent-team-v2-decisions_2026-05-01.md` — 결정 체크리스트 보존 (gitignore, untracked)
-- `docs/history/2026-05-01.md` §7 — 결정 결과 47줄
-- `docs/history/index.md` — Day 17 행 §7 반영
-- `docs/research/agent-team-skill-redesign/04_redesign-spec.md` §9.1/9.2/9.3 — 결정 마크 3건
-- `.todo.md` — #005 완료 + #009 신규
+### 본 turn 산출물 (커밋 예정)
+- `.backups/HANDOFF.done.2026-05-01-v2.md` — 5-1 후속2 인계서 소멸 (소멸 정책 **네 번째 검증**)
+- `HANDOFF.md` — 본 파일 (5-1 후속3 인계서 신설)
+- `docs/history/2026-05-01.md` §8 — 본 토론 47줄 추가
+- `.todo.md` — #010 신규 + #009 description 보강 (마스터플랜 후 위치 재조정)
+- 메모리 신규 1건 + 갱신 1건
 
 ### Git
-- 마지막 커밋: `6f006c6` (Day 17 후속2, push 완료)
-- 미커밋: 없음 (working tree clean)
-- 원격: `https://github.com/CuteRyan/ryan-harness-lab.git`
 - 브랜치: main
+- 원격: `https://github.com/CuteRyan/ryan-harness-lab.git`
+- 마지막 커밋: `6f006c6` (Day 17 후속2)
+- 본 turn 커밋 메시지 (예정): `docs+chore: Day 17 후속3 — agent-office 비전 토론 + 마스터플랜 4인 리서치 #010 신규`
