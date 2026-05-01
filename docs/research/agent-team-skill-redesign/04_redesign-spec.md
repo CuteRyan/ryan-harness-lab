@@ -466,17 +466,23 @@ protocols:
 
 **결정 포인트**: 주인님이 A/B/C 중 선택 → architect 가 마이그레이션 Step E 에서 반영.
 
+**결정 (2026-05-01, Day 17 다음 세션): C** — 사규(`~/.claude/CLAUDE.md` Agent Preferences) + 스킬(SKILL.md Non-goals) 양쪽 보강. 사유: 룰 충돌 지속(A) 또는 가이드 공백(B) 모두 실측 부적합 (Shipyard 95% 부적합 데이터 대비). 두 곳 검토 부담은 architect 가 마이그레이션 Step E 에서 흡수.
+
 ### 9.2 preset 5개 확정
 
 - 제안: review / debug / research / docs-research / harness-design
 - 대안: debug 제거하고 meta-review (리뷰어 팀 자체 리뷰) 추가?
 - **결정 포인트**: 주인님의 실사용 빈도 체감 — 주로 만드는 팀은 뭐였는가?
 
+**결정 (2026-05-01, Day 17 다음 세션): 제안 5종 그대로** (review / debug / research / docs-research / harness-design). 사유: 주인님 본 turn 발언 "하도 하는 일이 많아서 깜빡한다" → 자주 만든 팀 종류 기억 모호. **일단 5종 켜두고 안 쓰는 건 v2.1 회고 시 제거** 정책 채택 (Phase 2 후보 ID 신규 등록 불필요 — 이미 §10 Ph2-12 가 동일 영역 커버).
+
 ### 9.3 preset YAML vs 기존 markdown
 
 - 제안: YAML 전환 (파싱 안정성)
 - 대안: markdown 유지 (기존 자산 호환, 학습 비용 0)
 - **결정 포인트**: YAML 도입 허용 여부. 거부 시 `resolve-preset.ps1` 를 markdown 파서로 복잡화.
+
+**결정 (2026-05-01, Day 17 다음 세션): YAML** (전환). 사유: preset 은 "컴퓨터 발주서" 성격 (`depends_on`/`blocked_by`/`tools_allowlist` 같은 구조적 필드 다수) → YAML 이 적합. markdown 유지 시 `resolve-preset.ps1` 파서 복잡화 + LLM 해석 변동 리스크. 학습 비용은 본 결정 turn 에서 비유 설명으로 이미 흡수 (회원가입 양식 = YAML).
 
 ---
 
