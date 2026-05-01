@@ -15,6 +15,16 @@ created: 2026-04-17
 >
 > **다음 세션 진입점**: 이 index가 아니라 제안서 v4 + `docs/history/2026-04-20.md`를 먼저 읽을 것.
 
+## 2026-05-02
+
+### Agent-office 마스터플랜 04_masterplan.md 외부 검수 (Phase E)
+- 대상: `docs/research/agent-office-masterplan/04_masterplan.md` (701줄, master-architect Sonnet 작성)
+- Validation: **3/3 VALID**
+- [Claude Sub](2026-05-02_claude-sub_04_masterplan_20260502-073759.md) — 9건 ([치명] L546 issue#32732 / [치명] L148 PM heuristic 표 플레이스홀더 / [높음] L370 bypass / [높음] L339 PM 경유 vs 검수 / [중간] L553/L322/L566 / [낮음] L218/L187)
+- [Codex](2026-05-02_codex_04_masterplan_20260502-073759.md) — 5건 ([높음] L454 회피 vs L547 fallback 충돌 / [높음] L49 75% 설계 주장 vs 잔여 / [중간] L642 vs L700 / [중간] L218 / [중간] L552)
+- [Gemini](2026-05-02_gemini_04_masterplan_20260502-073759.md) — 6건 (라인 환각 4건이나 인용 본문 정확): [치명] TeamDelete state 손실 / [높음] bypass R-2 무력화 / [높음] issue#32732 / [중간] max_tool_calls=10 결정론 / [중간] TeamDelete deadlock / [낮음] traceability
+- [종합](2026-05-02_claude_04_masterplan_20260502-073759-종합.md) — Top 3 [치명/치명/높음]: ①issue#32732 model 자동 덮어쓰기 미해결 ②PM system prompt L148 플레이스홀더 잔존 ③bypass_threshold 결정 기준 명세 부재. 합집합 15건 / 반영 11 / 유보 2 / 반박 2 / 환각 4
+
 ## 2026-04-23
 
 ### /checklist 혼동 제거 체크리스트 v2 리뷰
