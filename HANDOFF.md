@@ -150,6 +150,35 @@ shutdown_request 송신 후 산출물 디렉토리 재확인 결과 **master-arc
 1. `HANDOFF.md` Read → `/handoff done`
 2. `~/.claude/teams/agent-office-masterplan/` 활성 여부 확인 → 활성이면 `TeamDelete` 로 정리 (master-architect 가 idle 후 shutdown_response 보냈을 가능성)
 3. **산출물 6개 검증** — 각 파일 Read 로 frontmatter / 핵심 섹션 / D-1~D-5 / R-1~R-5 가드 인용 확인
-4. **Phase E 실행** — `/feedback` 호출 (대상: `00_요약.md` 우선, 또는 `04_masterplan.md`). 5게이트 + 외부 훅 sycophancy-check
+4. **Phase E 실행** — `/feedback` 호출. **master-architect 권장 = `04_masterplan.md`** (부트스트랩 자기검증 부재의 유일한 완화). 5게이트 + 외부 훅 sycophancy-check
 5. 검수 결과 해석 (Opus) → 주인님 최종 보고
 6. `.todo.md` #010 완료 마크 + #009 description 갱신 (위치 재조정 진행 가능)
+
+---
+
+## ⚡ UPDATE 2: master-architect 정상 종료 + lead 검토 요청 3건 (사후 도착)
+
+shutdown_request 송신 후 master-architect 가 작업 완료 보고 → idle → shutdown_approved (2026-05-01 14:15:21) → terminated. **정상 종료 완료**.
+
+### master-architect lead 검토 요청 3건 (다음 세션 메인 Claude 가 처리)
+
+1. **D-1 "PM 은 추천만" 명세가 VISION.md §6 D-1 원문과 충돌 없는지 확인**
+   - master-architect 판단: 충돌 아님, "설명 보강" (PM 이 spawn 권한 가진 게 아니라 lead 에 추천 → lead 가 spawn 대행)
+   - 다음 세션 lead 가 재검토 필요. 충돌이라면 VISION.md §6 D-1 보강 + R-N 추가
+2. **pm.yaml `bypass_threshold` 수치 (max_tool_calls: 10) 적정성**
+   - Anthropic 블로그 "3-10 calls" scaling heuristic 에서 도출
+   - Phase 1 전 주인님 실제 작업 패턴 확인 권장 (4-22 4인 팀 / 본 turn 4인 팀 의 평균 tool_calls 측정)
+3. **/feedback 검수 대상 = `04_masterplan.md` 권장**
+   - 사유: 부트스트랩 단계 자기검증 부재 의 유일한 완화 수단
+   - 본 HANDOFF 의 다음 세션 시작 지점 §4 에 반영됨
+
+### master-architect 비판자 역할 수행 결과 4건 (D-1 dogfood, 04_masterplan.md §부록 보존)
+
+| # | 반박 검토 항목 | 처리 결과 |
+|---|---|---|
+| 1 | D-1 구조 충돌 우려 | 충돌 아님, 역할 분리 로 해소 |
+| 2 | 한 세션 1 team 한계가 비전 무너뜨림 | pm.yaml 기록 + cleanup 전 보존으로 완화 가능 |
+| 3 | heuristic 표 과도한 정밀도 | v0 명시 (Phase 2 실측 보정 예정) |
+| 4 | Echo chamber α 옵션 실효성 (같은 Claude 계열) | 한계 인정 + 2차 (/feedback) · 3차 (주인님 컨펌) 방어 필수 |
+
+→ 모든 반박이 합의안에 흡수. `04_masterplan.md §부록` 에 기록 보존. **D-1 비판자 dogfood 1차 검증 완료**.
