@@ -17,6 +17,7 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 - "체크리스트 만들어", "작업 시작", "이거 해줘" 등
 - `/checklist` 직접 호출
 - `/checklist 로그인 버그 수정` 처럼 작업명과 함께 호출
+- **분석/리뷰 작업도 SKILL.md/문서/코드 수정으로 귀결되는 시점부터 의무** — 단순 조회·메타 평가·외부 검수 1차 단계는 면제, 결과 반영 패치 진입 시 본 스킬 호출 필수
 
 ## 워크플로
 
@@ -69,7 +70,12 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 - 주인님 승인 후 `.checklist.md`를 `.backups/` 디렉토리로 **이동** (삭제 금지)
   - 권장 파일명: `.backups/.checklist.md.완료_{슬러그}_{YYYY-MM-DD}.md`
   - 근거 보존을 위해 원본은 절대 삭제하지 않는다
-- 필요 시 `docs/history/{YYYY-MM-DD}.md` 업데이트 + `docs/history/index.md` 갱신
+- **영구 기록 가치 평가** — Phase 5 완료 보고 후 다음 중 하나라도 해당하면 `/project-history update` 호출 의무:
+  - 새로운 결정 사항 발생 (D-N 또는 R-N 추가)
+  - 외부 검수 (`/feedback`) 결과 반영
+  - 마이그레이션 / 신설 스킬 / 신설 규칙
+  - dogfood 데이터 누적 (회고 가치 있는 패턴 발견)
+  - 위 4 항목 중 0건이면 history 갱신 생략 (단순 양식 정정·typo 수정 등)
 
 ## mode별 가이드
 

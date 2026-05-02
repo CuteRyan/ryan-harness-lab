@@ -42,12 +42,23 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 ## 백로그
 - [ ] #001 항목 내용 (added: 2026-04-29, priority: high)
 - [ ] #002 항목 내용 (added: 2026-04-29, priority: normal)
+- [ ] #003 항목 내용 (added: 2026-04-30, priority: low)
+- [ ] #004 항목 내용 (added: 2026-05-01, priority: normal, due: 2026-05-08)
+- [ ] #005 항목 내용 (added: 2026-05-02, priority: high, blocked_by: #004, source: [2026-05-02] §3)
 
 ## 완료 (최근 10개)
 - [x] #000 이전 항목 (done: 2026-04-28)
 ```
 
-번호(`#NNN`)는 단조 증가. 완료 후에도 보존 (감사 추적).
+### 필드 정의
+
+- **번호 `#NNN`**: 단조 증가, 완료 후에도 보존 (감사 추적, 재사용 금지)
+- **`added: YYYY-MM-DD`** (필수): 항목 추가일. 자동 부착
+- **`priority`** (필수): `high` | `normal` | `low` 중 1. 미지정 시 `normal`
+- **`due: YYYY-MM-DD`** (선택): 마감일. 시간 제약 있는 항목
+- **`blocked_by: #NNN`** (선택): 다른 항목 완료 의존 시 명시. 차단 해소 추적
+- **`source: [YYYY-MM-DD] §섹션`** (선택): 항목 발생 출처 (피드백 / 회고 / 결정 사항 등)
+- **`done: YYYY-MM-DD`** (자동): 완료 시 자동 부착
 
 ## How it works
 

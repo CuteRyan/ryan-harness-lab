@@ -40,6 +40,11 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 > 생성: YYYY-MM-DD HH:MM | 소멸 조건: 다음 세션 확인 후 `/handoff done`
 
+## 🚨 다음 세션 진입 전 사용자 결정 사항 (CRITICAL)
+> 선택 섹션 — 사용자 결정·재시작·외부 조치가 다음 세션 진입 전 필요할 때만 추가. 없으면 본 섹션 자체 생략.
+
+(결정 사항 + 선택지 A/B + 현재 기울기 + 사전 조치 절차)
+
 ## 마지막 상태 (어디까지 했나)
 - 작업: [작업명]
 - 진행률: [완료 단계/전체 단계]
@@ -50,6 +55,12 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 - [ ] 항목 2
 
 ## 다음 세션 시작 지점
+
+### Quick Start (메인 Claude 가 새 세션 진입 직후 즉시 실행)
+1. [동사 시작 — 즉시 실행 가능한 첫 행동, 예: "PowerShell `Get-ChildItem Env:` 으로 X 확인"]
+2. [두 번째 즉시 행동]
+
+### 정식 절차 (체크리스트 승인 후)
 1. [명확한 첫 번째 행동 — 동사 시작]
 2. [두 번째 행동]
 
@@ -65,7 +76,7 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 - `path/to/ref_doc` — 참조 문서
 ```
 
-5종 데이터 (마지막 상태 / 미완 / 다음 시작 / 미결 / 관련 파일) 모두 필수. 누락 시 인계 실패로 간주.
+6종 데이터 (마지막 상태 / 미완 / 다음 시작 / 미결 / 컨텍스트 / 관련 파일) 모두 필수. 🚨 결정 사항 섹션은 선택 (다음 세션 진입 전 사용자 결정·재시작·외부 조치 필요 시에만). 누락 시 인계 실패로 간주.
 
 ## How it works
 
@@ -78,10 +89,10 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 1. **수집**:
    - `git status --short` + `git diff --stat` → 수정 파일 목록
    - `TaskList` → 미완 task 확인 (in_progress / pending)
-   - `docs/history/index.md` 진행 중 섹션 → 장기 항목 참조
+   - `docs/history/index.md` 진행 중 섹션 → 장기 항목 참조 (**장기 포인터 한정, HANDOFF 본문에 동일 정보 중복 금지** — Day 15 결정 2=C)
    - 대화 맥락에서 미결 결정 추출
 2. **합성**: 위 데이터를 양식대로 채워 `HANDOFF.md` 작성
-3. **검증**: 5종 데이터 누락 여부 확인. 부족하면 사용자에게 보강 질문
+3. **검증**: 6종 데이터 누락 여부 확인 (🚨 결정 사항 섹션은 선택). 부족하면 사용자에게 보강 질문
 4. **부수 효과**:
    - 14일 이상 지속될 가능성이 큰 항목은 `index.md` 진행 중 섹션 갱신 권고 (자동 X)
    - 백로그성 항목은 `/todo add` 권고
@@ -93,6 +104,17 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 4. 14일 이상 지속될 항목 → `index.md` 진행 중 포인터 섹션 갱신 권고
 
 ## 다른 스킬과의 책임 경계
+
+### vs /checklist
+| 구분 | /handoff | /checklist |
+|------|----------|------------|
+| 시제 | 세션 종료 (단절 시점) | 세션 내 작업 단위 |
+| 파일 | `HANDOFF.md` (루트) | `.checklist.md` (루트, 작업 단위 생성·소멸) |
+| 승인 흐름 | 자동 (생성 즉시) | 필수 (`approved: false` → 주인님 승인) |
+| 소멸 조건 | 다음 세션 확인 후 즉시 | Phase 6 종결 후 `.backups/` 이동 |
+| 수명 | 1~2 세션 | 단일 작업 사이클 |
+
+**연계 정책**: `/checklist` Phase 6 미완 항목 중 다음 세션 즉시 이어가야 할 인계성 항목을 `/handoff create` 로 인계 (사용자 명시 호출). 같은 세션에서 둘 다 호출 가능. 본 스킬은 단일 작업 사이클이 아닌 세션 단위 단절을 다룸.
 
 ### vs /project-history (강한 분리)
 | 구분 | /handoff | /project-history |
@@ -123,7 +145,7 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 | SSOT | **단일 세션 인계의 SSOT** | 장기 항목 포인터 (HANDOFF.md 동일 정보 중복 금지) |
 
 ## Rules
-- **5종 데이터 누락 금지** — 마지막 상태 / 미완 / 다음 시작 / 미결 / 관련 파일 모두 필수
+- **6종 데이터 누락 금지** — 마지막 상태 / 미완 / 다음 시작 / 미결 / 컨텍스트 / 관련 파일 모두 필수 (🚨 결정 사항 섹션은 선택, 본문 중 양식 블록 참조)
 - **소멸 시 삭제 금지** — `.backups/` 로 이동만 (감사 추적)
 - **자동 이동 금지** — 미완 항목을 `.todo.md` 로 이동할지는 인계 받은 세션이 결정
 - **SSOT 분리 (결정 2=C)** — 단일 세션 인계는 HANDOFF.md, 장기 항목은 index.md 진행 중 섹션 (포인터). 동일 정보 중복 금지

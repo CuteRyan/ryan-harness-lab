@@ -17,6 +17,14 @@ created: 2026-04-17
 
 ## 2026-05-02
 
+### 4 스킬 (`/checklist` + `/todo` + `/handoff` + `/project-history`) 메타 리뷰
+- 대상: `docs/research/2026-05-02_4skill-meta-review/_input_combined.md` (4 SKILL.md 본체 + 메인 1차 진단 합본)
+- Validation: **3/3 VALID**
+- [Claude Sub](2026-05-02_claude-sub__input_combined_20260502-202220.md) — 10건 ([높음]×3 / [중간]×4 / [낮음]×4)
+- [Codex](2026-05-02_codex__input_combined_20260502-202220.md) — 8건 ([높음]×3 / [중간]×4 / [낮음]×1)
+- [Gemini](2026-05-02_gemini__input_combined_20260502-202220.md) — 6건 ([높음]×2 / [중간]×2 / [낮음]×2)
+- [종합](2026-05-02_claude__input_combined_20260502-202220-종합.md) — Top 3 [높음/높음/중간]: ①`/handoff` 5종/6종 모순 ②`/todo`+`/handoff` 양식 drift 일괄 ③`/handoff`↔`/checklist` 비대칭 + `/checklist` Phase 6 트리거 명확화. 합집합 14건 / 반영 12 / 유보 2 / 반박 0 / 환각 0
+
 ### Agent-office 마스터플랜 04_masterplan.md 외부 검수 (Phase E)
 - 대상: `docs/research/agent-office-masterplan/04_masterplan.md` (701줄, master-architect Sonnet 작성)
 - Validation: **3/3 VALID**
