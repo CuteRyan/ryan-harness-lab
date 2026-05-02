@@ -256,3 +256,66 @@ CLAUDECODE                     1
 - ~/.claude/settings.json env (본 turn 종료 시점): `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` (마스터플랜 D-4 정합 환원)
 - 실험 팀: `model-priority-test` (~/.claude/teams/model-priority-test/) — 본 turn 종료 시 archive 처리
 - 신규 agent: `~/.claude/agents/pm-test.md` — Phase 1 PM 신설 시점까지 보존 (재실험 입력)
+
+---
+
+## 9. 속편 — 새 세션 (turn 3) 검증 결과 (2026-05-02 후속 turn 3)
+
+### 9.1 검증 환경
+
+- 메인 Claude Code: 본 turn 시점 = **새 세션** (`/clear` 후 진입), Opus 4.7 (claude-opus-4-7), 1M context
+- 첫 PowerShell 실측 (Quick Start §1): `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` (메인 process env cache, 출처 = settings.json env 블록)
+- → 06 §6-1 한계 (env cache 출처 불명) **1차 해소**: 출처 = settings.json
+- 4단계 spawn (Step B → C → D-1 → D-2) `model-fallback-verify` 팀에서 실행
+
+### 9.2 결과 매트릭스
+
+| Step | subagent_type | model 경로 | 자식 env (실측) | 자식 자기보고 | 의미 |
+|------|---------------|-----------|----------------|--------------|------|
+| B | general-purpose | env 디폴트 (model X) | `sonnet` | **Sonnet** | env 디폴트 작동 (예상) |
+| C | pm-test | frontmatter `model: opus` (model X) | `sonnet` | **Sonnet** | **H1 결정적 기각** — 새 세션에서도 frontmatter 무력 |
+| D-1 | pm-test | frontmatter + settings.json env 라인 제거 후 spawn | `sonnet` (잔존) | **Sonnet** | **settings.json hot-reload 비작동 결정적 재현** (06 §2.2 가설 확정) |
+| D-2 | general-purpose | model="opus" 명시 + settings.json env 제거 후 | `sonnet` (잔존) | **Sonnet** | **H2 결정적 기각** — 명시 model 도 cache env 에 무력화 |
+
+### 9.3 결정 1 확정 — Step C = Sonnet (본 turn(turn 2) 결과 cache stale 가설 기각)
+
+전 turn (Day 18 후속 turn 2) 의 한계 §6-3 (모든 4 실험이 같은 cache 환경 → 결과는 본 환경 한정) 가설을 새 세션에서 재현. **새 세션 환경에서도 frontmatter `model: opus` 가 작동하지 않음** 결정적 확인. 마스터플랜 §8.2 의 "이중 보장" 가정 (env=sonnet + frontmatter=opus 동시) 은 **본 환경 (cache 갱신 가능 매체 부재) 에서 결정적으로 무효**.
+
+### 9.4 결정 2 확정 — fallback C+ (잠정), 새 세션 #015 검증 후 최종
+
+| 후보 | 본 turn 검증 결과 | 채택 여부 |
+|-----|------------------|----------|
+| **A** (PM 호출 시점에만 env unset wrapper) | Step D-1 결과로 **검증 불가**: 메인 process env cache 갱신 메커니즘 부재 → wrapper 가 spawn 시점 메인 cache 를 변경 못 함 | **부적합** (현 메인 process 모델로 작동 불가) |
+| **B** (Opus lead session 분리, 별도 Claude Code 인스턴스) | 본 turn 미검증 | 보조 후보 — 단 nested team 불가 (issue#31731) + IPC 부담 |
+| **C** (env 영구 unset + 모든 spawn model 명시 + 강제 훅) | Step D-2 결과로 **명시 model 도 cache env 에 무력화** 확인 → 단순 settings.json env 제거 + 명시 model 만으로는 부족 | **C+ 강화 필요** |
+
+**채택안: fallback C+ 잠정 — 핵심 메커니즘 3중화**:
+1. **settings.json env 영구 제거** — `CLAUDE_CODE_SUBAGENT_MODEL` 삭제 (env 우선순위 무력화의 출처 차단)
+2. **메인 Claude Code 재시작** — 새 세션 시작 시 메인 process env 에 SUBAGENT_MODEL 미캐시 (검증 가설 = #015)
+3. **모든 Agent spawn 에 model 파라미터 강제 명시** — PM = `model="opus"`, 워커 = `model="sonnet"`. 누락 방지 위한 PreToolUse Agent matcher 강제 훅 신설 (Phase 1 인프라)
+
+**최종 확정 조건 (#015 검증)**: 새 세션 진입 시 PowerShell `Get-ChildItem Env:` 로 SUBAGENT_MODEL **빈 값** 확인 → 그 환경에서 명시 model="opus" 명시 spawn → 자식 = Opus 보고. **이 두 가설 모두 PASS 시 fallback C+ 최종 확정**. FAIL 시 fallback B (별도 인스턴스) 검토.
+
+### 9.5 결정 3 확정 — pm-test agent 보존 + Phase 1 진입 시 폐기
+
+본 turn 결과로 frontmatter `model: opus` 가 본 환경에서 **결정적으로 무력화** 확인. 따라서 pm-test agent 의 frontmatter 자체는 운영 가치 없음. 단:
+- **#015 새 세션 검증 입력**으로 보존 (settings.json env 제거 + 새 세션 환경에서 frontmatter 작동 여부 재검증)
+- Phase 1 PM 신설 시 `pm-test → pm-agent` rename 또는 폐기 후 신설 (마스터플랜 §3.2 PM frontmatter v2 스펙 기반)
+- 결정 = **#015 PASS 후 폐기 + Phase 1 신설** (보존된 frontmatter 양식만 reference 로 활용)
+
+### 9.6 결정 4 (#014, PM 외부 리서치 의무화) 처리 시점
+
+`.todo.md` #014 = blocked_by #013 (본 turn 완료) → 해제. 단 fallback C+ 최종 확정 (#015) 까지는 PM 운영 메커니즘 자체 미완 → **#014 = blocked_by #015** 로 갱신. PM 운영 안정 후 의무 추가 적합.
+
+### 9.7 본 turn 한계 (재현 가능성)
+
+1. **메인 process env cache 갱신 메커니즘 미확정** — settings.json 영구 제거 + 새 세션 시작 시 process env 가 비어있을지 vs 다른 출처 (전 세션 cache 잔존, OS env, Claude Code 자체 디폴트) 가 우선될지 미상. 새 세션 첫 PowerShell 실측 의무 (#015 Step A).
+2. **fallback B 미검증** — 별도 Claude Code 인스턴스에서 spawn 시 정상 작동 여부 미확인. 본 turn 환경 한계.
+3. **강제 훅 미설계** — fallback C+ 의 핵심 (PreToolUse Agent matcher) 가 Phase 1 인프라 항목. 본 turn 범위 외.
+
+### 9.8 다음 작업 (#015)
+
+- [ ] **사용자 메인 Claude Code 재시작** — 메인 process env cache 갱신 위한 유일한 메커니즘 (HANDOFF.md Quick Start 첫 행에 명시 필요)
+- [ ] **새 세션 진입 직후** — 첫 PowerShell `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` 으로 SUBAGENT_MODEL 빈 값 확인
+- [ ] **단계별 spawn 검증** — (a) 디폴트 = 자식 모델? (b) frontmatter `model: opus` = 작동? (c) 명시 model="opus" = 작동? — 결과로 fallback C+ 최종 확정 또는 B 전환
+- [ ] **결과 06 §10 (속편 2) 추가** + 04 §8.2 최종 재작성 + Phase 1 진입 결정

@@ -613,6 +613,16 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 > - **fallback 후보 3안** — A (호출 시점 env unset wrapper) / B (Opus lead session 분리) / C (env 영구 unset + 모든 spawn 에 model 파라미터 명시 + 강제 훅). 결정 2 의무.
 > - **다음 turn 검증 절차**: 06 보고서 §5.2·5.3 — Step A (env 적용 확인) → Step B (디폴트 spawn) → Step C (frontmatter 우선순위 재검증) → Step D-1·D-2 (fallback A/C 검증) → 결정 2 확정.
 
+> **2차 실험 결과 (2026-05-02 후속 turn 3, D-32732-A2, 상세 → [06_issue32732_experiment.md §9](06_issue32732_experiment.md))**:
+> - **검증 환경**: 새 세션 (`/clear` 후) — 1차 실험의 한계 §6-3 (cache 환경 한정) 가설 새 세션에서 재현
+> - **H1 결정적 기각** — 새 세션 환경에서도 frontmatter `model: opus` 작동하지 않음 (Step C = Sonnet). 1차 실험의 cache stale 가설 기각.
+> - **H2 결정적 기각** — settings.json env 제거 후 명시 model="opus" spawn 도 자식 = Sonnet (Step D-2). 명시 model 도 cache env 에 무력화.
+> - **부록 메타 결정적 재현** — settings.json hot-reload 비작동 (Step D-1 자식 env=sonnet 잔존). 메인 process env cache 갱신 메커니즘 = 메인 재시작 only.
+> - **결정 1 확정** — Step C = Sonnet 분기 (1차 실험 결과 cache stale 아님, 결정적 메커니즘). "이중 보장" 가정 본 환경에서 **결정적 무효**.
+> - **결정 2 잠정 확정 = fallback C+** (3중화: settings.json env 영구 제거 + 메인 재시작 + 모든 spawn model 명시 + 강제 훅). fallback A 부적합 (현 메인 process 모델로 작동 불가), fallback B 보조 후보 (nested team 불가 단점).
+> - **#015 신설 (Phase 1 진입 차단 조건)** — 새 세션 (사용자 메인 Claude Code 재시작 후) 에서 (a) PowerShell 실측 SUBAGENT_MODEL=빈 값 확인 (b) 명시 model="opus" spawn 작동 검증. PASS 시 fallback C+ 최종 확정 + Phase 1 진입 가능. FAIL 시 fallback B 검토.
+> - **결정 3 확정** — pm-test agent 보존 (#015 입력) + Phase 1 진입 시 폐기 또는 rename.
+
 ### 8.3 비용 효과
 
 - Sonnet ≈ Opus의 1/5 비용
@@ -640,6 +650,7 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 | PM 팀 cleanup 실패 폴백 | 60초 timeout → 강제 archive 후 진행 (deadlock 차단) | §9.3 신설 |
 | 리뷰 사이클 cap | 3회 초과 시 PM 에스컬레이션 | aws-samples (Phase 1 URL 보강 필요) |
 | spawn 범위 제한 | spawn prompt에 "이 경로 외 탐색 금지" 명시 | issue#35513 |
+| **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse Agent matcher 강제 훅 (Phase 1 인프라) | 06 §9.4 (turn 3 결정적 검증) |
 
 ### 9.2 TeamDelete 후 에러 방지 + PM↔워커 hand-off 스키마
 
