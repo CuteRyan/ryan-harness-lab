@@ -63,11 +63,11 @@
 
 ## 미완 작업 (지금 하다 멈춘 것)
 
-- [ ] **commit** — 본 turn 변경 7 modified + 6 untracked = 13 파일
-- [ ] **push** — origin/main (사용자 명시 요청 시)
+- [x] **commit** — `c66c611` (14 파일, +1074 -86)
+- [x] **push** — origin/main `02eca15..c66c611`
 - [ ] **#015** — 사용자 메인 재시작 후 (위 🚨 섹션 참조)
 
-본 turn 자체 작업은 종결.
+본 turn 자체 작업은 종결. Working tree clean.
 
 ## 다음 세션 시작 지점
 
