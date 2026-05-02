@@ -34,6 +34,14 @@
 
 ## 다음 세션 시작 지점
 
+> **첫 한 명령 (Quick Start)** — 메인 Claude 가 새 세션 진입 직후 즉시 실행:
+> 1. **PowerShell**: `Get-ChildItem Env: \| Where-Object Name -like "*CLAUDE*"` — 메인 프로세스 env cache 출처 추적 (06 §6-1 한계 의무). 결과를 06 보고서 §5.2 Step A 결과로 기록.
+> 2. **HANDOFF.md Read** (본 파일) → `/handoff done` (소멸 정책 **8회차 검증**)
+> 3. **`/checklist`** 호출 → 작업명: "issue#32732 새 세션 fallback 검증 (#013) — 06 §5.2·5.3 Step A→B→C→D 절차"
+> 4. 체크리스트 승인 대기 → 진입
+
+### 정식 절차 (체크리스트 승인 후)
+
 1. **`HANDOFF.md` Read 후 `/handoff done`** 처리 (소멸 정책 **8회차 검증**)
 2. **`.todo.md` Read** — 우선순위 (#013 high / #014 normal blocked_by #013 / #012 normal / #009 normal / #008 normal due 2026-05-08)
 3. **`#013` 진입 권장** — `06_issue32732_experiment.md §5.2·5.3` 절차:
