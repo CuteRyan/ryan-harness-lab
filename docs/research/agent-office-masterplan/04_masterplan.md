@@ -603,7 +603,15 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 >    - **env 우선 (덮어쓰기 발생)**: fallback A — env 를 PM 호출 시점에만 unset 후 spawn, 그 외엔 sonnet 유지 / fallback B — Opus lead session 분리 (PM 전용 외부 wrapper)
 > 4. 실험 결과 본 §8.2 에 갱신 + Phase 1 진입 결정
 >
-> **현 상태**: 미실험 → 미결. 실험 전까지 "이중 보장"은 추정.
+> **현 상태**: 1차 실험 완료 (2026-05-02). Phase 1 진입 **차단 유지**. 새 세션 재검증 + fallback 결정 2 확정 후 §8.2 재작성 의무.
+
+> **1차 실험 결과 (2026-05-02, D-32732-A1, 상세 → [06_issue32732_experiment.md](06_issue32732_experiment.md))**:
+> - **H1 (frontmatter > env): 기각** — 실험 3 에서 frontmatter `model: opus` 명시했으나 자식 자기보고 = Sonnet (3중 단서 일치, 신뢰도 높음)
+> - **H2 (명시 model 파라미터 > env): 기각** — 실험 2 에서 `model="opus"` 명시했으나 자식 = Sonnet (issue#32732 재현 확인)
+> - **부록 메타 발견**: `settings.json` hot-reload 비작동 — 메인 프로세스 env cache 가 본 turn 의 settings.json 변경 (추가/제거) 을 갱신하지 못함. 메인 프로세스 재시작 (새 세션) 필요. → fallback A 검증은 새 세션 의무.
+> - **결론**: 본 환경 (메인 프로세스 env cache `CLAUDE_CODE_SUBAGENT_MODEL=sonnet`) 에서 env 가 명시 model 파라미터 + frontmatter 모두 덮어씀. 본 §8.2 의 "이중 보장" 가정 **무효**.
+> - **fallback 후보 3안** — A (호출 시점 env unset wrapper) / B (Opus lead session 분리) / C (env 영구 unset + 모든 spawn 에 model 파라미터 명시 + 강제 훅). 결정 2 의무.
+> - **다음 turn 검증 절차**: 06 보고서 §5.2·5.3 — Step A (env 적용 확인) → Step B (디폴트 spawn) → Step C (frontmatter 우선순위 재검증) → Step D-1·D-2 (fallback A/C 검증) → 결정 2 확정.
 
 ### 8.3 비용 효과
 
