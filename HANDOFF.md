@@ -35,7 +35,7 @@
 ## 다음 세션 시작 지점
 
 1. **`HANDOFF.md` Read 후 `/handoff done`** 처리 (소멸 정책 **8회차 검증**)
-2. **`.todo.md` Read** — 우선순위 (#013 high / #012 normal / #009 normal / #008 normal due 2026-05-08)
+2. **`.todo.md` Read** — 우선순위 (#013 high / #014 normal blocked_by #013 / #012 normal / #009 normal / #008 normal due 2026-05-08)
 3. **`#013` 진입 권장** — `06_issue32732_experiment.md §5.2·5.3` 절차:
    - **Step A**: PowerShell `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` 으로 메인 프로세스 env 출처 추적 (본 turn 한계 §6-1 추적 의무)
    - **Step B**: 디폴트 spawn (subagent_type=general-purpose, model X) → 자식 자기보고. 본 turn 결과 (Sonnet) 재현 또는 차이 확인
@@ -62,6 +62,12 @@
 - **A**: pm-test → pm-agent 로 rename + 운영 (Phase 1 입력으로 그대로 흡수)
 - **B**: pm-test 폐기 + Phase 1 에서 새로 작성 (마스터플랜 §3.2 PM frontmatter v2 스펙 기반)
 - **현재 기울기**: A (이미 작동하는 frontmatter 보존 가치)
+
+### 결정 4 — #014 (PM 외부 리서치 + 근거 인용) 처리 시점
+- **A**: #013 fallback 결정 직후, Phase 1 PM 신설 시 같이 적용 (한 번에 PM 디자인 완결)
+- **B**: #013 와 병렬, Phase 1 진입 전 마스터플랜 보강 먼저
+- **현재 기울기**: A (PM 운영 메커니즘 안정 후 의무 추가가 안전 — `.todo.md` #014 에 `blocked_by: #013` 명시)
+- **출처**: 본 turn 종료 직전 사용자 추가 요청 — "PM 이 자기 지식 내에서만 하지 말고 외부 리서치로 레퍼런스 / 근거 정확 제시"
 
 ## 컨텍스트 (배경 이해용)
 
