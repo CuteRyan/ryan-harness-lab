@@ -315,7 +315,88 @@ CLAUDECODE                     1
 
 ### 9.8 다음 작업 (#015)
 
-- [ ] **사용자 메인 Claude Code 재시작** — 메인 process env cache 갱신 위한 유일한 메커니즘 (HANDOFF.md Quick Start 첫 행에 명시 필요)
-- [ ] **새 세션 진입 직후** — 첫 PowerShell `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` 으로 SUBAGENT_MODEL 빈 값 확인
-- [ ] **단계별 spawn 검증** — (a) 디폴트 = 자식 모델? (b) frontmatter `model: opus` = 작동? (c) 명시 model="opus" = 작동? — 결과로 fallback C+ 최종 확정 또는 B 전환
-- [ ] **결과 06 §10 (속편 2) 추가** + 04 §8.2 최종 재작성 + Phase 1 진입 결정
+- [x] **사용자 메인 Claude Code 재시작** — 메인 process env cache 갱신 위한 유일한 메커니즘 (HANDOFF.md Quick Start 첫 행에 명시 필요) — turn 5 (Day 19) 완료
+- [x] **새 세션 진입 직후** — 첫 PowerShell `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` 으로 SUBAGENT_MODEL 빈 값 확인 — turn 6 (Day 19) Step 1 PASS
+- [x] **단계별 spawn 검증** — (a)(b)(c) + (d) sonnet 명시 비교 대조 — turn 6 Step 2~4 PASS
+- [x] **결과 06 §10 (속편 2) 추가** + 04 §8.2 최종 재작성 + Phase 1 진입 결정 — 본 §10
+
+---
+
+## 10. 속편 2 — fallback C+ 최종 확정 검증 (2026-05-04 Day 19 turn 6)
+
+> turn 5 (Day 19, 2026-05-03) 에서 settings.json env `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` 라인 임시 제거 + 백업 (`settings.json.bak.20260503_phaseB1`) 완료. 메인 Claude Code 재실행 → 본 세션 진입 후 본 검증 (turn 6) 진행.
+
+### 10.1 Step 1 — env 빈 값 확인 (PASS)
+
+**라이브 process env (lead, 메인 Claude)**:
+```
+CLAUDE_CODE_ENTRYPOINT=cli
+CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+CLAUDE_CODE_SSE_PORT=56760
+CLAUDECODE=1
+```
+→ `CLAUDE_CODE_SUBAGENT_MODEL` **부재 확인** (settings.json env 임시 제거가 메인 process 환경에 반영됨, §9.7 §1 한계 해소).
+
+**settings.json env 블록**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 만 잔존 (turn 5 setup 보존).
+
+### 10.2 Step 2~3 — TeamCreate + Agent spawn × 4 + 자기보고 수집
+
+**Team**: `model-fallback-verify-v2` (verification-lead 타입)
+**TaskCreate × 4 + Agent spawn × 4** (병렬, 각 spawn 에 동일 prompt = MODEL_TEST 5단서 자기보고)
+
+| spawn | 명세 | 시스템 프롬프트 model | 결론 (자기보고) | 자식 env SUBAGENT_MODEL |
+|---|---|---|---|---|
+| **A** | `model="opus"` 명시 + general-purpose | **Opus 4.7 (1M context)** | "불확정 — 추정 Opus" (메타 자각 = prompt-induced 정체성 자기 의심) | 부재 ✓ |
+| **B** | `pm-test` agent (frontmatter `model: opus`) + model 파라미터 X | **Opus 4.7 (1M context)** | Opus | 부재 ✓ |
+| **C** | model 생략 + frontmatter X (디폴트 측정) | **Opus 4.7 (1M context)** | Opus | 부재 ✓ |
+| **D** | `model="sonnet"` 명시 + general-purpose | **Sonnet 4.6 (`claude-sonnet-4-6`)** | Sonnet | 부재 ✓ |
+
+> 자식 env 부재 확인 4/4 = settings.json env 임시 제거가 자식 spawn 환경에도 정상 전파됨 (메인 → 자식 env 상속 경로 검증).
+> A 의 "불확정" 은 자기 신고로는 prompt-induced 정체성 회피 불가 라는 정직한 인식론적 한계 명시. 시스템 프롬프트 표시 = lead 의도 model 정합 = 검증 목적상 PASS.
+
+### 10.3 Step 4 — PASS 판정 + 핵심 검증
+
+**PASS 기준**: A=Opus AND B=Opus AND D=Sonnet → ✅ **PASS** (4/4 정합)
+
+**검증 결과**:
+1. ✅ **명시 model 작동** — A (opus)·D (sonnet) 모두 시스템 프롬프트에 명시 model 정확 주입. **§9.3 "명시 model 도 cache env 에 무력화" 가설 = env 제거 시 해소** 결정적 확인.
+2. ✅ **frontmatter 작동** — B (frontmatter `model: opus`) → Opus. **§9.5 "frontmatter 결정적으로 무력화" 가설 = env 제거 시 해소** 결정적 확인.
+3. ✅ **env SUBAGENT_MODEL 부재 자식까지 전파** — 4 spawn 모두 동일 4개 env 만 노출 (D 추가 1개: `AI_AGENT=claude-code/2.1.126/agent`, `CLAUDE_CODE_EXECPATH`).
+
+### 10.4 ⚠️ 부수 발견 (예상 외, Phase 1 강제 훅 정당성 결정적 강화)
+
+**Spawn C (model 생략 + frontmatter X) → 결과 = Opus** (예상: Sonnet 또는 명시적 디폴트).
+
+**해석 가설** (외부 검증 부재로 단정 불가, 본 turn 관측 결과 한정):
+- env=빈 값 + model 명시 부재 + frontmatter 부재 → **자식이 메인 model 상속** (메인 Opus 4.7 → 자식 Opus 4.7) 가설
+- 즉 **워커 디폴트 = Sonnet** 보장 메커니즘이 settings.json env 외에는 부재
+
+**의의**:
+- env=sonnet 잔존 시 → 모든 spawn 이 Sonnet (명시 무력) ← turn 3·5 결정적 재현
+- env 제거 시 → 명시 정상 + **디폴트 = 메인 상속 (Opus)**
+- → **fallback C+ 의 "모든 spawn 에 model 강제 명시" 는 Phase 1 PreToolUse Agent matcher 강제 훅 없이는 인간 실수로 Opus 자동 배치 위험 → 비용 폭증** = **§9.4 §3 강제 훅 신설 정당성 결정적 강화**
+
+### 10.5 fallback C+ 최종 확정
+
+§9.4 잠정 안 → **본 turn PASS 로 최종 확정**:
+
+| 메커니즘 | 본 turn 검증 결과 | 상태 |
+|---|---|---|
+| 1. settings.json env `CLAUDE_CODE_SUBAGENT_MODEL` 영구 제거 | ✅ 임시 제거 → 명시 model 작동 검증 → **영구 제거 안전** (단, 강제 훅 선제 필수) | **확정** |
+| 2. 메인 Claude Code 재시작 (process env cache 갱신) | ✅ turn 5 → turn 6 사이 재실행으로 메인·자식 env 모두 갱신 확인 | **확정** |
+| 3. 모든 Agent spawn 에 `model` 파라미터 강제 명시 (PM=opus, 워커=sonnet) | ✅ A·D 명시 정상 + B frontmatter 정상 + C 디폴트 = Opus (강제 훅 미사용 시 위험 노출) | **확정 + 강제 훅 Phase 1 필수** |
+
+**Phase 1 진입 가능 마킹**: ✅ **fallback C+ 확정 = agent-office-vision D-4 (PM=Opus / 워커=Sonnet) 운영 메커니즘 작동 검증 완료**. 단 영구 적용 = 강제 훅 (PreToolUse Agent matcher + model 누락 차단) 신설 후 settings.json env 영구 제거.
+
+### 10.6 다음 작업 (Step 5~6 + Phase 1 인프라)
+
+**본 turn (turn 6, Day 19) 잔여**:
+- [ ] **Step 5**: settings.json **mandatory 환원** (`Copy-Item ~/.claude/settings.json.bak.20260503_phaseB1 ...`) — 강제 훅 미신설 상태에서 env=빈 값 보존 시 다른 spawn 에서 Opus 자동 배치 위험
+- [ ] **Step 6-A**: `04_masterplan.md §8.2` 최종 재작성 + §9.1 가드레일 갱신
+- [ ] **Step 6-B**: 글로벌 강제 규칙 신설 (`rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙 + `memory/agent-office-vision.md` L115 정정)
+- [ ] **Step 6-C**: 인계 정리 (.todo + HANDOFF + history + stale 정정)
+
+**Phase 1 진입 후 별도 turn 작업**:
+- 강제 훅 신설 (`~/.claude/hooks/pretooluse-agent-model-required.sh` 또는 동등) — `.todo.md` #018 신설 또는 #009 (agent-team-manager v2) 와 묶기
+- settings.json env 영구 제거 (강제 훅 신설 후, 누락 spawn 차단 보장 후)
+- agent-team-manager SKILL.md v2 본체 (#009 = #010 마스터플랜 §5)

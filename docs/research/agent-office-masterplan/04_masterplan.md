@@ -603,7 +603,7 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 >    - **env 우선 (덮어쓰기 발생)**: fallback A — env 를 PM 호출 시점에만 unset 후 spawn, 그 외엔 sonnet 유지 / fallback B — Opus lead session 분리 (PM 전용 외부 wrapper)
 > 4. 실험 결과 본 §8.2 에 갱신 + Phase 1 진입 결정
 >
-> **현 상태**: 1차 실험 완료 (2026-05-02). Phase 1 진입 **차단 유지**. 새 세션 재검증 + fallback 결정 2 확정 후 §8.2 재작성 의무.
+> **현 상태**: 3차 실험 완료 (2026-05-04 turn 6). **fallback C+ 최종 확정** → Phase 1 진입 가능 (단 강제 훅 신설 후 settings.json env 영구 제거).
 
 > **1차 실험 결과 (2026-05-02, D-32732-A1, 상세 → [06_issue32732_experiment.md](06_issue32732_experiment.md))**:
 > - **H1 (frontmatter > env): 기각** — 실험 3 에서 frontmatter `model: opus` 명시했으나 자식 자기보고 = Sonnet (3중 단서 일치, 신뢰도 높음)
@@ -622,6 +622,16 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 > - **결정 2 잠정 확정 = fallback C+** (3중화: settings.json env 영구 제거 + 메인 재시작 + 모든 spawn model 명시 + 강제 훅). fallback A 부적합 (현 메인 process 모델로 작동 불가), fallback B 보조 후보 (nested team 불가 단점).
 > - **#015 신설 (Phase 1 진입 차단 조건)** — 새 세션 (사용자 메인 Claude Code 재시작 후) 에서 (a) PowerShell 실측 SUBAGENT_MODEL=빈 값 확인 (b) 명시 model="opus" spawn 작동 검증. PASS 시 fallback C+ 최종 확정 + Phase 1 진입 가능. FAIL 시 fallback B 검토.
 > - **결정 3 확정** — pm-test agent 보존 (#015 입력) + Phase 1 진입 시 폐기 또는 rename.
+
+> **3차 실험 결과 (2026-05-04 Day 19 turn 6, D-32732-A3, 상세 → [06_issue32732_experiment.md §10](06_issue32732_experiment.md))**:
+> - **검증 환경**: turn 5 (2026-05-03) 에 settings.json env `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` 라인 임시 제거 + 백업 → 메인 Claude Code 재실행 → 본 turn 6 새 세션 진입 후 검증
+> - **Step 1 PASS** — PowerShell 실측 SUBAGENT_MODEL **빈 값** 확인 (메인·자식 process 모두 env 부재 전파 확인)
+> - **Step 2~4 PASS** — 4 spawn 검증 결과: A (`model="opus"` 명시) = Opus / B (frontmatter `model: opus`) = Opus / C (model 생략 + frontmatter X) = **Opus** (예상 외, 디폴트 = 메인 model 상속 추정) / D (`model="sonnet"` 명시) = Sonnet
+> - **PASS 판정** — A=Opus AND B=Opus AND D=Sonnet 4/4 정합 → **명시 model + frontmatter 모두 env 제거 시 정상 작동** 결정적 확인 (1·2차 실험의 "결정적 무효" 가정 = env 잔존 조건 한정)
+> - **부수 발견 (강제 훅 정당성 결정적 강화)** — Spawn C 디폴트 = Opus → "워커 디폴트 = Sonnet" 보장 메커니즘이 settings.json env 외 부재 → fallback C+ 의 "모든 spawn model 강제 명시" 는 Phase 1 PreToolUse Agent matcher 강제 훅 없이는 인간 실수로 Opus 자동 배치 + 비용 폭증 위험
+> - **fallback C+ 최종 확정 메커니즘 3중화**: ① settings.json env 영구 제거 (강제 훅 신설 후) ② 메인 재시작 (process env cache 갱신) ③ 모든 spawn model 강제 명시 + PreToolUse Agent matcher 강제 훅
+> - **Phase 1 진입 가능 마킹** + **글로벌 강제 규칙 신설** (`rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙 + `memory/agent-office-vision.md` L115 정정) — 본 turn 6-B 단계로 흡수
+> - **Step 5 mandatory 환원** — settings.json 백업 복원 (강제 훅 미신설 상태에서 env=빈 값 보존 시 다른 spawn Opus 자동 배치 위험) — turn 6 Step 5 PASS 완료
 
 ### 8.3 비용 효과
 
@@ -650,7 +660,7 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 | PM 팀 cleanup 실패 폴백 | 60초 timeout → 강제 archive 후 진행 (deadlock 차단) | §9.3 신설 |
 | 리뷰 사이클 cap | 3회 초과 시 PM 에스컬레이션 | aws-samples (Phase 1 URL 보강 필요) |
 | spawn 범위 제한 | spawn prompt에 "이 경로 외 탐색 금지" 명시 | issue#35513 |
-| **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse Agent matcher 강제 훅 (Phase 1 인프라) | 06 §9.4 (turn 3 결정적 검증) |
+| **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 (강제 훅 후) + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse Agent matcher 강제 훅 (Phase 1 인프라). **2026-05-04 turn 6 PASS 검증으로 fallback C+ 최종 확정**. 글로벌 강제 규칙 = `~/.claude/rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙. | 06 §9.4 (turn 3) + §10 (turn 6 PASS) |
 
 ### 9.2 TeamDelete 후 에러 방지 + PM↔워커 hand-off 스키마
 
