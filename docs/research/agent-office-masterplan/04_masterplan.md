@@ -603,7 +603,7 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 >    - **env 우선 (덮어쓰기 발생)**: fallback A — env 를 PM 호출 시점에만 unset 후 spawn, 그 외엔 sonnet 유지 / fallback B — Opus lead session 분리 (PM 전용 외부 wrapper)
 > 4. 실험 결과 본 §8.2 에 갱신 + Phase 1 진입 결정
 >
-> **현 상태**: 3차 실험 완료 (2026-05-04 turn 6). **fallback C+ 최종 확정** → Phase 1 진입 가능 (단 강제 훅 신설 후 settings.json env 영구 제거).
+> **현 상태**: 5차 실험 완료 (2026-05-04 turn 8). **fallback C+ 효과 검증 완료 → Phase 1 진입 가능 최종 마킹** (3중 메커니즘 全 확정 — env 제거 / 메인 재시작 / 강제 훅).
 
 > **1차 실험 결과 (2026-05-02, D-32732-A1, 상세 → [06_issue32732_experiment.md](06_issue32732_experiment.md))**:
 > - **H1 (frontmatter > env): 기각** — 실험 3 에서 frontmatter `model: opus` 명시했으나 자식 자기보고 = Sonnet (3중 단서 일치, 신뢰도 높음)
@@ -647,6 +647,19 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 > - **Phase 1 진입 가능 마킹 (조건부)** — 본 turn = 강제 훅 작동 검증 PASS + env 제거 commit. **최종 PASS 조건 = 다음 세션 (turn 8) 에서 env 부재 환경 + 강제 훅 라이브 재검증** (4 spawn 동일 패턴, env 부재 시 명시 model 정합 확인)
 > - **fallback C+ 영구 적용** = ① env 제거 (commit 완료) ② 메인 재시작 (다음 세션 진입 = 충족) ③ 강제 훅 (turn 7 PASS) — 메커니즘 3 全 만족, 효과 검증만 잔여
 
+> **5차 실험 결과 (2026-05-04 Day 19 turn 8, D-32732-A5, 상세 → [06_issue32732_experiment.md §12](06_issue32732_experiment.md))**:
+> - **검증 환경**: 메인 재시작 후 새 세션 + env `CLAUDE_CODE_SUBAGENT_MODEL` **부재** 발효 확인 + 강제 훅 라이브
+> - **§12.1 사전 확인 PASS** — PowerShell `Get-ChildItem Env:` 실측 SUBAGENT_MODEL 변수 자체 미존재 (메인 재시작 + settings.json 제거 효과 발효)
+> - **§12.2 PASS 4/4 정합** — 라이브 4 spawn:
+>   - **A (model="opus") → 자식=`claude-opus-4-7`** (Opus, env 부재 환경에서 명시 model 정합 작동)
+>   - **B (model="sonnet") → 자식=`claude-sonnet-4-6`** (Sonnet, 정합)
+>   - **C (model 누락) → 강제 훅 차단 PASS** (`permissionDecision: deny` + exit 0 우회 라이브 재현, rules section 2/3 인용 메시지 정확)
+>   - **D (model="haiku") → 자식=`claude-haiku-4-5-20251001`** (Haiku, 3종 valid model 모두 spawn 가능 검증) — 원래 의도 D=invalid 는 SDK enum 차단으로 spawn 자체 불가 (turn 7 §11.3 D 패턴 재확인), 본 turn 에서 D 를 valid 한 세 번째 model 로 대체
+> - **fallback C+ 최종 마킹** — turn 6·7 의 잠정/조건부 마킹을 **무조건 마킹** 전환 (3중 메커니즘 全 확정: env 제거 / 메인 재시작 / 강제 훅)
+> - **turn 7 anomaly 정리** — turn 6 (env=빈 값, A=opus → Opus) + 본 turn 8 (env=빈 값, A=opus → Opus) 일치 vs turn 4·7 (env=sonnet, A=opus → Sonnet) 일치 = "env 가 1순위, 명시 model 은 env unset 시에만 작동" 결정적 재현 → turn 7 §11.4 의 "메인 재시작 직후 cache miss" 가설 잠정 기각 (turn 6 = turn 8 = 동일 조건 일치)
+> - **부수 발견** — 3종 valid model (`opus|sonnet|haiku`) 모두 spawn 가능 → 4단 비용 배분 (PM=Opus / 리뷰어=Opus / 워커=Sonnet / 트리비얼=Haiku) 가능성 (마스터플랜 §3.2 비용 효과 재검토 가치)
+> - **issue#32732 종결** — 본 5차 실험으로 모든 가설 검증 완료. Phase 1 진입 가능 최종 마킹 ✅
+
 ### 8.3 비용 효과
 
 - Sonnet ≈ Opus의 1/5 비용
@@ -674,7 +687,7 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 | PM 팀 cleanup 실패 폴백 | 60초 timeout → 강제 archive 후 진행 (deadlock 차단) | §9.3 신설 |
 | 리뷰 사이클 cap | 3회 초과 시 PM 에스컬레이션 | aws-samples (Phase 1 URL 보강 필요) |
 | spawn 범위 제한 | spawn prompt에 "이 경로 외 탐색 금지" 명시 | issue#35513 |
-| **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse `Task\|Agent` matcher 강제 훅 (`pretooluse-agent-model-required.{sh,py}`, **2026-05-04 turn 7 PASS = `permissionDecision: deny` 우회 작동, 세계 1호 검증**). **fallback C+ 영구 적용** (메커니즘 3중 — 강제 훅 turn 7 PASS / env 제거 commit / 메인 재시작 다음 세션). 글로벌 강제 규칙 = `~/.claude/rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙. ⚠️ Issue #26923/#40580 알려진 exit 2 무시 버그 회피 = JSON `permissionDecision: deny` + exit 0 패턴. | 06 §9.4 (turn 3) + §10 (turn 6) + **§11 (turn 7 PASS)** |
+| **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse `Task\|Agent` matcher 강제 훅 (`pretooluse-agent-model-required.{sh,py}`, **2026-05-04 turn 7 PASS = `permissionDecision: deny` 우회 작동, 세계 1호 검증**). **fallback C+ 영구 적용 — 효과 검증 완료** (2026-05-04 turn 8 §12 PASS, 메커니즘 3중 全 확정 — 강제 훅 라이브 재현 / env 부재 발효 / 명시 model 정합 작동). 글로벌 강제 규칙 = `~/.claude/rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙. ⚠️ Issue #26923/#40580 알려진 exit 2 무시 버그 회피 = JSON `permissionDecision: deny` + exit 0 패턴. | 06 §9.4 (turn 3) + §10 (turn 6) + §11 (turn 7) + **§12 (turn 8 효과 검증)** |
 
 ### 9.2 TeamDelete 후 에러 방지 + PM↔워커 hand-off 스키마
 

@@ -511,7 +511,81 @@ CLAUDECODE=1
 - [x] Step 6: `rules/agent-spawn-model.md §4` 상태 변경 + `memory/agent-office-vision.md` L115 정정 + `.todo.md` #018 잠정 PASS + history Day 19 turn 7 + HANDOFF turn 7 + commit
 
 **다음 세션 (turn 8, Day 19+ 또는 Day 20)**:
-- [ ] env 부재 환경 검증 (사용자 메인 재시작 후 PowerShell `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` 으로 env 빈 값 확인)
-- [ ] 강제 훅 + env 부재 동시 작동 검증 (4 spawn 재실행)
-- [ ] PASS 시: `.todo.md` #018 최종 완료 마킹 + Phase 1 진입 (`#009` agent-team-manager v2 본체 또는 `#014` PM 외부 리서치)
-- [ ] FAIL 시 (env 덮어쓰기 또 재현): settings.json 외 env source 조사 + fallback D (env 보존) 후퇴 결정
+- [x] env 부재 환경 검증 (사용자 메인 재시작 후 PowerShell `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` 으로 env 빈 값 확인) → **§12.1 PASS**
+- [x] 강제 훅 + env 부재 동시 작동 검증 (4 spawn 재실행) → **§12.2 PASS**
+- [x] PASS 시: `.todo.md` #018 최종 완료 마킹 + Phase 1 진입 (`#009` agent-team-manager v2 본체 또는 `#014` PM 외부 리서치) → §12.4 + §12.7 처리
+- [ ] ~~FAIL 시 (env 덮어쓰기 또 재현): settings.json 외 env source 조사 + fallback D (env 보존) 후퇴 결정~~ — **불필요** (§12.2 PASS)
+
+---
+
+## 12. 속편 — Day 19 turn 8 (#019 PASS, env 부재 환경 fallback C+ 효과 검증 완료, 2026-05-04)
+
+### 12.0 검증 환경 / 미션
+
+본 turn 미션 = HANDOFF turn 7 §🚨 Quick Start §5~7 = `.todo.md` #019 = **fallback C+ 효과 라이브 재검증** (Phase 1 진입 최종 사전조건). turn 7 (#018 PASS) 에서 강제 훅 신설 + settings.json env 영구 제거 commit 완료, 메인 재시작 후 env 부재 환경 진입 = 본 turn 8.
+
+### 12.1 사전 확인 — env 부재 발효 (PASS)
+
+PowerShell 실측: `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` → `CLAUDE_CODE_SUBAGENT_MODEL` **부재** (변수 자체 미존재). 메인 재시작 + settings.json env 제거 commit 효과 발효 결정적 확인 (잔존 변수 = `CLAUDE_CODE_ENTRYPOINT`, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, `CLAUDE_CODE_SSE_PORT`, `CLAUDECODE=1` — 본 검증과 무관).
+
+### 12.2 4 spawn 결과 매트릭스
+
+| Test | spawn 명시 model | 자기보고 모델 ID | 예상 | 결과 |
+|---|---|---|---|---|
+| A | `opus` | `claude-opus-4-7` | Opus | ✅ **PASS** (env 부재 환경에서 명시 model 정확 작동) |
+| B | `sonnet` | `claude-sonnet-4-6` | Sonnet | ✅ **PASS** (정합) |
+| C | (누락) | — | 강제 훅 차단 | ✅ **PASS** (`permissionDecision: deny` + exit 0 우회 라이브 재현) |
+| D | `haiku` | `claude-haiku-4-5-20251001` | Haiku | ✅ **PASS** (3종 valid model 모두 spawn 가능 확인) |
+
+> **D 변경 사유**: 원래 체크리스트 D=invalid (`gpt-5`) 로 SDK 차단 검증 의도였으나 SDK enum 이 invalid 값을 거부 = spawn 호출 자체 불가 (turn 7 §11.3 D 패턴 재확인 = 이중 보장 자체는 turn 7 으로 완료). 본 turn 에서 D 를 valid 한 세 번째 model (haiku) 로 대체 → "model 명시가 정확히 해당 model 을 선택하는지" 검증 (3종 valid model `opus|sonnet|haiku` 모두 작동 확인 + 4단 비용 배분 가능성 검증).
+
+### 12.3 PASS 판정 + 핵심 발견
+
+**PASS 조건 4/4 정합** = A=Opus AND B=Sonnet AND C=차단 AND D=Haiku → fallback C+ **효과 검증 완료**.
+
+**3중 메커니즘 全 작동 결정적 확인**:
+1. **강제 훅** (Test C 차단) — turn 7 PASS 의 `permissionDecision: deny` + exit 0 우회 라이브 재현 + rules section 2/3 인용 메시지 정확 (`[BLOCKED] Agent spawn requires model parameter. ... Per ~/.claude/rules/agent-spawn-model.md section 2: ...`)
+2. **env 제거 + 메인 재시작** (Test A·B·D 모두 명시 model 그대로) — turn 7 의 env 덮어쓰기 (A=opus → Sonnet) 가 env=sonnet 환경 한정임을 결정적 재현 (env=빈 값 환경에서는 명시 model 정확 작동)
+3. **3종 valid model 모두 spawn 가능** — D 변경으로 새로 검증 (turn 6·7 은 opus/sonnet 만 검증, 본 turn 으로 haiku 추가) → 4단 비용 배분 (PM=Opus / 리뷰어=Opus / 워커=Sonnet / 트리비얼 워커=Haiku) 가능성 확인
+
+### 12.4 fallback C+ 영구 적용 — 최종 마킹
+
+§11.6 의 조건부 마킹을 본 turn 으로 **확정** 전환:
+
+| 메커니즘 | 본 turn 검증 결과 | 상태 |
+|---|---|---|
+| 1. settings.json env `CLAUDE_CODE_SUBAGENT_MODEL` 영구 제거 | ✅ **효과 검증 PASS** (12.1 + 12.2 의 A·B·D 정합) | **확정** |
+| 2. 메인 Claude Code 재시작 (process env cache 갱신) | ✅ **본 turn 진입 시 충족** | **확정** |
+| 3. 모든 Agent spawn 에 `model` 파라미터 강제 명시 | ✅ **라이브 차단 검증** (Test C) | **확정** |
+
+**Phase 1 진입 가능 — 최종 마킹**: turn 6 의 잠정 마킹 (조건부) + turn 7 의 조건부 마킹 (효과 미검증) → 본 turn 으로 **무조건 마킹** 전환. issue#32732 = **종결**.
+
+### 12.5 turn 7 anomaly 정리 (env=sonnet 환경 한정 결정적 재확인)
+
+turn 4 (env=sonnet, A=opus → Sonnet) + turn 7 (env=sonnet, A=opus → Sonnet) 일치 vs turn 6 (env=빈 값, A=opus → Opus) + 본 turn 8 (env=빈 값, A=opus → Opus) 일치 = 해석:
+
+- **env=sonnet 환경**: env 가 명시 model 덮어씀 (turn 4·7 결정적 재현)
+- **env=빈 값 환경**: 명시 model 그대로 작동 (turn 6·8 결정적 재현)
+- **turn 6 anomaly 가설 기각** — turn 6 결과 = 자기보고 신뢰도 한계 가설 (turn 7 §11.4) 이 잠정 채택되었으나 본 turn 8 으로 정합 결과 결정적 재현 = **turn 6 결과 정합** 확인. turn 7 §11.4 의 "메인 재시작 직후 cache miss" 가설은 잠정 기각 (turn 6 = 메인 재시작 후 새 세션, turn 8 = 메인 재시작 후 새 세션 → 동일 조건에서 일치).
+
+→ **issue#32732 의 본질 = env 가 1순위, 명시 model 은 env 가 unset 일 때만 작동**. 외부 출처 ([Issue #26923 (CLOSED)](https://github.com/anthropics/claude-code/issues/26923) + [#40580 (OPEN)](https://github.com/anthropics/claude-code/issues/40580)) 의 통념 = "Task hook + exit 2" 와 다름 = "Agent matcher + permissionDecision uderstanding" 이 본 환경 (claude-code 2.1.126) 의 정확한 우회 패턴 (turn 7 §11.4 + 본 turn §12.2 결정적 재현).
+
+### 12.6 메타 발견 (turn 8 한정)
+
+1. **메인 재시작 효과 발효 = 1회 만으로 충분** — env hot-reload 비작동 + 메인 재시작 후 = 즉시 발효 (turn 7 마지막 commit 직후 메인 재시작 = 본 turn 진입 시 효과 발효 확인). hot-reload 우회 메커니즘 = "settings.json 변경 시점 캡처 → 메인 재시작 시 cache 갱신 → 새 세션 시 반영" 단순 구조.
+2. **3종 valid model 동시 작동** — Anthropic Claude Code SDK 의 `model` 파라미터 enum = `opus|sonnet|haiku` 3종 모두 spawn 가능 확인. PM=Opus / 리뷰어=Opus / 워커=Sonnet / 트리비얼 워커=Haiku 4단 비용 배분 가능 (마스터플랜 §3.2 비용 효과 재검토 가치).
+3. **SendMessage 회신 의무 안정성 검증** — turn 6 §6-1 교훈 = "spawn 텍스트 출력만으로는 lead 미수신, SendMessage 강제 의무" → 본 turn 4 spawn 모두 SendMessage 회신 도착 (Test A·B·D, Test C 는 spawn 자체 차단으로 무관) → 의무 패턴 결정적 안정 (Phase 1 PM-워커 통신 신뢰 가능).
+
+### 12.7 다음 작업 (Phase 1 진입 가능)
+
+**본 turn (turn 8) 잔여**:
+- [x] Step 1·2: 4 spawn 라이브 검증 + 분기 판정 (PASS)
+- [ ] Step 3-A: 본 §12 신설 + 04 §8.2 5차 실험 박스 + memory L115 갱신
+- [ ] Step 4: history Day 19 turn 8 + index.md 갱신
+- [ ] Step 5: commit + push (한 단위)
+- [ ] Step 6: `.checklist.md` `.backups/` 이동
+
+**다음 작업 (turn 9, Phase 1 진입)**:
+- [ ] **Phase 1 진입** — `#009` agent-team-manager v2 본체 (마스터플랜 §5 인프라) 또는 `#014` PM 외부 리서치 의무화 (PM system prompt 강화) — 우선순위는 다음 세션에서 결정 (HANDOFF turn 7 미결 결정 1 = "B → A 순차" 기울기 유지)
+- [ ] `#012` 출처 보강 (Anthropic 블로그 URL · aws-samples 리포지토리 SHA) — Phase 1 진입 전 의무
+- [ ] `#018` 강제 훅 운영 안정성 모니터링 (정상 spawn false positive / 비정상 spawn false negative)
