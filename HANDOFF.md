@@ -165,7 +165,9 @@
 - `~/.claude/projects/.../memory/agent-office-vision.md` L115 (정정)
 - `docs/research/agent-office-masterplan/06_issue32732_experiment.md` §10 (신설, ~75줄)
 - `docs/research/agent-office-masterplan/04_masterplan.md` §8.2 (3차 실험 박스) + §9.1 (model override 행 갱신)
-- `docs/history/2026-05-04.md` (Day 19 일자 파일, 신설)
+- `docs/research/agent-office-masterplan/05_migration_plan.md` 3 stale 정정 (L249·L377·L399, 정합성 보강 commit)
+- `docs/research/agent-office-masterplan/agent-office-vision.md` D-4 footnote 추가 (docs SSOT 본체, 정합성 보강 commit)
+- `docs/history/2026-05-04.md` (Day 19 일자 파일, 신설 + §10-A 정합성 보강 회고)
 - `docs/history/index.md` (Day 19 행 추가)
 
 ### 운영 자산 (#018 입력)

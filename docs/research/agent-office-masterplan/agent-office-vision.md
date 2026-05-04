@@ -191,6 +191,7 @@ related_docs:
 - **근거**: Anthropic 공식 블로그 "토큰 사용량이 quality 분산의 80%" + aws-samples + wshobson 모두 동일 결론
 - **비용 효과**: Sonnet ≈ Opus 의 1/5 → 워커 80% 절감
 - **구현**: `Agent(model="sonnet")` 명시 + agent frontmatter `model: sonnet`
+- **운영 강제 (2026-05-04 turn 6 PASS 후 확정)**: issue#32732 = settings.json env `CLAUDE_CODE_SUBAGENT_MODEL` 가 frontmatter + 명시 model 모두 덮음 → **fallback C+ 메커니즘 3중화** (① settings.json env 영구 제거 [#018 강제 훅 후] ② 모든 spawn `model` 파라미터 강제 명시 ③ PreToolUse Agent matcher 강제 훅 = Phase 1 인프라). 글로벌 규칙 = `~/.claude/rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙. 검증 보고서 = `06_issue32732_experiment.md §10`. **D-4 운영 가능 사전조건 = #018 PASS**.
 
 ### D-5. 최종 의사결정권자 = 주인님 (오너)
 
