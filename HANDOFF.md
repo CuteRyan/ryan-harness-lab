@@ -20,12 +20,13 @@
 - `docs/history/index.md` Day 19 행 turn 12 결과 추가.
 - 본 `HANDOFF.md` 신설.
 
-### Working tree (인계 시점 상태)
-- `M .todo.md` — turn 11 #009 갱신 결과 (이미 turn 11 commit 에 포함, 본 turn 추가 변경 없음)
-- `M docs/history/2026-05-04.md` — §15 신설
-- `M docs/history/index.md` — Day 19 행 갱신
-- `?? .checklist.md` — turn 12 신설 (draft, commit 포함 예정)
-- `?? HANDOFF.md` — 본 파일 (commit 포함 예정)
+### Working tree (commit `0e386ea` 후 상태 = clean)
+- 본 turn 12 commit `0e386ea` 에 포함 PASS (`7cf701d..0e386ea main`):
+  - M `docs/history/2026-05-04.md` — §15 신설 (~50줄)
+  - M `docs/history/index.md` — Day 19 행 turn 12 결과 추가
+  - A `.checklist.md` — Step B 체크리스트 (status=draft, git tracked, 다음 세션 진입 시 자동 보존)
+  - A `HANDOFF.md` — 본 파일 (git tracked)
+- 다음 세션 진입 시 `git status --short` = clean (Untracked 0건)
 
 ### 운영 변경 (git 추적 외)
 - `~/.claude/projects/.../memory/agent-office-vision.md` (4 항목 추가)
@@ -35,7 +36,7 @@
 - [ ] **#009-B presets/ 5 YAML 신설** (체크리스트 status=draft 보존). 다음 세션 진입 시 즉시 승인 받고 진입 가능. **추정 50분** (체크리스트 §작업 시간 추정 참조).
 - [ ] **#009-C agent-team-manager SKILL.md v1.5 → v2** (PM·preset·hooks 보류 3건 흡수 + Step A·B 자산 호출 박음). **추정 1 turn**.
 - [ ] (잔여) scripts/ 6 + reference/ 4 = 별도 turn 또는 #009-D 종결.
-- [ ] HANDOFF turn 12 (본 파일) commit + push (다음 세션 진입 시 `/handoff done` 으로 archive)
+- [x] HANDOFF turn 12 (본 파일) commit `0e386ea` + push PASS — 다음 세션 진입 시 `/handoff done` 으로 `.backups/HANDOFF.done.2026-05-05.md` archive (소멸 정책 15회차 검증 예정)
 
 ## 다음 세션 시작 지점
 
@@ -43,7 +44,7 @@
 
 1. **사전 확인** (안전성 검증, 1분):
    - `Get-ChildItem Env:CLAUDE_CODE_SUBAGENT_MODEL` → 부재 확인 (env 영구 제거 효과 유지)
-   - `git status --short` → `?? .checklist.md` (turn 12 보존됨 = 정상) 확인
+   - `git status --short` → **clean** 확인 (turn 12 commit `0e386ea` 후 working tree 깔끔). `.checklist.md` 와 `HANDOFF.md` 는 git tracked 상태로 자동 보존되어 있음.
 2. **HANDOFF.md Read** (본 파일) → `/handoff done` (소멸 정책 **15회차 검증**)
 3. **`.checklist.md` Read** — `#009-B presets/ 5 YAML 신설` 체크리스트 (status=draft) 그대로 사용. 사용자 승인 받고 다음 turn 에서 `approved: true` + `status: approved` 변경 후 Phase 2 진입.
 4. **`.todo.md` Read** — #009 진행 표기 확인 (Step A 完, Step B 작업 직전 상태).
