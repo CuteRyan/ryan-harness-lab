@@ -103,9 +103,11 @@
 - **현재 기울기**: B → A 순차 (PM system prompt 강화 후 Phase 1 진입)
 
 ### 결정 2 — #019 FAIL 시 fallback D 후퇴 vs 추가 조사
-- **A**: 즉시 fallback D 후퇴 (env 보존 + 메인 자기 검열) + Phase 1 진입
+- **A**: 즉시 fallback D 후퇴 (env 보존 + **PM=Sonnet 채택** + 메인 Opus 가 PM 비판자 역할 흡수) + Phase 1 진입
 - **B**: settings.json 외 env source 조사 (시간 + 결과 불확실)
-- **현재 기울기**: B 1차 시도 (1시간 cap) → 추가 source 발견 못하면 A
+- **현재 기울기**: **A** (사용자 turn 7 후속 대화 합의 — "이게 실패로 끝나면 그냥 어쩔 수 없이 pm 도 소넷으로 가야겠다"). B 는 추가 호기심 있을 때만.
+- **A 채택 시 운영 흐름**: 사용자 (사장) → 메인 Claude (Opus, 사용자 직접 선택, PM 비판자 흡수) → 워커 (Sonnet, env 가 자동 강제). PM agent layer 폐기 (또는 frontmatter `model: sonnet` 으로 신설). 5층 위계 → 3층 단순화.
+- **A 채택 시 즉시 작업**: settings.json `env.CLAUDE_CODE_SUBAGENT_MODEL=sonnet` 부활 (1줄, commit) + 메인 재시작 + Phase 1 진입.
 
 ### 결정 3 — 본 turn 7 commit 분량
 - **A**: 단일 commit (turn 7 全 산출물 묶음)
@@ -118,6 +120,24 @@
 - **B**: #008 due 2026-05-08 (1주 후) 통합 회고 (#016 디테일·#017 양식 정합 함께)
 - **현재 기울기**: B (회고 효율 + 데이터 누적)
 
+### 결정 5 (turn 7 후속 합의) — #019 FAIL 시 PM=Sonnet 즉시 채택
+- 사용자 본 turn 7 후속 대화 명시: "이게 실패로 끝나면 그냥 어쩔 수 없이 pm 도 소넷으로 가야겠다"
+- **합의 사항**: 시나리오 X (env 보존 + PM=Sonnet) 도 운영 가능한 안전망. 메인 (Opus, 사용자 직접 선택) 이 PM 비판자 역할 흡수 → D-4 의 "+90.2% 성능" 패턴 (Opus lead + Sonnet worker) 그대로 작동. 단지 layered 구조 단순화 (5층 → 3층).
+- **검증 근거**: turn 7 Step 3 의 Test B (`model="sonnet"` 명시 → 자식=Sonnet 정합) PASS — Sonnet teammate spawn 100% 작동 확인.
+- **잃는 것 (작음)**: 별도 PM layer 의 비판 강도 약간 약화 (Sonnet PM < Opus PM). 단 메인 (Opus) 흡수 시 보완.
+- **다음 세션 적용**: #019 FAIL 시 즉시 위 결정 2 = A 안 진행 (env 부활 + PM=Sonnet). 사용자 추가 컨펌 불필요 (이미 본 turn 합의).
+
+### 결정 6 (turn 7 후속 영감) — agent-team-manager v2 (#009) 의 /feedback 패턴 차용
+- 사용자 본 turn 7 후속 대화 영감: "에이전트 팀 스킬에서 피드백 스킬에서 힌트를 얻을 수 있을 것 같다"
+- **차용 후보 5 패턴**:
+  1. **단발 + 격리 spawn** — PM 호출 = 1회 → 추천 받음 → teardown (대화 누적 X)
+  2. **scripts 외부화** — SKILL.md (가이드) + scripts/ (orchestrate-pm / prepare-pm-input / run-pm / validate-pm-output) — v1.5 인라인 252줄 → v2 외부 분리
+  3. **orchestrate 병렬 + 종합** — 여러 워커 안 병렬 평가 → 사장 종합
+  4. **Validation Gate (5게이트)** — PM 추천 = 근거·반박·출처·통계·자기비판 통과 후 사장 채택
+  5. **외부 검증 훅 (sycophancy-check)** — PM 결과물 자동 sycophancy/환각 감지 → 사장 가시화
+- **가장 강한 시너지**: #1 + #2 + #4 (구조 + 검증 동시) — 마스터플랜 §5 (scripts 6개 + presets 5 YAML) 와 정합
+- **다음 세션 진입 시점**: #019 PASS 후 (PM=Opus 가능 시) 또는 결정 5=A 채택 후 (PM=Sonnet 단순화 시). 어느 쪽이든 v2 본체 신설 시 본 영감 적용.
+
 ## 컨텍스트 (배경 이해용)
 
 ### 이 작업을 하는 이유
@@ -125,8 +145,11 @@
 - **세계 1호 검증 의의**: Issue #26923 reporter 본인이 미검증으로 명시한 가설 = `permissionDecision: deny` + exit 0 우회 패턴이 본 turn 으로 작동 결정적 확인. Anthropic Issue 본 turn 결과 인용 가치 (오픈 issue #40580 에 댓글 가능).
 - **turn 6 anomaly 재해석**: turn 6 의 "A=opus 명시 → 자식=Opus" 정합 결과 = anomaly 가능성 (본 turn 재현 실패). turn 4 + turn 7 일치 = "env=sonnet 환경에서 명시 model 도 무력" 결정적 재현.
 
+### 본 turn 후속 추가 산출물 (HANDOFF 외)
+- **statusline c 풍부형 설정** (`~/.claude/settings.json` L130-133 + `~/.claude/statusline-command.sh`) — 메인 재시작 시 동시 발효. 형식: `claude-sonnet-4-6 | ~/projects/myapp | ctx: 42%` (모델 ID + 디렉토리 + 컨텍스트 사용량). Phase 1 다중 spawn 운영 시 ctx 가시화 가치.
+
 ### 주의 사항
-1. **메인 재시작 사전 의무** — env 변경은 hot-reload 비작동. 다음 세션 진입 전 메인 Claude Code 재시작 필수. 안 하면 #019 결과 = turn 7 결과 재현 + Phase 1 진입 차단 지속.
+1. **메인 재시작 사전 의무** — env 변경은 hot-reload 비작동. 다음 세션 진입 전 메인 Claude Code 재시작 필수. 안 하면 #019 결과 = turn 7 결과 재현 + Phase 1 진입 차단 지속. **재시작 1회로 동시 발효**: (a) env 부재 발효 (b) statusline 새 형식 표시 (c) 강제 훅 활성 유지.
 2. **글로벌 강제 규칙 5번째 규칙 의무 준수** (`~/.claude/CLAUDE.md` Agent Preferences) — 모든 Agent spawn `model` 명시. PM=opus / 워커=sonnet. **본 turn 부터 강제 훅이 라이브 차단** = 위반 시 즉시 차단됨.
 3. **글로벌 외부 리서치 의무 (`~/.claude/rules/research-mandatory.md`)** 적용 중. 본 turn 자체가 검증 사례 (Issue #26923/#40580 인용).
 4. **소멸 정책 13회차 검증** — 본 HANDOFF (turn 7) 이 다음 세션에서 `/handoff done` 처리되면 13회차.
