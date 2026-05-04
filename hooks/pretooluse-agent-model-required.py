@@ -93,7 +93,7 @@ def main():
         "got: tool_name={}, model={!r}, subagent_type={!r}. "
         "Per ~/.claude/rules/agent-spawn-model.md section 2: "
         "PM uses model=\"opus\", workers use model=\"sonnet\". "
-        "Frontmatter agents (e.g., pm-test) are exempt via rules section 3."
+        "Frontmatter agents (e.g., pm) are exempt via rules section 3."
     ).format(tool_name, model_raw, subagent_type)
 
     response = {

@@ -43,7 +43,7 @@ Agent({
 ## 3. 예외
 
 - **단순 스킬 호출** (Skill tool 직접 호출, Agent spawn 없음) — 본 규칙 무관
-- **공식 agent 사용 시** — 해당 agent 의 frontmatter `model:` 가 명시되어 있으면 `model` 파라미터 생략 가능 (예: `pm-test` agent frontmatter `model: opus`). 단 frontmatter 미명시 agent (예: `general-purpose`) 는 본 규칙 적용.
+- **공식 agent 사용 시** — 해당 agent 의 frontmatter `model:` 가 명시되어 있으면 `model` 파라미터 생략 가능 (예: `pm` agent frontmatter `model: opus`, 2026-05-04 turn 11 #009-A 신설). 단 frontmatter 미명시 agent (예: `general-purpose`) 는 본 규칙 적용.
 - **검증 실험** — issue#32732 같은 model 우선순위 측정 실험은 의도적으로 `model` 생략 (디폴트 측정 목적) 가능. 단 실험 종료 후 즉시 정리.
 
 ## 4. 위험 + 강제 훅 (활성, 2026-05-04 turn 7 PASS)
