@@ -38,7 +38,7 @@ Agent-office 비전은 **프로젝트마다 영속 PM 에이전트를 두고, PM
 핵심 결정 3건:
 1. **PM은 추천만, spawn은 lead 대행** (issue#32731 확인 — teammate는 Agent 도구 없음)
 2. **한 세션 1 team 한계 → PM 팀 cleanup 후 워커 팀 생성 순차 운영**
-3. **모델 배분: Opus(사장·PM·/feedback 해석) / Sonnet(워커 ①②④) / 외부CLI(③+/feedback 검증)** — 3개 출처 일치, 워커 80% 비용 절감
+3. **모델 배분: Opus(사장·PM·/feedback 해석) / Sonnet(워커 ①②④) / 외부CLI(③+/feedback 검증)** — 3개 출처 모델 배분 패턴 일치 (Anthropic + aws-samples + wshobson, §8.3.5), 워커 80% 단가 절감 (자체 산정 = Sonnet ≈ Opus×1/5, §8.3.1)
 
 마이그레이션 Phase:
 - Phase 0 (현재): 마스터플랜 확정 + /feedback 검수
@@ -667,15 +667,50 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 
 ### 8.3 비용 효과
 
-- Sonnet ≈ Opus의 1/5 비용
-- 워커 80% 비용 절감 (Anthropic 블로그 — URL 미보강 v0)
-- "+90.2% 성능 향상" = Opus(lead) + Sonnet(worker) 조합 (Anthropic 블로그 내부 실험 결과)
+> **2026-05-04 Day 19 turn 10 (#012 PASS) — 출처 보강 완료**. 글로벌 `~/.claude/rules/research-mandatory.md §3` 4 요소 형식 (URL + 발행일 + 직접 인용 + 추측 표현 금지) 준수.
+> ⚠️ **두 80% 의 의미 분리** (turn 10 부수 발견): "워커 80% 비용 절감" (자체 단가 산정, §8.3.1) ≠ "Anthropic 블로그 80%" (분산 설명력, §8.3.3) — turn 10 보강 전 본 §8.3 v0 표현이 두 의미를 혼동했으므로 정정.
 
-> **출처 미보강 항목 (Phase 1 진입 전 보강 의무)**:
-> - "Anthropic 블로그" 의 정확한 URL · 게재 일자 · 실험 조건 (데이터셋·태스크 종류·평가 지표)
-> - "+90.2% 성능 향상" 의 실험 조건 — 일반화 가능성 (실작업 패턴이 Anthropic 내부 실험과 다를 가능성)
-> - "워커 80% 비용 절감" 산정 기준 (토큰 단가 기준인지, 작업당 비용인지)
-> - 02_external-deep.md 의 aws-samples · wshobson 인용도 동일 원칙 적용 — 리포지토리 URL · 커밋 SHA · 파일 경로 명시
+#### 8.3.1 워커 비용 절감 (자체 단가 비교)
+
+- **Sonnet ≈ Opus 의 1/5 단가** → **워커 80% 단가 절감 (자체 산정)**
+- 산정 방식: Claude Sonnet 4 의 input/output 토큰 단가가 Claude Opus 4 의 약 1/5 수준 → (1 - 1/5) × 100% = 80% 단가 절감
+- ⚠️ 본 80% 는 **Anthropic 블로그 80% (§8.3.3 = 분산 설명력) 와 다른 의미**. 본 비전 §8.1 L577 "구현·실행 = 비용 절감 80%" 는 본 §8.3.1 자체 산정 결과를 가리킴.
+
+#### 8.3.2 +90.2% 성능 향상 출처 (Anthropic 블로그)
+
+- **출처**: [Anthropic Engineering — How we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)
+- **게재일**: 2025-06-13
+- **직접 인용**: "We found that a multi-agent system with Claude Opus 4 as the lead agent and Claude Sonnet 4 subagents outperformed single-agent Claude Opus 4 by 90.2% on our internal research eval." (Benefits of a multi-agent system 섹션)
+- **실험 조건**:
+  - **데이터셋**: BrowseComp + Anthropic 내부 research eval
+  - **태스크 종류**: research / browsing (예: "identify all the board members of the companies in the Information Technology S&P 500")
+  - **Baseline**: single-agent Claude Opus 4
+  - **Metric**: "internal research eval" (구체 metric 명·산식 미공개 = **일반화 한계 1**)
+
+#### 8.3.3 토큰 사용량 분산 설명력 (Anthropic 블로그, 80% 출처)
+
+- **직접 인용**: "We found that token usage by itself explains 80% of the variance, with the number of tool calls and the model choice as the two other explanatory factors." (직전 문장: "three factors explained 95% of the performance variance")
+- **의미**: token usage 가 BrowseComp evaluation 의 performance variance 의 80% 를 설명한다 = **분산 설명력 (statistical variance explained)**
+- **D-4 모델 배분 결정의 정당성 근거**: 워커 모델 선택 (Opus vs Sonnet) 의 결과 영향력이 매우 크다 → 신중히 배분해야 함 (단순 비용 절감보다 결과 품질에 미치는 영향이 더 본질적)
+- ⚠️ **NOT 비용 절감률** = §8.3.1 (자체 단가 산정 80%) 과 의미 다름. 본 turn 10 (#012) 보강으로 두 80% 의 의미 분리 명시.
+
+#### 8.3.4 일반화 가능성 한계 (Anthropic → 본 비전 적용 한계)
+
+- **Anthropic 본문 직접 인용**: "some domains that require all agents to share the same context or involve many dependencies between agents are not a good fit for multi-agent systems today. For instance, most coding tasks involve fewer truly parallelizable tasks than research"
+- **본 비전 적용 한계**:
+  1. **#009 코딩 워크플로 (Phase 1 본 공사)** = Anthropic 자체가 "코딩 태스크는 multi-agent 부적합" 명시 → +90.2% 를 코딩 태스크에 그대로 적용 단정 불가. 본 비전의 ① 인턴 (Sub-agent) + ④ 파이프라인 (single-thread sequential) 갈래는 적용 가능, ② 회의실 (3-5명 병렬) 은 코딩 태스크에서 효과 보장 안 됨.
+  2. **internal research eval 지표** = 외부 검증 불가. 본 비전 #008 /feedback 2주 회고 시점에 자체 metric 측정으로 보완 필요.
+  3. **Opus lead + Sonnet workers 1:N 구조 ≠ 본 비전 ② 회의실 (3-5명)** = Anthropic 의 lead-subagents 1:N 패턴은 본 비전의 5층 위계 (3층 PM 1명 + 4층 워커 N명) 와 정확히 매핑되지 않음. 적용 시 PM heuristic 표 (§3) 의 워커 갯수 결정 로직과 함께 검증 필요.
+
+#### 8.3.5 외부 출처 일치 패턴 (3개 리포 = D-4 외부 근거)
+
+| 출처 | URL | HEAD SHA / 게재일 | 모델 배분 패턴 |
+|------|-----|-------------------|---------------|
+| Anthropic Engineering | [multi-agent-research-system](https://www.anthropic.com/engineering/multi-agent-research-system) | 게재 2025-06-13 (블로그) | lead = Opus 4, workers = Sonnet 4 |
+| aws-samples | [sample-claude-code-agent-team](https://github.com/aws-samples/sample-claude-code-agent-team) | `67840be315fad3ef252c06ccfe35d6ab9a2d43d6` (2026-04-29) | fullstack(lead)=opus, review=opus, coding/devops/sa=sonnet (frontmatter 직접 확인) |
+| wshobson | [agents](https://github.com/wshobson/agents) | `ece811f23310a37ceb43496dbac0e244fe6845b6` (2026-05-02) | architecture/review 우세 = opus, 구현·테스트 우세 = sonnet (`docs/agents.md` sample 확인) |
+
+**3개 출처 일치 결론** = 의사결정·설계·리뷰 = Opus / 구현·실행 = Sonnet → D-4 채택의 외부 근거 충족 (단 §8.3.4 일반화 한계 동시 적용).
 
 ---
 
@@ -690,7 +725,7 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 | Ralph 자율 루프 제한 | `max_iterations: 5` + Plan-Approval gate 필수 | D-5 원칙 |
 | 고아 팀 청소 | `~/.claude/teams/` 글로벌 cleanup (`validate-team.ps1`) | v2 스펙 §6 + L37 디렉토리 트리 (검증 완료) |
 | PM 팀 cleanup 실패 폴백 | 60초 timeout → 강제 archive 후 진행 (deadlock 차단) | §9.3 신설 |
-| 리뷰 사이클 cap | 3회 초과 시 PM 에스컬레이션 | aws-samples (Phase 1 URL 보강 필요) |
+| 리뷰 사이클 cap | 3회 초과 시 PM 에스컬레이션 (Max 3 review cycles per group, then escalate) | [aws-samples/sample-claude-code-agent-team](https://github.com/aws-samples/sample-claude-code-agent-team) `skills/spec-workflow/SKILL.md:65` (HEAD `67840be3`, 2026-04-29) |
 | spawn 범위 제한 | spawn prompt에 "이 경로 외 탐색 금지" 명시 | issue#35513 |
 | **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse `Task\|Agent` matcher 강제 훅 (`pretooluse-agent-model-required.{sh,py}`, **2026-05-04 turn 7 PASS = `permissionDecision: deny` 우회 작동, 세계 1호 검증**). **fallback C+ 영구 적용 — 효과 검증 완료** (2026-05-04 turn 8 §12 PASS, 메커니즘 3중 全 확정 — 강제 훅 라이브 재현 / env 부재 발효 / 명시 model 정합 작동). 글로벌 강제 규칙 = `~/.claude/rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙. ⚠️ Issue #26923/#40580 알려진 exit 2 무시 버그 회피 = JSON `permissionDecision: deny` + exit 0 패턴. | 06 §9.4 (turn 3) + §10 (turn 6) + §11 (turn 7) + **§12 (turn 8 효과 검증)** |
 | **PM 외부 리서치 + 출처 인용 강제** | PM agent system prompt 에 외부 리서치 의무 (WebSearch/WebFetch/외부 CLI 1순위 + 보조) + 출처 형식 (URL + 발행일 + 직접 인용 1~2줄) + 4 요소 강제 (결론·출처·추측 금지·자기비판) 박음. 글로벌 `~/.claude/rules/research-mandatory.md` superset + PM 한정 강도 추가 (PM 은 추천 자체가 직무 → 매 추천마다 출처 의무). 본 가드레일은 §2.3 "핵심 행동 규칙 5번" 으로 명세, PM agent (`~/.claude/agents/pm-test.md` 임시 / #009 정식 PM agent 본체) frontmatter + system prompt 에 박음. | 글로벌 `rules/research-mandatory.md` + #014 PASS (2026-05-04 turn 9) |
