@@ -632,6 +632,20 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 > - **fallback C+ 최종 확정 메커니즘 3중화**: ① settings.json env 영구 제거 (강제 훅 신설 후) ② 메인 재시작 (process env cache 갱신) ③ 모든 spawn model 강제 명시 + PreToolUse Agent matcher 강제 훅
 > - **Phase 1 진입 가능 마킹** + **글로벌 강제 규칙 신설** (`rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙 + `memory/agent-office-vision.md` L115 정정) — 본 turn 6-B 단계로 흡수
 > - **Step 5 mandatory 환원** — settings.json 백업 복원 (강제 훅 미신설 상태에서 env=빈 값 보존 시 다른 spawn Opus 자동 배치 위험) — turn 6 Step 5 PASS 완료
+> - ⚠️ **turn 7 재해석 (2026-05-04 후속)**: A=Opus 결과 = anomaly 가능성 (turn 7 §11.4 재현 실패). turn 4 + turn 7 일치 = "env=sonnet 환경에서 명시 model 도 무력화" 결정적 재현. turn 6 의 정합 결과 = 메인 재시작 직후 cache miss 또는 자기보고 신뢰도 한계 가설.
+
+> **4차 실험 결과 (2026-05-04 Day 19 turn 7, D-32732-A4, 상세 → [06_issue32732_experiment.md §11](06_issue32732_experiment.md))**:
+> - **검증 환경**: env=sonnet 보존 + `~/.claude/hooks/pretooluse-agent-model-required.{sh,py}` 신설 + settings.json `hooks.PreToolUse` 에 `Task|Agent` matcher 등록
+> - **Step 1·2 PASS** — 훅 본체 단위 테스트 5/5 (무관 tool 통과 / 명시 model 통과 / 누락 차단 / frontmatter 예외 / invalid 차단) + settings.json JSON valid + SHA256 MATCH 양측
+> - **Step 3 PASS** — 라이브 4 spawn 검증:
+>   - **C (model 누락) → 차단 PASS** (`permissionDecision: deny` + exit 0 우회 작동, **Issue #26923 reporter 미검증 가설 = 세계 1호 검증 PASS**)
+>   - **A (model="opus") → 자식=Sonnet** (env 덮어씀, turn 6 A=Opus anomaly 재해석 = turn 4 결정적 재현 강화)
+>   - **B (model="sonnet") → 자식=Sonnet** (정합)
+>   - **D (model="gpt-5") → SDK level InputValidationError 차단** (이중 보장: SDK + 훅)
+> - **3가지 결정적 가설 동시 PASS**: ① `Agent` matcher 작동 (Issue #26923 의 "Task" 통념과 다름) / ② settings.json `hooks` 섹션 hot-reload 작동 (env 섹션과 분리 메커니즘) / ③ permissionDecision 우회 패턴 작동
+> - **Step 4 처리** — settings.json env `CLAUDE_CODE_SUBAGENT_MODEL` 영구 제거 (commit). 효과 = 메인 재시작 후 검증 (다음 세션, env hot-reload 비작동 한정)
+> - **Phase 1 진입 가능 마킹 (조건부)** — 본 turn = 강제 훅 작동 검증 PASS + env 제거 commit. **최종 PASS 조건 = 다음 세션 (turn 8) 에서 env 부재 환경 + 강제 훅 라이브 재검증** (4 spawn 동일 패턴, env 부재 시 명시 model 정합 확인)
+> - **fallback C+ 영구 적용** = ① env 제거 (commit 완료) ② 메인 재시작 (다음 세션 진입 = 충족) ③ 강제 훅 (turn 7 PASS) — 메커니즘 3 全 만족, 효과 검증만 잔여
 
 ### 8.3 비용 효과
 
@@ -660,7 +674,7 @@ description: PM 역할 — 비판자 + 동적 선택 추천자
 | PM 팀 cleanup 실패 폴백 | 60초 timeout → 강제 archive 후 진행 (deadlock 차단) | §9.3 신설 |
 | 리뷰 사이클 cap | 3회 초과 시 PM 에스컬레이션 | aws-samples (Phase 1 URL 보강 필요) |
 | spawn 범위 제한 | spawn prompt에 "이 경로 외 탐색 금지" 명시 | issue#35513 |
-| **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 (강제 훅 후) + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse Agent matcher 강제 훅 (Phase 1 인프라). **2026-05-04 turn 6 PASS 검증으로 fallback C+ 최종 확정**. 글로벌 강제 규칙 = `~/.claude/rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙. | 06 §9.4 (turn 3) + §10 (turn 6 PASS) |
+| **model override 자동 무력화** | 메인 process env cache 가 frontmatter + 명시 model 모두 덮어씀 — settings.json env 영구 제거 + 모든 spawn 에 model 파라미터 강제 명시 + PreToolUse `Task\|Agent` matcher 강제 훅 (`pretooluse-agent-model-required.{sh,py}`, **2026-05-04 turn 7 PASS = `permissionDecision: deny` 우회 작동, 세계 1호 검증**). **fallback C+ 영구 적용** (메커니즘 3중 — 강제 훅 turn 7 PASS / env 제거 commit / 메인 재시작 다음 세션). 글로벌 강제 규칙 = `~/.claude/rules/agent-spawn-model.md` + `~/.claude/CLAUDE.md` Agent Preferences 5번째 규칙. ⚠️ Issue #26923/#40580 알려진 exit 2 무시 버그 회피 = JSON `permissionDecision: deny` + exit 0 패턴. | 06 §9.4 (turn 3) + §10 (turn 6) + **§11 (turn 7 PASS)** |
 
 ### 9.2 TeamDelete 후 에러 방지 + PM↔워커 hand-off 스키마
 

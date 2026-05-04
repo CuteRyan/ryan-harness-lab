@@ -400,3 +400,118 @@ CLAUDECODE=1
 - 강제 훅 신설 (`~/.claude/hooks/pretooluse-agent-model-required.sh` 또는 동등) — `.todo.md` #018 신설 또는 #009 (agent-team-manager v2) 와 묶기
 - settings.json env 영구 제거 (강제 훅 신설 후, 누락 spawn 차단 보장 후)
 - agent-team-manager SKILL.md v2 본체 (#009 = #010 마스터플랜 §5)
+
+---
+
+## 11. 속편 — Day 19 turn 7 (#018 강제 훅 신설 + 우회 패턴 세계 1호 검증, 2026-05-04)
+
+**미션**: §10 turn 6 의 "Phase 1 진입 사전조건 = 강제 훅 신설" 을 직접 구현 + Issue #26923 reporter 미검증 가설 (`permissionDecision: deny` 우회) 을 세계 1호로 검증.
+
+**A 안 채택**: HANDOFF turn 6 §🚨 결정 1 = "단독 진행". 사용자 자율 권한 부여 (turn 7 中 의사결정 변경 1회 포함 — §11.4 부수 발견 후).
+
+### 11.1 Step 0 — 외부 리서치 (`rules/research-mandatory.md` §1 의무)
+
+**핵심 출처 2건** (글로벌 룰 §3 형식):
+
+1. **[Issue #26923 (CLOSED, 2026-02-19~03-03, anthropics/claude-code)](https://github.com/anthropics/claude-code/issues/26923)** — `PreToolUse hook exit code 2 does not block Task tool calls`
+   > 인용: "Across 8 sessions over 7 days, every PreToolUse exit 2 for a Task call resulted in the agent running anyway... Agents that ran despite BLOCKED: 19 (100%)"
+   > 인용: "We have not yet tested `permissionDecision: 'deny'` as a workaround. If it works for Task and Bash, that would confirm exit code 2 is the broken path."
+
+2. **[Issue #40580 (OPEN, 2026-03-29, anthropics/claude-code)](https://github.com/anthropics/claude-code/issues/40580)** — `PreToolUse hook exit code ignored for subagent tool calls`
+   > 인용: "Hook IS called for subagent tool calls (confirmed via file logging) ... Hook receives correct JSON input (tool_name, tool_input)... **But the tool call proceeds anyway** — the agent gets the file contents."
+   > 인용: "This makes it impossible to enforce tool usage policies on subagents via hooks."
+
+**리서치 충격**: §10 의 "강제 훅 신설" 자체가 Anthropic 측 알려진 버그로 차단 불가능 가능성 → 본 turn 의 핵심 가정 흔들림 → **체크리스트 §승인 규칙 = 치명 항목 변경 = 사용자 재승인** 거쳐 A 안 (우회 패턴 검증) 채택.
+
+**우회 패턴**: exit 2 단독 폐기 → **`permissionDecision: deny` JSON + exit 0** 출력 (Issue #26923 reporter 본인이 미검증 가설 명시).
+
+### 11.2 Step 1·2 — 인프라 신설
+
+**훅 본체** (`hooks/pretooluse-agent-model-required.{sh,py}`):
+- sh wrapper (~30 줄) + Python 본체 (~95 줄) — 기존 `feedback-sycophancy-check` 패턴 동일
+- 검사 순위: (1) `tool_name in ("Task", "Agent")` 매칭 → (2) `tool_input.model in {opus, sonnet, haiku}` 통과 → (3) `subagent_type` frontmatter 예외 (rules §3) → (4) 차단 = `permissionDecision: deny` JSON + stderr
+- **단위 테스트 5/5 PASS** (무관 tool 통과 / 명시 model 통과 / 누락 차단 / frontmatter 예외 통과 / invalid 차단)
+- SHA256 MATCH 양측 (스테이징 ↔ 운영)
+
+**settings.json**:
+- 백업 (`settings.json.bak.20260504_phase1`, SHA256 `5D708DBA...089E4` = turn 6 환원본 동일)
+- `hooks.PreToolUse` 배열에 `{matcher: "Task|Agent", hooks: [...]}` 추가 (5번째 matcher)
+- 정규식 OR 패턴 (`Task|Agent`) — 검색 결과의 "matcher: Grep|Glob|Read" 사례 패턴 따라 단일 객체로 양쪽 등록
+
+### 11.3 Step 3 — 라이브 4 spawn 검증
+
+**핵심 결정적 발견 = `permissionDecision: deny` + exit 0 우회 패턴 작동** (issue #26923 reporter 미검증 가설 = **세계 1호 검증 PASS**).
+
+| Spawn | model 입력 | 자식 model 자기보고 | 판정 | 메커니즘 |
+|---|---|---|---|---|
+| **C** (model 누락) | (없음) | (spawn 자체 차단됨) | ✅ **차단 PASS** | `permissionDecision: deny` 우회 작동 |
+| A (model="opus") | 명시 | `claude-sonnet-4-6` ⚠️ | 통과 BUT env 덮어씀 | 훅 통과 + env 무력화 (§11.4 참조) |
+| B (model="sonnet") | 명시 | `claude-sonnet-4-6` | 정합 통과 | 훅 통과 + env 정합 |
+| D (model="gpt-5") | invalid | (Claude Code SDK 차단) | ✅ **이중 보장** | InputValidationError (SDK level) → 훅 도달 전 차단 |
+
+**3가지 가설 동시 PASS**:
+1. **`Agent` matcher 작동** — 에러 메시지의 hook 트리거 라인 = `"PreToolUse:Agent hook blocking error"` → Claude Code (현재 환경, version `claude-code/2.1.126` per spawn env leak) 가 사용하는 tool name = **`Agent`** (Issue #26923 의 "Task" 통념과 다름)
+2. **settings.json `hooks` 섹션 hot-reload 작동** — turn 4·6 의 "hot-reload 비작동" 가설은 **env 섹션 한정**. hooks 섹션은 매 PreToolUse 시점 재로드.
+3. **우회 패턴 작동** — Issue #26923 reporter 미검증 가설 PASS. exit 2 무시 버그를 우회.
+
+### 11.4 ⚠️ turn 6 anomaly 재해석 — env 덮어쓰기 결정적 재확인
+
+**Spawn A 결과 충돌**:
+- §10.2 turn 6 (env=sonnet 보존, 메인 재시작 직후): A `model="opus"` → 자식 = **Opus** (정합)
+- 본 turn (env=sonnet 보존, 메인 재시작 후 시간 경과): A `model="opus"` → 자식 = **Sonnet** (env 덮어씀)
+
+**해석**:
+- §8.2 Phase A turn 4 (env=sonnet, 명시 model 무력 = 모두 sonnet) **+ 본 turn 결과 일치** → 정합
+- §10 turn 6 의 "정합" 결과 = **anomaly 가능성 높음** (해석 후보):
+  - (a) 자기보고 신뢰도 한계 — 메인 재시작 직후 cache miss 또는 시스템 프롬프트 표시 path 차이
+  - (b) 시점 변수 — 메인 재시작 직후 vs 시간 경과 후 env propagation 차이
+  - (c) 측정 path 차이 — turn 6 은 TaskCreate 후 spawn / 본 turn 은 직접 Agent 호출 (단 두 path 가 spawn 환경에 영향 줄 메커니즘 미확인)
+
+**의의**:
+- **env=sonnet 환경에서 명시 model 도 무력화** = turn 4 + 본 turn 일치 = **결정적 재현 강화**
+- → **env 제거 = PM=Opus 운영의 필수 조건** (강제 훅만으로는 부족)
+- §10.5 "fallback C+ 최종 확정" 의 메커니즘 1 (env 제거) 가 §10.4 부수 발견 (디폴트=Opus 위험) 보다 **상위 우선순위**임이 본 turn 으로 확정
+
+### 11.5 Step 4 — env 영구 제거 (사전조치)
+
+**처리**: `~/.claude/settings.json` 의 `env.CLAUDE_CODE_SUBAGENT_MODEL` 라인 영구 삭제 (commit). JSON valid 검증 PASS. 백업 보존 (`settings.json.bak.20260504_phase1`).
+
+**전제 충족**: §10.5 의 "강제 훅 선제 필수" 조건 = **본 turn §11.2·11.3 으로 충족**. 즉 강제 훅 (우회 패턴) 작동 검증 PASS 후 env 제거 진행 = §10.5 결정 4 (env 제거 시점 = #018 PASS 직후 즉시) 정합.
+
+**검증 잔여**: env 제거 후 spawn 검증은 **사용자 메인 재시작 후 다음 세션** (env 변수는 메인 프로세스 cache 라 hot-reload 비작동, §10 turn 6 §6-1 결정적 재현). 다음 세션에서 env 부재 환경 + 강제 훅 동시 작동 확인.
+
+### 11.6 fallback C+ 영구 적용 — 조건부 마킹
+
+§10.5 의 fallback C+ 3 메커니즘 본 turn 갱신:
+
+| 메커니즘 | 본 turn 검증 결과 | 상태 |
+|---|---|---|
+| 1. settings.json env `CLAUDE_CODE_SUBAGENT_MODEL` 영구 제거 | ✅ Step 4 처리 (commit). 효과 = 메인 재시작 후 검증 | **commit 완료, 효과 검증 다음 세션** |
+| 2. 메인 Claude Code 재시작 (process env cache 갱신) | (다음 세션 진입 시 충족) | **다음 세션 진입 = 충족** |
+| 3. 모든 Agent spawn 에 `model` 파라미터 강제 명시 | ✅ Step 1~3 PASS — `permissionDecision: deny` 우회 작동, 디폴트 spawn 차단 작동 | **확정** |
+
+**Phase 1 진입 가능 마킹 (조건부)**: 본 turn = 강제 훅 작동 검증 PASS + env 제거 commit. **최종 PASS 조건** = 다음 세션에서 env 부재 환경 + 강제 훅 라이브 검증 (4 spawn 재실행, A·B·C·D 패턴 동일).
+
+**Phase 1 진입 차단 사유** (다음 세션까지):
+- env 부재 환경에서 명시 model 정합 검증 (turn 6 §10.3 패턴 = A·B·D 정합 + C 차단)
+- 만약 다음 세션 검증에서 또 env 덮어쓰기 재현 → settings.json 외 다른 env source 존재 가능성 (예: Windows 시스템 env, .bashrc, claude-code 자체 default) → 추가 조사
+
+### 11.7 메타 발견 (turn 7 한정, 마스터플랜 입력)
+
+1. **`Agent` matcher** — `Task` 가 아닌 `Agent` 가 Claude Code 의 subagent tool name. Issue #26923/#40580 제출자가 사용한 "Task" 표기는 통념 또는 다른 환경. 본 환경 (claude-code 2.1.126) 한정.
+2. **hooks 섹션 hot-reload 작동** — env 섹션과 별개. matcher 추가 즉시 효과 발효 = settings.json 변경 시점부터 다음 PreToolUse 차단 가능. 단 env 섹션은 메인 재시작 필요 (분리 메커니즘).
+3. **Claude Code SDK input validation** — `model` 값을 `opus|sonnet|haiku` 만 허용. invalid 값은 SDK level 차단 (훅 도달 전). 본 훅 검사 범위는 "값 invalid" 보다 "값 누락" 이 핵심.
+4. **turn 6 결과 신뢰도 의문** — A=opus → Opus 결과는 본 turn 재현 실패. 자기보고 검증의 인식론적 한계 (§9.5 "정직한 인식론적 한계 명시") 재확인.
+
+### 11.8 다음 작업 (Step 5·6 + 다음 세션)
+
+**본 turn (turn 7, Day 19) 잔여**:
+- [x] Step 4: settings.json env 제거 (commit)
+- [x] Step 5: 본 §11 + `04_masterplan.md §8.2` 4차 실험 박스 + `§9.1` 가드레일 갱신
+- [x] Step 6: `rules/agent-spawn-model.md §4` 상태 변경 + `memory/agent-office-vision.md` L115 정정 + `.todo.md` #018 잠정 PASS + history Day 19 turn 7 + HANDOFF turn 7 + commit
+
+**다음 세션 (turn 8, Day 19+ 또는 Day 20)**:
+- [ ] env 부재 환경 검증 (사용자 메인 재시작 후 PowerShell `Get-ChildItem Env: | Where-Object Name -like "*CLAUDE*"` 으로 env 빈 값 확인)
+- [ ] 강제 훅 + env 부재 동시 작동 검증 (4 spawn 재실행)
+- [ ] PASS 시: `.todo.md` #018 최종 완료 마킹 + Phase 1 진입 (`#009` agent-team-manager v2 본체 또는 `#014` PM 외부 리서치)
+- [ ] FAIL 시 (env 덮어쓰기 또 재현): settings.json 외 env source 조사 + fallback D (env 보존) 후퇴 결정
