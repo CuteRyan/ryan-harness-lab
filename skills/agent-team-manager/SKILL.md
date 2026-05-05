@@ -56,7 +56,29 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 **저장 경로 (실제 도구 동작)**:
 - 팀 메타: `~/.claude/teams/<팀이름>/` (글로벌, **프로젝트 로컬 아님** — v1 명세 버그 정정)
 - 작업 메타: `~/.claude/tasks/<팀이름>/`
-- 종료 후 정리: `validate-team.ps1` (Phase 2 신설 예정) 또는 수동 archive (마스터플랜 §9.3 폴백 참조)
+- sentinel: `~/.claude/tasks/<팀이름>/.sentinel.json` (deadline + members + cycle_count, `scripts/run-team.ps1 -SentinelInit` 자동 신설)
+- 종료 후 정리: `scripts/shutdown-team.ps1 -Team <name>` (R-5 정합 archive 기본, `-Force` 즉시 삭제)
+
+### 1.2 Phase 0~8 자동화 흐름 (scripts/ 6 헬퍼 호출)
+
+> v2 spec `04_redesign-spec.md §3.1` 양식 차용 (본 비전 양식 SSOT 정합, D-23). LLM (메인 Claude) 가 본 흐름 따라 호출.
+
+| Phase | 주체 | 동작 |
+|-------|------|------|
+| **0: Pre-flight** | LLM → `scripts/preflight.ps1 -SkipTmux` | 5 검사 (env 부재 + claude-code 버전 + 메인 컨텍스트 + PS 5.1+ + pyyaml). 실패 시 abort + `reference/errors.md` 의 reason 안내 |
+| **1: Preset 해석** | LLM → `scripts/resolve-preset.ps1 -Preset <name>` | preset YAML → JSON 메타 (team_name_template + members + task_graph + protocol_steps + cap) |
+| **2: TeamCreate** | **LLM** (tool 직접) | resolve-preset 의 team_name_template 으로 호출. **스크립트는 tool 호출 안 함** (v2 spec §2 경계선) |
+| **3: TaskCreate + blockedBy** | **LLM** (tool 직접) | task_graph 순회, 각 task 를 TaskCreate + addBlockedBy = preset YAML `members[].blocked_by` 그대로 mapping |
+| **4: Agent spawn** | **LLM** (tool 직접) | members 순회, `Agent({subagent_type: <name>, model: <model>, team_name: ...})`. 글로벌 강제 훅 통과 의무 (§1.1) |
+| **5: Sentinel 등록** | LLM → `scripts/run-team.ps1 -Team <name> -SentinelInit -TimeoutMinutes 30 -Members ...` | `.sentinel.json` 신설 (start_time + deadline + members + cycle_count) |
+| **6: Monitor loop** (선택) | LLM → `scripts/monitor-team.ps1 -Team <name>` 주기 | active/stale/zombie/orphan 상태 덤프. zombie/orphan 시 개입 |
+| **7: Validate + Synthesize** | LLM → `scripts/validate-team.ps1 -Team <name>` → LLM 종합 | 5 검증 (orphan/deadline/cycle_cap/duplicate/zombie). valid 항목만 종합 보고서 작성 + `/feedback` 검수 (§4) |
+| **8: Shutdown** | LLM → `scripts/shutdown-team.ps1 -Team <name>` | archive 기본 (R-5 정합). 사용자 컨펌 후 `-Force` 즉시 삭제 |
+
+**핵심 제약**:
+- Phase 2·3·4 = LLM 만 가능 (TeamCreate/TaskCreate/Agent spawn/SendMessage 는 Claude Code tool, 스크립트가 호출 못 함)
+- 스크립트는 파일·프로세스·검증만 담당 (feedback 차용 경계선)
+- 트러블슈팅: `reference/errors.md` (reason 코드별 해결법) + `reference/anti-patterns.md` (A1~A15 실패 모드)
 
 ---
 
@@ -98,7 +120,8 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 
 ### 2.4 ② 회의실 preset 카탈로그 (5종, Phase 1 정식)
 
-> Step B (Day 20 turn 1) 산출물 = `presets/*.yaml` 5건. Step A (turn 11) 의 정식 직책별 agent 12명 호출 박음. 마스터플랜 §2.4 ② 회의실 preset 표 1:1 정합 5/5 PASS (feature·security 2/7 보류 = 별도 turn).
+> **1차 참조**: `reference/presets.md` (preset 요약 + 트리거 키워드 + 호출 흐름). LLM 이 본 §2.4 표 + reference 후 `presets/<name>.yaml` Read.
+> Step B (Day 20 turn 1) 산출물 = `presets/*.yaml` 5건. Step A (turn 11) 의 정식 직책별 agent 12명 호출 박음. 마스터플랜 §2.4 ② 회의실 preset 표 1:1 정합 5/5 PASS (feature·security 2/7 보류 = 별도 turn #009-E).
 
 | Preset | YAML | team_size | members (Step A 12 agent) | 단계 의존성 | 적합 작업 |
 |--------|------|----------|--------------------------|------------|---------|
@@ -233,6 +256,9 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 | **R-10** 12 agent 양식 일관 | 핵심 행동 규칙 5 + 출력 형식 4 요소 + 면제 예외 = agent 12 全 동일 (turn 11). 어느 워커 spawn 되어도 출력 일관성 보장 |
 | **R-11** team_size ≠ len(members) 가능 | preset variations (예: review.security_focused team_size=2). 검증 시 default variation 의 team_size 와 members 수 정합만 확인 (Day 20 turn 1) |
 | **R-12** dimension = preset 컨텍스트 속성 | 동일 agent 가 다른 preset 에서 다른 dimension 명 (예: docs-researcher: "공식 문서" vs "조사"). 정합성 자동 검증 단위 = preset (Day 20 turn 1) |
+| **R-13** §변경 이력 다중 entry 보존 | 체크리스트 grep 명세 작성 시 §변경 이력 entry M개 × 평균 단어/entry 사전 고려 의무. 단순 단어 카운트 명세 = 좁음 (Day 20 turn 2) |
+| **R-14** orphan 팀 정기 정리 | `validate-team.ps1 -AllTeams` 부수 발견 (Day 20 turn 3 = 운영 71 orphan). `shutdown-team.ps1` 일괄 정리 별도 turn 권장 (#021) |
+| **R-15** 한글 ps1 = UTF-8 BOM 의무 | PowerShell 5.1 한글 주석 ps1 = BOM 부재 시 CP949 fallback → here-string parse fail. `[UTF8Encoding]::new($true)` 의무. Python 호출 = `PYTHONIOENCODING=utf-8` 강제 (Day 20 turn 3) |
 
 ### 5.1 운영 가드레일 (마스터플랜 §9 인용)
 
@@ -278,14 +304,18 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 /agent-team run --preset harness-design --topic "글로벌 외부 리서치 의무 규칙"
 ```
 
-**preset 모드 흐름**:
-1. `presets/<이름>.yaml` Read → `members[].name` 추출
-2. `TeamCreate <이름>-팀-<timestamp>`
-3. `TaskCreate` (단계 의존성 = `members[].blocked_by` mapping)
-4. 각 멤버 spawn = `Agent({subagent_type: <name>, model: <model>, team_name: ...})`
-5. `SendMessage` 로 `task_template.subject` + `description` + `output_format_required` 전달
-6. 결과 수신 + `review_cycle_cap: 3` 초과 시 PM 에스컬레이션
-7. 결과 종합 후 `/feedback` 검수 호출 (§4)
+**preset 모드 흐름** (§1.2 Phase 0~8 자동화 흐름 정합):
+1. `scripts/preflight.ps1 -SkipTmux` → 5 검사 PASS (Phase 0)
+2. `scripts/resolve-preset.ps1 -Preset <이름>` → JSON 메타 추출 (Phase 1)
+3. `TeamCreate <이름>-팀-<timestamp>` (Phase 2, LLM 직접)
+4. `TaskCreate` × N (Phase 3, blocked_by mapping)
+5. 각 멤버 `Agent({subagent_type, model, team_name})` (Phase 4, 강제 훅 통과)
+6. `scripts/run-team.ps1 -SentinelInit -TimeoutMinutes 30` (Phase 5)
+7. `SendMessage` 로 `task_template` 전달 + lead 회신 의무 (R-6)
+8. (선택) `scripts/monitor-team.ps1` 주기 호출 (Phase 6)
+9. `scripts/validate-team.ps1` 검증 → cycle_cap 초과 시 PM 에스컬레이션 (Phase 7)
+10. 결과 종합 + `/feedback` 검수 (§4)
+11. `scripts/shutdown-team.ps1 -Team <name>` archive (Phase 8, R-5)
 
 **모드 3 — PM 협의** (선택, R-2 강화):
 ```
@@ -317,6 +347,8 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 | **PM 비판자 (3층 부장)** | `agents/pm.md` (Opus) + `~/.claude/agents/pm.md` 운영 sync | turn 11 (#009-A) | `/agent-team run --pm-consult <작업>` 또는 직접 spawn |
 | **PM 외부 리서치 의무** | `agents/pm.md` 핵심 행동 규칙 5번 + 출력 형식 4 요소 | turn 9 (#014) | PM 추천 시 자동 적용 (글로벌 `rules/research-mandatory.md` superset) |
 | **② 회의실 5 preset** | `presets/{review,debug,research,docs-research,harness-design}.yaml` + `~/.claude/presets/` 운영 sync | Day 20 turn 1 (#009-B) | `/agent-team run --preset <이름>` |
+| **scripts/ 6 자동화 헬퍼** | `skills/agent-team-manager/scripts/{preflight,resolve-preset,run-team,monitor-team,validate-team,shutdown-team}.ps1` + 운영 sync | Day 20 turn 3 (#009-D-1) | §1.2 Phase 0~8 흐름 자동 호출 |
+| **reference/ 4 사례 라이브러리** | `skills/agent-team-manager/reference/{patterns,anti-patterns,errors,presets}.md` + 운영 sync | Day 20 turn 4 (#009-D-2) | on-demand 로드 (LLM 이 패턴 선택·트러블슈팅·preset 선택 시 Read) |
 | **글로벌 강제 훅** | `hooks/pretooluse-agent-model-required.{sh,py}` + settings.json `Task|Agent` matcher | turn 7 (#018) | `model` 누락 시 자동 차단 (`permissionDecision: deny`) |
 | **fallback C+ 영구 적용** | env 영구 제거 + 메인 재시작 + 강제 훅 (3중 메커니즘) | turn 7·8 (#018·#019) | 자동 (settings.json 환경변수 분리) |
 | **글로벌 강제 규칙** | `~/.claude/rules/agent-spawn-model.md` + Agent Preferences 5번째 규칙 | turn 6 (#015) | 모든 Agent spawn 에 적용 |
@@ -325,11 +357,10 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 
 | 미구현 | 이유 | 진입 조건 |
 |--------|------|---------|
-| **scripts/ 6** (preflight·resolve-preset·run-team·monitor-team·validate-team·shutdown-team) | 명령어 자동화 PowerShell 헬퍼 미작성 | 별도 turn 또는 #009-D 종결 |
-| **reference/ 4** (patterns·anti-patterns·errors·presets) | 사례 라이브러리 미작성 | 별도 turn 또는 #009-D 종결 |
-| **feature·security 2 preset** | 마스터플랜 §2.4 표 中 2/7 보류 | 별도 turn |
+| **feature·security 2 preset** | 마스터플랜 §2.4 표 中 2/7 보류 + 새 agent 7 (lead/frontend/backend/tester + SAST/DAST/compliance) 신설 선행 필요 | #009-E 별도 turn (추정 2 turn) |
+| **운영 71 orphan 팀 정리** | Day 20 turn 3 R-14 부수 발견. `validate-team -AllTeams` 후 일괄 archive | #021 별도 turn (추정 30분) |
 | **bypass_threshold 자동 적용** | 작업 복잡도 자동 분석 → 워커 자동 선택 | Phase 2 dogfood 후 |
-| **`/agent-office` 통합 진입점** | 본 스킬 + 자동 분류 + UI 통합 + scripts 자동 호출 | Phase 2 |
+| **`/agent-office` 통합 진입점** | 본 스킬 + 자동 분류 + UI 통합 | Phase 2 |
 | **자동 검증 hooks 추가** | PostToolUse sycophancy + 강제 훅 외 추가 (예: preset 자동 매핑 검증) | Phase 2 |
 | **Linux 서버 배포** | bash 버전 병행 (`pretooluse-agent-model-required.sh` 이미 신설, 나머지 헬퍼 별도) | Phase 3 |
 
@@ -359,6 +390,7 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 
 ## 변경 이력
 
+- **2026-05-05 (v2.5, Day 20 turn 4)**: scripts/ 6 + reference/ 4 호출 박기 (#009-D-2). §1.2 Phase 0~8 자동화 흐름 표 신설 (v2 spec §3.1 양식 차용 + 본 비전 양식 SSOT D-23). §2.4 `reference/presets.md` 1차 참조 박기. §5 가드레일 R-1~R-12 → R-1~R-15 확장 (R-13 §변경 이력 다중 entry 보존 + R-14 orphan 정리 + R-15 ps1 BOM 의무). §6 명령어 = scripts/ 6 호출 흐름 11단계 명시. §7.1 활용 자산 표 = scripts/ 6 + reference/ 4 행 추가 (6→8행). §7.2 잔여 한계 = scripts/ 6 + reference/ 4 행 제거, feature·security 2 preset (#009-E) + orphan 71 정리 (#021) 만 잔존. SHA256 (이전 v2) = `9FC078A6...AFFF`.
 - **2026-05-05 (v2, Day 20 turn 2)**: PM·preset·hooks 보류 3건 흡수 (#009-C). v1.5 §7 한계 표 中 3 행 (PM 비판자 + PM 동적 선택 + preset YAML) 제거 → §7.1 활용 자산 표로 전환. §0 부트스트랩 표현 제거. §1.1 글로벌 강제 훅 박스 신설 (turn 7 #018 + turn 8 #019 라이브 검증 인용). §2.4 ② 회의실 5 preset 카탈로그 신설 (마스터플랜 §2.4 1:1 정합 5/5 PASS). §2.5 preset 자동 매핑 heuristic 신설. §3.1 박스 의미 전환 = 종전 경고 박스 → "fallback C+ 영구 적용" (turn 8 #019 PASS, issue#32732 종결). §5 가드레일 R-1~R-5 → R-1~R-12 확장 (turn 8 R-7·R-8 + turn 10 R-9 + turn 11 R-10 + Day 20 turn 1 R-11·R-12). §6 명령어 = preset 옵션 + PM 협의 모드 추가. SHA256 (이전 v1.5) = `ED0A9DD1...8F0C`.
 - **2026-05-02 (v1.5, Day 18 후속)**: 마스터플랜 정합 재작성. v1 의 6가지 문제 해소 (저장 경로 / PM / 모델 배분 / 4가지 워커 / lifecycle / /feedback). 부트스트랩 가이드로 위치 확정. SHA256 (이전 v1) = `454F27ED...A8F5`.
 - **2026-04-21 (v1)**: `/feedback` 스킬 구조 승격 패턴 모방, 단순 팀 관리 명령어 6개. → 마스터플랜 비전과 미정합.
