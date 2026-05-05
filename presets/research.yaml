@@ -1,0 +1,87 @@
+# research preset — 기술 조사 (병렬 + 종합: 공식 docs + 커뮤니티 → analyst)
+#
+# 마스터플랜 §2.4 ② 회의실 preset 표 (L229~238) "research = 3명 (공식docs/커뮤니티/analyst)" 1:1 정합.
+# Step A 12 agent (#009-A turn 11 PASS) 中 docs-researcher / community-researcher / analyst 호출.
+# 양식 출처: wshobson/agents HEAD `ece811f23310a37ceb43496dbac0e244fe6845b6` (2026-05-02)
+#   `plugins/agent-teams/skills/team-composition-patterns/references/preset-teams.md` (Research preset).
+# 단계 의존성: zircote 7패턴 中 Research+Implementation 변형 = 병렬 Specialists (docs + community) → 종합 (analyst).
+
+name: research
+description: 기술 조사 — 공식 docs + 커뮤니티 병렬 조사 후 analyst 가 종합. 시사점 + 본 비전 적용 가능성 도출.
+source:
+  - "마스터플랜 §2.4 ② 회의실 preset 표 (research = 3명 공식docs/커뮤니티/analyst)"
+  - "wshobson/agents HEAD ece811f2 preset-teams.md (Research preset)"
+  - "zircote 7패턴 中 Research+Implementation + Parallel Specialists 혼합 — 02_external-deep §3"
+  - "Step A 12 agent (#009-A turn 11 PASS, agents/{docs-researcher|community-researcher|analyst}.md)"
+
+pm_lead: pm
+team_size: 3
+display_mode: tmux
+
+members:
+  - name: docs-researcher
+    model: sonnet
+    dimension: 공식 문서
+    sequence: 1                # 병렬 1단계 (community-researcher 와 동시)
+    focus_areas:
+      - "공식 문서 (Anthropic Engineering · OpenAI · Google AI · MDN · RFC · ISO · W3C · NIST)"
+      - "라이브러리 공식 (GitHub README · CHANGELOG · 공식 docs · API reference)"
+      - "표준 사양 (HTTP · JSON Schema · OAuth · OIDC · WebAssembly · CBOR)"
+      - "공식 권고 (보안 권고 · best practice · deprecation · migration guide)"
+      - "버전·릴리스 (게재일 · 버전 · breaking change · hotfix 추적)"
+
+  - name: community-researcher
+    model: sonnet
+    dimension: 커뮤니티
+    sequence: 1                # 병렬 1단계 (docs-researcher 와 동시)
+    focus_areas:
+      - "GitHub (인기 리포 ★ ≥ 1000 · issue/PR 패턴 · CONTRIBUTING · 사례 코드)"
+      - "Stack Overflow (답변 score ≥ 50 · 채택된 답변 · 최신 갱신)"
+      - "블로그·뉴스레터 (실무 사례 · 회고 · post-mortem · 벤치마크)"
+      - "Reddit·Hacker News (토론 합의 · 사용자 후기 · 안티패턴 경고)"
+      - "출처 신뢰도 평가 (reputation · 인용 갯수 · 검증 가능성 · 신선도)"
+
+  - name: analyst
+    model: sonnet
+    dimension: 종합
+    sequence: 2                # docs + community 후 (addBlockedBy 둘 다)
+    blocked_by: [docs-researcher, community-researcher]
+    focus_areas:
+      - "종합 분석 (일관 발견 / 차원 분리 / 충돌 발견 3 분류)"
+      - "시사점 도출 (발견 → 본 비전 적용 가능성 + 한계 + 다음 행동 제안)"
+      - "충돌 해소 (공식 vs 커뮤니티 충돌 시 출처 우선 + 사유 + 추가 검증 필요 명시)"
+      - "일반화 가능성 (외부 사례 → 본 비전 적용 한계 명시, 예: turn 10 #012 일반화 한계 박스)"
+      - "다음 행동 제안 (PM 또는 architect 에게 다음 단계 추천)"
+
+task_template:
+  subject: "[명사형 - 조사 주제] (예: 'Streaming SSE 표준과 Anthropic SDK 차이 조사')"
+  description: |
+    조사 주제 + 조사 동기 (왜 필요한가) + 사용처 (마스터플랜 §X · #이슈) + 깊이 요구 사항 (요약 vs 깊이).
+    docs/community 병렬 → analyst 종합 순서. 각 멤버는 본인 영역만 담당.
+  output_format_required:
+    - 결론 (1~2줄): 조사 결과 요약 + 본 비전 적용 가능성
+    - 출처: URL + 발행일 + 직접 인용 1~2줄 (공식 docs 링크 · GitHub HEAD SHA · Stack Overflow score)
+    - 추측 표현 금지 (paraphrase 가 아닌 직접 인용 권장, 출처 없는 단언 금지)
+    - 자기비판 1줄 (출처 신뢰도 한계 또는 일반화 한계 명시 — turn 10 R-9 정책 정합)
+
+protocol:
+  enforcement: 4-step 강제 (글로벌 ~/.claude/rules/agent-spawn-model.md)
+  steps:
+    - "1. TeamCreate (팀 생성)"
+    - "2. TaskCreate (docs/community 병렬 + analyst addBlockedBy 둘 다)"
+    - "3. Agent spawn (model 명시 의무 — pm=opus, 워커=sonnet, 강제 훅 활성)"
+    - "4. SendMessage (병렬 결과 → analyst 로 종합)"
+
+review_cycle_cap: 3
+escalation_after_cap: |
+  3 사이클 초과 시 (출처 신뢰도 부족 반복 · 충돌 해소 실패 반복) PM 이 (a) 조사 범위 재정의 또는 (b) 사장 에스컬레이션.
+  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+
+variations:
+  default:
+    members: [docs-researcher, community-researcher, analyst]
+    description: "기본 = docs/community 병렬 → analyst 종합"
+  docs_only:                 # 커뮤니티 신뢰도 낮은 영역 (예: 신규 표준 직후)
+    members: [docs-researcher, analyst]
+    team_size: 2
+    description: "공식 문서만 (커뮤니티 자료 부족 시)"

@@ -1,0 +1,91 @@
+# docs-research preset — 하네스 리서치 (research 3 + architect ADR 도출)
+#
+# 마스터플랜 §2.4 ② 회의실 preset 표 (L229~238) "docs-research = 4명 (공식docs/커뮤니티/analyst/architect)" 1:1 정합.
+# Step A 12 agent (#009-A turn 11 PASS) 中 docs-researcher / community-researcher / analyst / architect 호출.
+# 양식 출처: wshobson/agents HEAD `ece811f23310a37ceb43496dbac0e244fe6845b6` (2026-05-02)
+#   `plugins/agent-teams/skills/team-composition-patterns/references/preset-teams.md` (Research 변형).
+# research preset 의 superset = analyst 종합 후 architect 가 ADR 도출.
+
+name: docs-research
+description: 하네스 도메인 리서치 — research 3 (docs/community/analyst) + architect 가 ADR 도출. 설계 결정까지 포함.
+source:
+  - "마스터플랜 §2.4 ② 회의실 preset 표 (docs-research = 4명 공식docs/커뮤니티/analyst/architect)"
+  - "wshobson/agents HEAD ece811f2 preset-teams.md (Research 변형)"
+  - "research preset 의 superset (analyst → architect ADR 단계 추가)"
+  - "Step A 12 agent (#009-A turn 11 PASS, agents/{docs-researcher|community-researcher|analyst|architect}.md)"
+
+pm_lead: pm
+team_size: 4
+display_mode: tmux
+
+members:
+  - name: docs-researcher
+    model: sonnet
+    dimension: 공식 문서
+    sequence: 1                # 병렬 1단계
+    focus_areas:
+      - "공식 문서 (Anthropic Engineering · OpenAI · Google AI · MDN · RFC · ISO · W3C · NIST)"
+      - "라이브러리 공식 (GitHub README · CHANGELOG · API reference)"
+      - "표준 사양 + 공식 권고 + 버전·릴리스 추적"
+
+  - name: community-researcher
+    model: sonnet
+    dimension: 커뮤니티
+    sequence: 1                # 병렬 1단계
+    focus_areas:
+      - "GitHub (★ ≥ 1000) · Stack Overflow (score ≥ 50) · 블로그 · Reddit/HN"
+      - "출처 신뢰도 평가 (reputation · 인용 · 신선도)"
+
+  - name: analyst
+    model: sonnet
+    dimension: 종합
+    sequence: 2                # docs + community 후
+    blocked_by: [docs-researcher, community-researcher]
+    focus_areas:
+      - "종합 분석 (일관/차원 분리/충돌 3 분류)"
+      - "시사점 도출 + 일반화 한계 명시 + 다음 행동 제안"
+
+  - name: architect
+    model: opus                # 설계 결정 = Opus 영역
+    dimension: 설계 (ADR)
+    sequence: 3                # analyst 후 (addBlockedBy: analyst)
+    blocked_by: [analyst]
+    focus_areas:
+      - "시스템 설계 (5W1H + 트레이드오프 — 각 결정의 비용·대안)"
+      - "ADR (Architecture Decision Record) 4 섹션 (배경·결론·사유·대안)"
+      - "입출력 계약 (시그니처 + invariant + 실패 케이스)"
+      - "의존 관계 명시 (addBlockedBy 체인 — zircote Pipeline)"
+      - "확장성 평가 (성능 · 유지보수성 · 진화 가능성)"
+
+task_template:
+  subject: "[명사형 - 리서치 + 설계 주제] (예: 'agent-team-manager v2 Sub-agent vs Agent Teams 설계 결정')"
+  description: |
+    조사 + 설계 주제 + 동기 + 사용처 (마스터플랜 §X · #이슈) + 결정 깊이 요구 (heuristic 표 vs ADR 본문).
+    docs/community 병렬 → analyst 종합 → architect ADR 4단계 Pipeline.
+  output_format_required:
+    - 결론 (1~2줄): 리서치 결과 + ADR 결정 + 본 비전 적용 가능성
+    - 출처: URL + 발행일 + 직접 인용 1~2줄 (공식 docs · GitHub HEAD SHA · 외부 사례 매핑 표)
+    - 추측 표현 금지 (paraphrase 가 아닌 직접 인용 권장)
+    - 자기비판 1줄 (출처 신뢰도 한계 + 일반화 한계 + ADR 결정의 회귀 위험)
+
+protocol:
+  enforcement: 4-step 강제 (글로벌 ~/.claude/rules/agent-spawn-model.md)
+  steps:
+    - "1. TeamCreate (팀 생성)"
+    - "2. TaskCreate (docs/community 병렬 → analyst → architect Pipeline addBlockedBy 체인)"
+    - "3. Agent spawn (model 명시 의무 — pm/architect=opus, 나머지=sonnet, 강제 훅 활성)"
+    - "4. SendMessage (단계 결과 다음 단계로 전달)"
+
+review_cycle_cap: 3
+escalation_after_cap: |
+  3 사이클 초과 시 (ADR 결정 합의 실패 반복 · 출처 신뢰도 부족 반복) PM 이 (a) 조사 범위 또는 ADR 범위 재정의 또는 (b) 사장 에스컬레이션.
+  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+
+variations:
+  default:
+    members: [docs-researcher, community-researcher, analyst, architect]
+    description: "기본 4명 Pipeline"
+  research_only:             # ADR 불필요 (조사만)
+    members: [docs-researcher, community-researcher, analyst]
+    team_size: 3
+    description: "research preset 으로 다운그레이드 (ADR 단계 생략)"

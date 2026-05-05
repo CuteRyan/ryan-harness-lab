@@ -1,0 +1,83 @@
+# review preset — 코드 리뷰 (3차원 병렬: 보안 / 성능 / 정확성)
+#
+# 마스터플랜 §2.4 ② 회의실 preset 표 (L229~238) "review = 3명 (보안/성능/정확성)" 1:1 정합.
+# Step A 12 agent (#009-A turn 11 PASS) 中 security-reviewer / performance-reviewer / correctness-reviewer 호출.
+# 양식 출처: wshobson/agents HEAD `ece811f23310a37ceb43496dbac0e244fe6845b6` (2026-05-02)
+#   `plugins/agent-teams/skills/team-composition-patterns/references/preset-teams.md` (Configuration + Members + Task Template + Variations).
+# 본 비전 확장: 4-step 프로토콜 강제 + review_cycle_cap 3 (aws-samples HEAD `67840be3` `skills/spec-workflow/SKILL.md:65`).
+
+name: review
+description: 코드 리뷰 — 보안·성능·정확성 3차원 병렬 검토. 차원별 발견 사항을 PM lead 가 종합.
+source:
+  - "마스터플랜 §2.4 ② 회의실 preset 표 (review = 3명 보안/성능/정확성)"
+  - "wshobson/agents HEAD ece811f2 plugins/agent-teams/skills/team-composition-patterns/references/preset-teams.md (Review preset)"
+  - "Step A 12 agent (#009-A turn 11 PASS, agents/{security|performance|correctness}-reviewer.md)"
+
+pm_lead: pm                    # 모든 ② 회의실 preset 의 lead = pm agent (Opus)
+team_size: 3
+display_mode: tmux             # wshobson 차용 (병렬 출력 가시성)
+
+members:
+  - name: security-reviewer
+    model: sonnet
+    dimension: 보안
+    focus_areas:
+      - "입력 검증 (XSS · SQLi · Command Injection · Path Traversal · CSRF · SSRF · XXE · LDAP)"
+      - "인증·세션 (토큰 검증 · 세션 hijacking · 비밀번호 정책 · MFA · OAuth/OIDC)"
+      - "시크릿 관리 (환경변수 노출 · git history 누출 · API key rotation)"
+      - "CVE·OWASP (NVD · GitHub Security Advisory · OWASP Top 10 2021 · ASVS)"
+      - "의존성 보안 (npm audit · pip-audit · cargo audit)"
+
+  - name: performance-reviewer
+    model: sonnet
+    dimension: 성능
+    focus_areas:
+      - "DB 쿼리 (N+1 · 인덱스 · EXPLAIN ANALYZE · 트랜잭션 격리 · row-level lock)"
+      - "메모리 (leak · GC 압력 · object lifecycle · 대용량 buffer)"
+      - "캐싱 (cache-aside · write-through · TTL · invalidation · stale 위험)"
+      - "async/await (blocking call · Promise.all/asyncio.gather · backpressure · race condition)"
+      - "병목 분석 (profiling · 핫스팟 · big-O · I/O vs CPU)"
+
+  - name: correctness-reviewer
+    model: sonnet
+    dimension: 정확성
+    focus_areas:
+      - "SOLID 원칙 (SRP · OCP · LSP · ISP · DIP) 위반 검출"
+      - "결합도/응집도 분석 (loose/tight · functional/sequential)"
+      - "디자인 패턴 (GoF) + 안티패턴 (God Object · Spaghetti · Lava Flow)"
+      - "에러 처리 (예외 vs return · None/null safety · panic vs recoverable)"
+      - "입출력 계약 (시그니처 · invariant · pre/post-condition)"
+
+task_template:
+  subject: "[명사형 - 리뷰 대상 + 차원] (예: '인증 모듈 리뷰 — 보안/성능/정확성')"
+  description: |
+    리뷰 대상 (file:line 범위 명시) + 핵심 우려 사항 + 기존 컨텍스트 (이전 결정·관련 PR).
+    각 멤버는 본인 차원 (보안/성능/정확성) 만 담당. 다른 차원 침범 금지.
+  output_format_required:
+    - 결론 (1~2줄): 발견 사항 요약 + Severity (Critical/High/Medium/Low)
+    - 출처: URL + 발행일 + 직접 인용 1~2줄 (CVE 번호 · OWASP 카테고리 · 공식 권고 · 벤치마크 · GoF 원전)
+    - 추측 표현 금지 (`아마`·`보통`·`일반적으로` 사용 금지, 출처 없는 단언 금지)
+    - 자기비판 1줄 (false positive 가능성 또는 반박 후보 명시)
+
+protocol:
+  enforcement: 4-step 강제 (글로벌 ~/.claude/rules/agent-spawn-model.md)
+  steps:
+    - "1. TeamCreate (팀 생성)"
+    - "2. TaskCreate (태스크 정의 + 의존성)"
+    - "3. Agent spawn (model 명시 의무 — pm=opus, 워커=sonnet, 강제 훅 PreToolUse Task|Agent matcher 활성)"
+    - "4. SendMessage (lead ↔ 멤버 통신)"
+
+review_cycle_cap: 3            # 리뷰 사이클 cap (PM 재설계 또는 사장 컨펌 트리거)
+escalation_after_cap: |
+  3 사이클 초과 시 PM 이 (a) 산출물 재설계 또는 (b) 사장 (메인 Claude) 에게 SendMessage 로 에스컬레이션.
+  근거: aws-samples/sample-claude-code-agent-team HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` 인용
+        "Max 3 review cycles per group, then escalate"
+
+variations:
+  full_review:               # 기본 (3명 全)
+    members: [security-reviewer, performance-reviewer, correctness-reviewer]
+    description: "보안 + 성능 + 정확성 全 차원"
+  security_focused:          # 보안 + 정합성만 (성능 무관 영역, 예: 인증 모듈)
+    members: [security-reviewer, correctness-reviewer]
+    team_size: 2
+    description: "성능 영향 적은 영역 (인증·시크릿·정책 모듈)"

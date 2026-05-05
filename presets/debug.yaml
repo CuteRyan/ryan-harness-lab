@@ -1,0 +1,88 @@
+# debug preset — 버그 헌팅 (3단계 순차: 가설 → 재현 → 해결)
+#
+# 마스터플랜 §2.4 ② 회의실 preset 표 (L229~238) "debug = 3명 (가설/재현/해결)" 1:1 정합.
+# Step A 12 agent (#009-A turn 11 PASS) 中 hypothesis-investigator / reproducer / solver 호출.
+# 양식 출처: wshobson/agents HEAD `ece811f23310a37ceb43496dbac0e244fe6845b6` (2026-05-02)
+#   `plugins/agent-teams/skills/team-composition-patterns/references/preset-teams.md` (Debug preset).
+# 단계 의존성: zircote 7패턴 中 Pipeline (addBlockedBy 체인).
+
+name: debug
+description: 버그 헌팅 — 가설 → 최소 재현 → 해결 순차. 단계 의존성 (Pipeline).
+source:
+  - "마스터플랜 §2.4 ② 회의실 preset 표 (debug = 3명 가설/재현/해결)"
+  - "wshobson/agents HEAD ece811f2 preset-teams.md (Debug preset: hypothesis/reproducer/solver)"
+  - "zircote 7패턴 中 Pipeline (단계 의존성 + addBlockedBy 체인) — 02_external-deep §3"
+  - "Step A 12 agent (#009-A turn 11 PASS, agents/{hypothesis-investigator|reproducer|solver}.md)"
+
+pm_lead: pm
+team_size: 3
+display_mode: tmux
+
+members:
+  - name: hypothesis-investigator
+    model: sonnet
+    dimension: 가설
+    sequence: 1                # Pipeline 1단계 (선행)
+    focus_areas:
+      - "가설 4 요소 (statement/scope/confirming/falsifying) 일관 적용"
+      - "증거 수집 (file:line · git log · stack trace · 로그 · 환경 차이)"
+      - "confidence 산정 (Strong/Medium/Weak)"
+      - "falsifying 조건 사전 명시 (Karl Popper 반증 가능성 원칙)"
+      - "causal chain (증상 ← 직접 원인 ← 근본 원인)"
+
+  - name: reproducer
+    model: sonnet
+    dimension: 재현
+    sequence: 2                # 가설 후 (addBlockedBy: hypothesis-investigator)
+    blocked_by: [hypothesis-investigator]
+    focus_areas:
+      - "최소 재현 케이스 (Minimal Reproducible Example)"
+      - "Step-by-step 절차 (1) 환경 setup 2) 입력 3) 실행 4) 예상 5) 실제)"
+      - "환경 명세 (OS · 런타임 · 라이브러리 버전 · 환경변수)"
+      - "재현 실패 분석 (환경 차이 vs 가설 오류 구분)"
+      - "결정적 (deterministic) vs 비결정적 (race · timing) 구분"
+
+  - name: solver
+    model: sonnet
+    dimension: 해결
+    sequence: 3                # 재현 후 (addBlockedBy: reproducer)
+    blocked_by: [reproducer]
+    focus_areas:
+      - "root cause 분석 (5 Why 기법, 인과 체인)"
+      - "fix 후보 N개 (최소 2~3 + 비용/회귀/사이드/유지보수 트레이드오프)"
+      - "회귀 위험 평가 (어떤 기능이 깨질 가능성 + 단위 테스트 보강)"
+      - "사이드 이펙트 추정 (API 시그니처 · 의존성 · DB 스키마)"
+      - "fix 검증 방법 (단위/통합 테스트 · production metric)"
+
+task_template:
+  subject: "[명사형 - 버그 증상 요약] (예: '로그인 후 세션 만료 5분 단축 버그 디버그')"
+  description: |
+    버그 증상 + 발생 환경 (OS·런타임·재현 빈도) + 영향 범위 + 우선순위.
+    가설 → 재현 → 해결 순차 진행. 각 단계의 출력은 다음 단계 입력.
+  output_format_required:
+    - 결론 (1~2줄): 단계별 결과 (가설 confidence / 재현 성공률 / fix 후보 N개)
+    - 출처: file:line · commit hash · 로그 인용 · 외부 docs (Python docs · MDN · 라이브러리 issue tracker)
+    - 추측 표현 금지 (`아마 race condition` 금지, falsifying 조건 명시 의무)
+    - 자기비판 1줄 (가설 오류 가능성 또는 fix 회귀 위험)
+
+protocol:
+  enforcement: 4-step 강제 (글로벌 ~/.claude/rules/agent-spawn-model.md)
+  steps:
+    - "1. TeamCreate (팀 생성)"
+    - "2. TaskCreate (태스크 정의 + addBlockedBy 체인 = Pipeline)"
+    - "3. Agent spawn (model 명시 의무 — pm=opus, 워커=sonnet, 강제 훅 활성)"
+    - "4. SendMessage (단계 결과 다음 단계로 전달)"
+
+review_cycle_cap: 3
+escalation_after_cap: |
+  3 사이클 초과 시 (가설 기각 반복·재현 실패 반복·fix 회귀 반복) PM 이 (a) 가설 재설계 또는 (b) 사장 에스컬레이션.
+  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+
+variations:
+  default:
+    members: [hypothesis-investigator, reproducer, solver]
+    description: "기본 3 단계 Pipeline"
+  hypotheses_n:              # 가설 N개 병렬 (zircote Parallel Specialists 변형)
+    members: [hypothesis-investigator, hypothesis-investigator, hypothesis-investigator, reproducer, solver]
+    team_size: 5
+    description: "가설 갯수 변동 (복수 가설 병렬 조사 후 재현/해결)"
