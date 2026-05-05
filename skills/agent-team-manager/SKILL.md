@@ -4,7 +4,7 @@ description: 에이전트 팀 구성·실행·관리 (Phase 1 본격 운영 — 
 trigger: /agent-team
 argument-hint: "[create|run|list|show|edit|delete] [팀이름|--preset 이름] [추가 인자...]"
 user-invocable: true
-allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
+allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 ---
 
 # Agent Team Manager (Phase 1 정식 운영)
@@ -22,7 +22,7 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 3. §3 모델 배분 강제 (워커 = Sonnet, 강제 훅 + frontmatter + 명시 model 3중 보장)
 4. PM 협의 가능 시 `agents/pm.md` (Opus) spawn → preset 추천 받음 → 사장이 spawn 대행 (R-2 보호막)
 5. §4 작업 완료 후 `/feedback` 검수 의무
-6. §5 가드레일 R-1~R-12 인지 (R-9 일반화 한계 + R-10 양식 일관 + R-11 team_size·members 정합 + R-12 dimension preset 컨텍스트)
+6. §5 가드레일 R-1~R-15 인지 (R-9 일반화 한계 + R-10 양식 일관 + R-11 team_size·members 정합 + R-12 dimension preset 컨텍스트 + R-13 §변경 이력 다중 entry + R-14 orphan 정리 + R-15 ps1 BOM 의무)
 
 ---
 
@@ -238,9 +238,9 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 
 ---
 
-## 5. 가드레일 (R-1~R-12)
+## 5. 가드레일 (R-1~R-15)
 
-마스터플랜 §6 R-1~R-5 + 본 비전 누적 R-6~R-12 가드 운영:
+마스터플랜 §6 R-1~R-5 + 본 비전 누적 R-6~R-15 가드 운영:
 
 | 가드 | 본 스킬에서의 적용 |
 |------|-----------------|
@@ -264,10 +264,10 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 
 | 가드레일 | 내용 |
 |---------|------|
-| 한 세션 1 team | PM 팀 cleanup 후 워커 팀 생성 (현재는 PM 없음 — 워커 팀만) |
+| 한 세션 1 team | Phase 1 정식 PM (`agents/pm.md`, Opus) 운영 가능, 단 PM 팀 cleanup 후 워커 팀 생성 (또는 워커 팀 단독) — PM 팀 + 워커 팀 동시 불가 |
 | nested team 불가 | teammate 는 `Agent`/`TeamCreate` 도구 없음 (issue#32731). 추가 spawn 필요 시 lead 가 대행 |
 | Ralph 자율 루프 제한 | `max_iterations: 5` + Plan-Approval gate 필수 (D-5 보호) |
-| 고아 팀 청소 | `~/.claude/teams/.archived/` 로 archive 또는 `validate-team.ps1` (Phase 1 후) |
+| 고아 팀 청소 | `scripts/shutdown-team.ps1 -Team <name>` archive (Phase 1 신설 완료, Day 20 turn 3) 또는 `~/.claude/teams/.archived/` 수동 이동 |
 | PM 팀 cleanup 실패 폴백 | 60초 timeout → 강제 archive (마스터플랜 §9.3) |
 | spawn 범위 제한 | spawn prompt 에 "이 경로 외 탐색 금지" 명시 (issue#35513) |
 
@@ -390,6 +390,7 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 
 ## 변경 이력
 
+- **2026-05-05 (v2.6, Day 20 turn 5 /feedback 반영)**: 3 CLI 외부 검수 (codex+gemini+claude_sub) 합집합 11건 → 환각 0 / 만장일치 1 + 부분 합의 1 + 단독 가치 3 = critical 6건 즉시 반영. (a) frontmatter `allowed-tools` = TeamCreate/TaskCreate/SendMessage/TeamDelete 4 도구 추가 (4-step 본문 명단 정합). (b) §0 의무 6번 R-1~R-12 → R-1~R-15. (c) §5 헤더 R-1~R-12 → R-1~R-15. (d) §5 본문 R-6~R-12 → R-6~R-15. (e) §5.1 "현재는 PM 없음" → Phase 1 정식 PM 운영 정합. (f) §5.1 "(Phase 1 후)" → Phase 1 신설 완료 표현. 반박 4건 (gemini exit 0 우회 = Issue #26923 의도 / 4-step 예외 = §2.1 heuristic 의도 / Phase 모순 = §7.1·§7.2 분리 의도 / SHA256 절단 = 히스토리 식별자 용도). 게이트 6 표기 모순 (5게이트 + 외부 훅) = #022 별도 turn 백로그. **자기비판** = v2.5 작성 시 frontmatter ↔ 본문 정합 grep 누락 (글로벌 더블 체크 §3 일관성 검증 빠뜨림). SHA256 (이전 v2.5) = `3D70CE05...A641`.
 - **2026-05-05 (v2.5, Day 20 turn 4)**: scripts/ 6 + reference/ 4 호출 박기 (#009-D-2). §1.2 Phase 0~8 자동화 흐름 표 신설 (v2 spec §3.1 양식 차용 + 본 비전 양식 SSOT D-23). §2.4 `reference/presets.md` 1차 참조 박기. §5 가드레일 R-1~R-12 → R-1~R-15 확장 (R-13 §변경 이력 다중 entry 보존 + R-14 orphan 정리 + R-15 ps1 BOM 의무). §6 명령어 = scripts/ 6 호출 흐름 11단계 명시. §7.1 활용 자산 표 = scripts/ 6 + reference/ 4 행 추가 (6→8행). §7.2 잔여 한계 = scripts/ 6 + reference/ 4 행 제거, feature·security 2 preset (#009-E) + orphan 71 정리 (#021) 만 잔존. SHA256 (이전 v2) = `9FC078A6...AFFF`.
 - **2026-05-05 (v2, Day 20 turn 2)**: PM·preset·hooks 보류 3건 흡수 (#009-C). v1.5 §7 한계 표 中 3 행 (PM 비판자 + PM 동적 선택 + preset YAML) 제거 → §7.1 활용 자산 표로 전환. §0 부트스트랩 표현 제거. §1.1 글로벌 강제 훅 박스 신설 (turn 7 #018 + turn 8 #019 라이브 검증 인용). §2.4 ② 회의실 5 preset 카탈로그 신설 (마스터플랜 §2.4 1:1 정합 5/5 PASS). §2.5 preset 자동 매핑 heuristic 신설. §3.1 박스 의미 전환 = 종전 경고 박스 → "fallback C+ 영구 적용" (turn 8 #019 PASS, issue#32732 종결). §5 가드레일 R-1~R-5 → R-1~R-12 확장 (turn 8 R-7·R-8 + turn 10 R-9 + turn 11 R-10 + Day 20 turn 1 R-11·R-12). §6 명령어 = preset 옵션 + PM 협의 모드 추가. SHA256 (이전 v1.5) = `ED0A9DD1...8F0C`.
 - **2026-05-02 (v1.5, Day 18 후속)**: 마스터플랜 정합 재작성. v1 의 6가지 문제 해소 (저장 경로 / PM / 모델 배분 / 4가지 워커 / lifecycle / /feedback). 부트스트랩 가이드로 위치 확정. SHA256 (이전 v1) = `454F27ED...A8F5`.
