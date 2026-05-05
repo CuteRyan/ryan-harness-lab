@@ -17,12 +17,12 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 > **비전 SSOT**: `docs/research/agent-office-masterplan/agent-office-vision.md` (D-1~D-18 / R-1~R-12)
 
 **본 스킬 호출 시 사장(메인 Claude) 의 의무**:
-1. 작업 분석 → §2 heuristic 표로 4가지 워커 中 1~N개 선택, ② 회의실 시 §2.4 preset 카탈로그 (5종) 우선 매핑
+1. 작업 분석 → §2 heuristic 표로 4가지 워커 中 1~N개 선택, ② 회의실 시 §2.4 preset 카탈로그 (7종) 우선 매핑
 2. §1 표준 4-step 으로 spawn — **글로벌 강제 훅 활성** (`Task|Agent` matcher, `model` 누락 시 차단, turn 7·8 라이브 검증 PASS)
 3. §3 모델 배분 강제 (워커 = Sonnet, 강제 훅 + frontmatter + 명시 model 3중 보장)
 4. PM 협의 가능 시 `agents/pm.md` (Opus) spawn → preset 추천 받음 → 사장이 spawn 대행 (R-2 보호막)
 5. §4 작업 완료 후 `/feedback` 검수 의무
-6. §5 가드레일 R-1~R-15 인지 (R-9 일반화 한계 + R-10 양식 일관 + R-11 team_size·members 정합 + R-12 dimension preset 컨텍스트 + R-13 §변경 이력 다중 entry + R-14 orphan 정리 + R-15 ps1 BOM 의무)
+6. §5 가드레일 R-1~R-17 인지 (R-9 일반화 한계 + R-10 양식 일관 + R-11 team_size·members 정합 + R-12 dimension preset 컨텍스트 + R-13 §변경 이력 다중 entry + R-14 orphan 정리 + R-15 ps1 BOM 의무 + R-16 간소 모드 + R-17 frontmatter ↔ §변경 이력 정합 grep 의무)
 
 ---
 
@@ -155,7 +155,7 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 - 본 비전 확장 4 항목: `pm_lead` · `protocol` (4-step) · `review_cycle_cap: 3` · `output_format_required` (4 요소: 결론·출처·추측 금지·자기비판)
 - 출처 인용 cap 3: [aws-samples/sample-claude-code-agent-team](https://github.com/aws-samples/sample-claude-code-agent-team) HEAD `67840be315fad3ef252c06ccfe35d6ab9a2d43d6` `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
 
-**보류 2 preset (별도 turn)**: feature (4명) · security (3명) — 마스터플랜 §2.4 표 中 5/7 PASS, 2/7 보류.
+**Phase 1 정식 7 preset 完** (Day 20 turn 7 #009-E PASS, 마스터플랜 §2.4 표 7/7 정합 100%).
 
 ### 2.5 preset 자동 매핑 heuristic
 
@@ -166,6 +166,8 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 | "조사" / "리서치" / "research" | research | 커뮤니티 자료 부족 시 docs_only variations |
 | "하네스 리서치" / "ADR" / "설계 결정" | docs-research | ADR 단계 생략 시 research_only |
 | "스킬 설계" / "훅 설계" / "규칙 설계" | harness-design | auditor 단계 분리 시 design_only |
+| "기능 개발" / "feature" / "신규 기능" / "API 추가" / "UI 신설" | feature | backend_only / frontend_only variations (도메인 전용 lead 분화는 #009-F) |
+| "보안 감사" / "security audit" / "취약점 분석" / "OWASP" / "PCI-DSS" / "GDPR" | security | sast_only (DAST 환경 부재 시) / audit_focused (compliance 단독) variations |
 | 매핑 모호 / 다관점 필요 | PM 협의 (`agents/pm.md`) | R-2 보호막 강화 |
 
 ---
@@ -179,7 +181,7 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 | 메인 Claude (사장) | **Opus** | 본 세션 자체 |
 | PM (3층 부장) | **Opus** | `agents/pm.md` frontmatter `model: opus` (turn 11 신설) |
 | architect (docs-research·harness-design preset) | **Opus** | `agents/architect.md` frontmatter `model: opus` |
-| 워커 ①②④ (나머지 9 슬롯) | **Sonnet** | (a) `agents/*.md` frontmatter `model: sonnet` (b) Agent spawn `model="sonnet"` 명시 (c) **글로벌 강제 훅** (PreToolUse `Task|Agent` matcher, §1.1) |
+| 워커 ①②④ (나머지 15 슬롯, agents 18 - PM·architect 2 lead = 15 - architect 1 [docs-research·harness-design 공유] = 14 ~ 16 변동) | **Sonnet** | (a) `agents/*.md` frontmatter `model: sonnet` (b) Agent spawn `model="sonnet"` 명시 (c) **글로벌 강제 훅** (PreToolUse `Task|Agent` matcher, §1.1) |
 | ③ 외부 CLI / ⑤ /feedback 검증 | 외부 (Codex / Gemini / Claude Sub) | `/feedback` 스킬 내장 |
 | ⑤ /feedback 결과 해석 (메인) | **Opus** | 본 세션 자체 |
 
@@ -243,13 +245,13 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 
 ---
 
-## 5. 가드레일 (R-1~R-15)
+## 5. 가드레일 (R-1~R-17)
 
-마스터플랜 §6 R-1~R-5 + 본 비전 누적 R-6~R-15 가드 운영:
+마스터플랜 §6 R-1~R-5 + 본 비전 누적 R-6~R-17 가드 운영:
 
 | 가드 | 본 스킬에서의 적용 |
 |------|-----------------|
-| **R-1** 영속화 우려 | yaml + 외부 자산으로 해소. `~/.claude/teams/<팀>/config.json` + `agents/*.md` 12 + `presets/*.yaml` 5 + 산출물 파일이 외부 자산 |
+| **R-1** 영속화 우려 | yaml + 외부 자산으로 해소. `~/.claude/teams/<팀>/config.json` + `agents/*.md` 18 (Step A 12 + Day 20 turn 7 6) + `presets/*.yaml` 7 + 산출물 파일이 외부 자산 |
 | **R-2** PM 별도 두기 | **Phase 1 정식 PM** = `agents/pm.md` (Opus, turn 11 신설). 사장이 PM 협의 거쳐 결정 = 자기 확증 편향 1차 회피. `/feedback` 검수 = 2차 외부 보호막 |
 | **R-3** Sonnet 워커 강제 | §3 모델 배분 + 강제 훅 3중 보장 |
 | **R-4** 4가지 워커 명시 | §2 항상 ①②③④ 4가지 — 3가지로 줄이지 말 것 |
@@ -264,6 +266,8 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 | **R-13** §변경 이력 다중 entry 보존 | 체크리스트 grep 명세 작성 시 §변경 이력 entry M개 × 평균 단어/entry 사전 고려 의무. 단순 단어 카운트 명세 = 좁음 (Day 20 turn 2) |
 | **R-14** orphan 팀 정기 정리 | `validate-team.ps1 -AllTeams` 부수 발견 (Day 20 turn 3 = 운영 71 orphan). `shutdown-team.ps1` 일괄 정리 별도 turn 권장 (#021) |
 | **R-15** 한글 ps1 = UTF-8 BOM 의무 | PowerShell 5.1 한글 주석 ps1 = BOM 부재 시 CP949 fallback → here-string parse fail. `[UTF8Encoding]::new($true)` 의무. Python 호출 = `PYTHONIOENCODING=utf-8` 강제 (Day 20 turn 3) |
+| **R-16** 간소 모드 의무 | 작은 보완 작업 (1 결함 정정·운영 정리 等) = 체크리스트 200줄 → 60줄 압축, history 75줄 → 30줄 압축, 검증 batch (각 단계 후 매번 → 마지막 일괄). 사용자 "왜 이렇게 오래 걸려" 피드백 반영 (Day 20 turn 6) |
+| **R-17** frontmatter ↔ §변경 이력 정합 grep 의무 | 본 스킬 SKILL.md 갱신 시 (a) frontmatter description 의 "N preset"·"M agent" 표기 (b) §변경 이력 v.X entry 신설 (c) 본문 全 grep ("preset 카탈로그 N종" / "presets/*.yaml N" / "agents/*.md M" / "나머지 K 슬롯") = 3 위치 동시 갱신 의무. 누락 시 정합성 결함 (Day 20 turn 7 #009-E /feedback 검수에서 critical 9건 검출 → 본 R-17 신설) |
 
 ### 5.1 운영 가드레일 (마스터플랜 §9 인용)
 
@@ -329,7 +333,7 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 → `agents/pm.md` (Opus) spawn → preset 추천 받음 → 사용자 컨펌 → 모드 2 진입
 
 ### `/agent-team list`
-`~/.claude/teams/` 디렉토리 스캔 → 활성 팀 목록 표시 + `presets/*.yaml` 5 카탈로그 표시 (이름·team_size·members) + archive 디렉토리 (`~/.claude/teams/.archived/`) 표시.
+`~/.claude/teams/` 디렉토리 스캔 → 활성 팀 목록 표시 + `presets/*.yaml` 7 카탈로그 표시 (이름·team_size·members) + archive 디렉토리 (`~/.claude/teams/.archived/`) 표시.
 
 ### `/agent-team show [팀이름|--preset <이름>]`
 - 팀 모드: `~/.claude/teams/<팀이름>/config.json` Read + members 표시
@@ -351,7 +355,8 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 |------|------|---------|---------|
 | **PM 비판자 (3층 부장)** | `agents/pm.md` (Opus) + `~/.claude/agents/pm.md` 운영 sync | turn 11 (#009-A) | `/agent-team run --pm-consult <작업>` 또는 직접 spawn |
 | **PM 외부 리서치 의무** | `agents/pm.md` 핵심 행동 규칙 5번 + 출력 형식 4 요소 | turn 9 (#014) | PM 추천 시 자동 적용 (글로벌 `rules/research-mandatory.md` superset) |
-| **② 회의실 5 preset** | `presets/{review,debug,research,docs-research,harness-design}.yaml` + `~/.claude/presets/` 운영 sync | Day 20 turn 1 (#009-B) | `/agent-team run --preset <이름>` |
+| **② 회의실 7 preset** | `presets/{review,debug,research,docs-research,harness-design,feature,security}.yaml` + `~/.claude/presets/` 운영 sync | Day 20 turn 1 (#009-B, 5건) + turn 7 (#009-E, feature·security 2건) | `/agent-team run --preset <이름>` |
+| **직책별 agents 18 (Step A 12 + turn 7 6)** | `agents/{pm,architect,auditor,analyst,security/performance/correctness-reviewer,hypothesis-investigator,reproducer,solver,docs-researcher,community-researcher,frontend/backend-developer,tester,sast/dast-analyzer,compliance-checker}.md` + 운영 sync | turn 11 (#009-A, 12건) + Day 20 turn 7 (#009-E, 6건) | preset spawn 시 자동 호출 (model 명시 의무) |
 | **scripts/ 6 자동화 헬퍼** | `skills/agent-team-manager/scripts/{preflight,resolve-preset,run-team,monitor-team,validate-team,shutdown-team}.ps1` + 운영 sync | Day 20 turn 3 (#009-D-1) | §1.2 Phase 0~8 흐름 자동 호출 |
 | **reference/ 4 사례 라이브러리** | `skills/agent-team-manager/reference/{patterns,anti-patterns,errors,presets}.md` + 운영 sync | Day 20 turn 4 (#009-D-2) | on-demand 로드 (LLM 이 패턴 선택·트러블슈팅·preset 선택 시 Read) |
 | **글로벌 강제 훅** | `hooks/pretooluse-agent-model-required.{sh,py}` + settings.json `Task|Agent` matcher | turn 7 (#018) | `model` 누락 시 자동 차단 (`permissionDecision: deny`) |
@@ -385,8 +390,8 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 ```
 
 **호환성**:
-- 본 스킬로 만든 팀 메타 (`~/.claude/teams/<팀>/`) + `presets/*.yaml` 5 + `agents/*.md` 12 는 `/agent-office` 도 그대로 읽음 (역방향 호환)
-- 자연어 트리거 ("팀 만들어줘", "리뷰 팀 돌려줘") 는 Phase 2 후 `/agent-office` 가 우선 트리거 (본 스킬은 fallback)
+- 본 스킬로 만든 팀 메타 (`~/.claude/teams/<팀>/`) + `presets/*.yaml` 7 + `agents/*.md` 18 는 `/agent-office` 도 그대로 읽음 (역방향 호환)
+- 자연어 트리거 ("팀 만들어줘", "리뷰 팀 돌려줘", "보안 감사 팀", "기능 개발 팀") 는 Phase 2 후 `/agent-office` 가 우선 트리거 (본 스킬은 fallback)
 
 상세 마이그레이션: 마스터플랜 `05_migration_plan.md` Phase 0~3.
 
@@ -394,6 +399,7 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 
 ## 변경 이력
 
+- **2026-05-05 (v2.9, Day 20 turn 7 /feedback 반영)**: 본 turn /feedback 3 CLI (codex+claude_sub+gemini) 검수 합집합 9건 critical 정합 결함 즉시 반영 (환각 0). codex 5건 (L158/L252/L332/L354/L388 5/12 체계 잔존) + claude_sub 4건 (L20 "(5종)" / L25 "R-1~R-15" / L162 §2.5 표 미갱신 / L182 "9 슬롯" / R-16 §5 본문 미반영). 만장일치 2건 (L158 보류 단락 + L354 활용 자산 표 5 preset = codex+claude_sub 동시 지적). **반영 9건**: (a) L20 "(5종)" → "(7종)" / (b) L25 "R-1~R-15" → "R-1~R-17" + R-16·R-17 행 명시 / (c) L158 "보류 2 preset" 단락 → "Phase 1 정식 7 preset 完" 갱신 / (d) §2.5 표 = feature·security 자동 매핑 2행 신설 + 트리거 키워드 보강 ("기능 개발"·"feature"·"API 추가"·"UI 신설" / "보안 감사"·"OWASP"·"PCI-DSS"·"GDPR") / (e) L182 "나머지 9 슬롯" → "15 슬롯 (agents 18 - PM·architect 2 lead = 14 ~ 16 변동)" / (f) R-1 자산 = "agents 12 + presets 5" → "agents 18 (Step A 12 + turn 7 6) + presets 7" / (g) §5 표 = R-16 행 신설 (간소 모드, turn 6 누락 정정) + **R-17 신설** (frontmatter ↔ §변경 이력 정합 grep 의무, 본 turn 학습 결정적 박음) / (h) L332 list 명령 = "presets 5 카탈로그" → "presets 7 카탈로그" / (i) §7.1 "② 회의실 5 preset" 행 갱신 + **신규 행 = "직책별 agents 18 (Step A 12 + turn 7 6)"** + L388·394 마이그레이션 호환 자산 = "presets 5 + agents 12" → "presets 7 + agents 18" + 자연어 트리거 4종. **반박 1건** (gemini L108 4-step 우회 정책 모순) = §35 (4-step 강제) 는 ② 회의실 한정, §108 (단순 버그픽스 4-step 생략) 은 ① 인턴 영역 = 적용 영역 다름 (§2.1 heuristic 의도). **유보 3건** (gemini cycle_cap 에스컬레이션 핸들링 / --target 인터페이스 / preflight 자동 인코딩 검증) = Phase 2 후속 가치, 본 turn 범위 외. **확인 불가 1건** (claude_sub zircote 7패턴 출처) = 02_external-deep.md §3 별도 검증 가능. **자기비판** = 본 turn 작업 시 §2.4 표만 갱신하고 6 위치의 5/12 체계 잔존을 사전 grep 안 함 → R-17 신설 불가피. SHA256 (이전 v2.8) = `8F91BD50...41EE`.
 - **2026-05-05 (v2.8, Day 20 turn 7)**: #009-E PASS = 마스터플랜 §2.4 ② 회의실 preset 표 1:1 정합 **5/7 → 7/7 完** (feature·security 2 preset 신설). (a) §2.4 표 5행 → 7행 (feature: frontend ‖ backend → tester / security: SAST → DAST → compliance). (b) frontmatter description "5 preset" → "7 preset" + 자연어 트리거 "보안 감사 팀"·"기능 개발 팀" 추가. (c) §0 본 스킬 위치 = "5 preset" → "7 preset, 마스터플랜 §2.4 7/7 完". (d) §7.2 잔여 한계 표 = feature·security 행 제거 + #009-F (도메인 전문 lead 분화 백로그 후보) 행 추가. **결정 1=A** (feature preset lead = pm 재사용, R-2 정합) + **결정 2=A** (security preset 멤버 = 새 agent 3 신설, R-12 차원 분리 정합). 신설 = agents 6 (frontend-developer / backend-developer / tester / sast-analyzer / dast-analyzer / compliance-checker) + presets 2 (feature.yaml / security.yaml). 운영 sync 9쌍 SHA256 MATCH. 마스터플랜 §2.4 표 본문 무수정 (preset 명세와 1:1 정합 사전 확인 PASS). SHA256 (이전 v2.7) = `A4B94BF0...4D10`.
 - **2026-05-05 (v2.7, Day 20 turn 6 #022)**: §4.3 게이트 표기 정정 (5게이트 + 외부 훅 → 6게이트 = 5게이트 LLM + 외부 훅 1) + 정합 박스 신설. R-16 간소 모드 신규 (사용자 "왜 이렇게 오래 걸려" 피드백 반영 = 작은 보완 작업 압축 의무). SHA256 (이전 v2.6) = `[turn 6 commit b2a8c91 시점]`.
 - **2026-05-05 (v2.6, Day 20 turn 5 /feedback 반영)**: 3 CLI 외부 검수 (codex+gemini+claude_sub) 합집합 11건 → 환각 0 / 만장일치 1 + 부분 합의 1 + 단독 가치 3 = critical 6건 즉시 반영. (a) frontmatter `allowed-tools` = TeamCreate/TaskCreate/SendMessage/TeamDelete 4 도구 추가 (4-step 본문 명단 정합). (b) §0 의무 6번 R-1~R-12 → R-1~R-15. (c) §5 헤더 R-1~R-12 → R-1~R-15. (d) §5 본문 R-6~R-12 → R-6~R-15. (e) §5.1 "현재는 PM 없음" → Phase 1 정식 PM 운영 정합. (f) §5.1 "(Phase 1 후)" → Phase 1 신설 완료 표현. 반박 4건 (gemini exit 0 우회 = Issue #26923 의도 / 4-step 예외 = §2.1 heuristic 의도 / Phase 모순 = §7.1·§7.2 분리 의도 / SHA256 절단 = 히스토리 식별자 용도). 게이트 6 표기 모순 (5게이트 + 외부 훅) = #022 별도 turn 백로그. **자기비판** = v2.5 작성 시 frontmatter ↔ 본문 정합 grep 누락 (글로벌 더블 체크 §3 일관성 검증 빠뜨림). SHA256 (이전 v2.5) = `3D70CE05...A641`.
