@@ -40,7 +40,7 @@ model: sonnet
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - 종합 결과 → PM lead 가 architect (docs-research) 또는 사장에게 위임
 - 최종 결정권 = 주인님 (D-5)
 - docs-researcher/community-researcher/architect 와 차원 분리 = 종합 전담 (공식·커뮤니티 발견 외)

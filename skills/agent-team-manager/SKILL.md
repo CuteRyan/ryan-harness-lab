@@ -22,7 +22,7 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 3. §3 모델 배분 강제 (워커 = Sonnet, 강제 훅 + frontmatter + 명시 model 3중 보장)
 4. PM 협의 가능 시 `agents/pm.md` (Opus) spawn → preset 추천 받음 → 사장이 spawn 대행 (R-2 보호막)
 5. §4 작업 완료 후 `/feedback` 검수 의무
-6. §5 가드레일 R-1~R-17 인지 (R-9 일반화 한계 + R-10 양식 일관 + R-11 team_size·members 정합 + R-12 dimension preset 컨텍스트 + R-13 §변경 이력 다중 entry + R-14 orphan 정리 + R-15 ps1 BOM 의무 + R-16 간소 모드 + R-17 frontmatter ↔ §변경 이력 정합 grep 의무)
+6. §5 가드레일 R-1~R-18 인지 (R-9 일반화 한계 + R-10 양식 일관 + R-11 team_size·members 정합 + R-12 dimension preset 컨텍스트 + R-13 §변경 이력 다중 entry + R-14 orphan 정리 + R-15 ps1 BOM 의무 + R-16 간소 모드 + R-17 frontmatter ↔ §변경 이력 정합 grep 의무 + R-18 agent 양식 공통 결함 = 全 agent 적용 의무)
 
 ---
 
@@ -245,9 +245,9 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 
 ---
 
-## 5. 가드레일 (R-1~R-17)
+## 5. 가드레일 (R-1~R-18)
 
-마스터플랜 §6 R-1~R-5 + 본 비전 누적 R-6~R-17 가드 운영:
+마스터플랜 §6 R-1~R-5 + 본 비전 누적 R-6~R-18 가드 운영:
 
 | 가드 | 본 스킬에서의 적용 |
 |------|-----------------|
@@ -268,6 +268,7 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 | **R-15** 한글 ps1 = UTF-8 BOM 의무 | PowerShell 5.1 한글 주석 ps1 = BOM 부재 시 CP949 fallback → here-string parse fail. `[UTF8Encoding]::new($true)` 의무. Python 호출 = `PYTHONIOENCODING=utf-8` 강제 (Day 20 turn 3) |
 | **R-16** 간소 모드 의무 | 작은 보완 작업 (1 결함 정정·운영 정리 等) = 체크리스트 200줄 → 60줄 압축, history 75줄 → 30줄 압축, 검증 batch (각 단계 후 매번 → 마지막 일괄). 사용자 "왜 이렇게 오래 걸려" 피드백 반영 (Day 20 turn 6) |
 | **R-17** frontmatter ↔ §변경 이력 정합 grep 의무 | 본 스킬 SKILL.md 갱신 시 (a) frontmatter description 의 "N preset"·"M agent" 표기 (b) §변경 이력 v.X entry 신설 (c) 본문 全 grep ("preset 카탈로그 N종" / "presets/*.yaml N" / "agents/*.md M" / "나머지 K 슬롯") = 3 위치 동시 갱신 의무. 누락 시 정합성 결함 (Day 20 turn 7 #009-E /feedback 검수에서 critical 9건 검출 → 본 R-17 신설) |
+| **R-18** agent 양식 공통 결함 = 全 agent 적용 의무 | 1 agent 의 양식 결함 발견 시 18 agent 全 동일 패턴 grep + 일괄 정정 의무. 단일 정정 금지 (drift 위험 + R-10 양식 일관 위반). Day 20 turn 8 dogfood = "PM lead 가 대행" → "PM lead 가 추천, 사장이 spawn" 17 agent (pm 제외) 일괄 정정 PASS. 검출 도구 = `grep -n "공통 패턴" agents/*.md` 사전 의무 |
 
 ### 5.1 운영 가드레일 (마스터플랜 §9 인용)
 
@@ -399,6 +400,7 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 
 ## 변경 이력
 
+- **2026-05-05 (v3.0, Day 20 turn 8 PM 협의 + /feedback 8 자산 검수 반영)**: 본 turn = 진짜 Agent Teams dogfood 첫 사례 = `feedback-triage-day20-turn8` 팀 생성 + PM 부장 (Opus) spawn → 4-step 프로토콜 (TeamCreate → TaskCreate → Agent spawn[model=opus] → SendMessage) → PM 추천 7건 + 외부 리서치 4건 PASS + 자기비판 → 사장 채택 + 사용자 5-A 컨펌 → 사장 직접 반영 (Edit, ① 인턴 영역). **반영 7건**: (1) **A-2 17 agent 一括** "PM lead 가 대행" → "PM lead 가 추천, 사장이 spawn" 정정 (R-18 dogfood, pm.md 제외 17 agent 全) / (2) **B-7 security.yaml 데드락** = `compliance-checker.blocked_by_policy: any_available` 신설 (D-26 양식 SSOT 5번째 확장 항목) + sast_only/audit_focused variations 데드락 해결 / (3) **B-8 security.yaml self_critique** = preset YAML 자기비판 신설 (DAST production 강제 미구현 + Phase 2 hooks 차단 예고 + blocked_by_policy 양식 SSOT 확장 명시) / (4) **C-12 PCI-DSS v4.0 → v4.0.1** (compliance-checker.md L58 + security.yaml focus_areas, 외부 출처 PCI SSC Blog 직접 인용) / (5) **C-13 ISO 27002:2022 = 93 controls/4 themes** (compliance-checker.md L62 + security.yaml focus_areas, Organizational 37/People 8/Physical 14/Technological 34, ISO 공식 출처) / (6) **C-10 IE11 미지원 표현 정정** (frontend-developer.md L32 자기비판 예시 = "Safari 15 미만 미검증 / Edge IE mode" + "비용 추산 5~15× (추정값, 실측 미수행)" 명시) / (7) **C-11 Recoil 권장 제거** (frontend-developer.md L56 = "Jotai 권장, Recoil = Meta archived 2023-01-31"). **R-18 신설** (agent 양식 공통 결함 = 全 agent 적용 의무, pm.md 제외 17 agent 一括 grep + 정정). **D-26 신설** (양식 SSOT 5번째 확장 항목 = `blocked_by_policy: any_available`, wshobson preset-teams.md 양식 부재, 본 비전 확장). **Phase 2 후속 #023~#026 백로그**: A-1 비용 추산 vs 4 요소 양식 통합 / A-3 5~15× 출처 검색 / A-4 Rules DRY 정리 (18 agent 全 일괄) / B-9 escalation_after_cap 구조화. **외부 리서치 4건 PASS** (Microsoft IE11 / Recoil-next GitHub / PCI SSC v4.0.1 / ISO 27002:2022). 환각 0 (codex em-dash mojibake = 환경 한계, 제외). SHA256 (이전 v2.9) = `BE82E2C8...5935`.
 - **2026-05-05 (v2.9, Day 20 turn 7 /feedback 반영)**: 본 turn /feedback 3 CLI (codex+claude_sub+gemini) 검수 합집합 9건 critical 정합 결함 즉시 반영 (환각 0). codex 5건 (L158/L252/L332/L354/L388 5/12 체계 잔존) + claude_sub 4건 (L20 "(5종)" / L25 "R-1~R-15" / L162 §2.5 표 미갱신 / L182 "9 슬롯" / R-16 §5 본문 미반영). 만장일치 2건 (L158 보류 단락 + L354 활용 자산 표 5 preset = codex+claude_sub 동시 지적). **반영 9건**: (a) L20 "(5종)" → "(7종)" / (b) L25 "R-1~R-15" → "R-1~R-17" + R-16·R-17 행 명시 / (c) L158 "보류 2 preset" 단락 → "Phase 1 정식 7 preset 完" 갱신 / (d) §2.5 표 = feature·security 자동 매핑 2행 신설 + 트리거 키워드 보강 ("기능 개발"·"feature"·"API 추가"·"UI 신설" / "보안 감사"·"OWASP"·"PCI-DSS"·"GDPR") / (e) L182 "나머지 9 슬롯" → "15 슬롯 (agents 18 - PM·architect 2 lead = 14 ~ 16 변동)" / (f) R-1 자산 = "agents 12 + presets 5" → "agents 18 (Step A 12 + turn 7 6) + presets 7" / (g) §5 표 = R-16 행 신설 (간소 모드, turn 6 누락 정정) + **R-17 신설** (frontmatter ↔ §변경 이력 정합 grep 의무, 본 turn 학습 결정적 박음) / (h) L332 list 명령 = "presets 5 카탈로그" → "presets 7 카탈로그" / (i) §7.1 "② 회의실 5 preset" 행 갱신 + **신규 행 = "직책별 agents 18 (Step A 12 + turn 7 6)"** + L388·394 마이그레이션 호환 자산 = "presets 5 + agents 12" → "presets 7 + agents 18" + 자연어 트리거 4종. **반박 1건** (gemini L108 4-step 우회 정책 모순) = §35 (4-step 강제) 는 ② 회의실 한정, §108 (단순 버그픽스 4-step 생략) 은 ① 인턴 영역 = 적용 영역 다름 (§2.1 heuristic 의도). **유보 3건** (gemini cycle_cap 에스컬레이션 핸들링 / --target 인터페이스 / preflight 자동 인코딩 검증) = Phase 2 후속 가치, 본 turn 범위 외. **확인 불가 1건** (claude_sub zircote 7패턴 출처) = 02_external-deep.md §3 별도 검증 가능. **자기비판** = 본 turn 작업 시 §2.4 표만 갱신하고 6 위치의 5/12 체계 잔존을 사전 grep 안 함 → R-17 신설 불가피. SHA256 (이전 v2.8) = `8F91BD50...41EE`.
 - **2026-05-05 (v2.8, Day 20 turn 7)**: #009-E PASS = 마스터플랜 §2.4 ② 회의실 preset 표 1:1 정합 **5/7 → 7/7 完** (feature·security 2 preset 신설). (a) §2.4 표 5행 → 7행 (feature: frontend ‖ backend → tester / security: SAST → DAST → compliance). (b) frontmatter description "5 preset" → "7 preset" + 자연어 트리거 "보안 감사 팀"·"기능 개발 팀" 추가. (c) §0 본 스킬 위치 = "5 preset" → "7 preset, 마스터플랜 §2.4 7/7 完". (d) §7.2 잔여 한계 표 = feature·security 행 제거 + #009-F (도메인 전문 lead 분화 백로그 후보) 행 추가. **결정 1=A** (feature preset lead = pm 재사용, R-2 정합) + **결정 2=A** (security preset 멤버 = 새 agent 3 신설, R-12 차원 분리 정합). 신설 = agents 6 (frontend-developer / backend-developer / tester / sast-analyzer / dast-analyzer / compliance-checker) + presets 2 (feature.yaml / security.yaml). 운영 sync 9쌍 SHA256 MATCH. 마스터플랜 §2.4 표 본문 무수정 (preset 명세와 1:1 정합 사전 확인 PASS). SHA256 (이전 v2.7) = `A4B94BF0...4D10`.
 - **2026-05-05 (v2.7, Day 20 turn 6 #022)**: §4.3 게이트 표기 정정 (5게이트 + 외부 훅 → 6게이트 = 5게이트 LLM + 외부 훅 1) + 정합 박스 신설. R-16 간소 모드 신규 (사용자 "왜 이렇게 오래 걸려" 피드백 반영 = 작은 보완 작업 압축 의무). SHA256 (이전 v2.6) = `[turn 6 commit b2a8c91 시점]`.

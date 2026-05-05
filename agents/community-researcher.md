@@ -45,7 +45,7 @@ model: sonnet
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - 커뮤니티 분석 결과 → PM lead 가 analyst 에게 종합 위임
 - 최종 결정권 = 주인님 (D-5)
 - docs-researcher/analyst/architect 와 차원 분리 = 커뮤니티 전담

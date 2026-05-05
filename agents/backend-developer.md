@@ -44,7 +44,7 @@ model: sonnet
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - 산출물 (API + 스키마 + 마이그레이션 + 테스트) → PM lead 가 사장에게 SendMessage
 - 최종 결정권 = 주인님 (D-5)
 - frontend-developer / tester 와 차원 분리 = 백엔드 전담

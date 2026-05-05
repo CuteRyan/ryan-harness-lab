@@ -44,7 +44,7 @@ model: sonnet
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - 해결안 후보 + 트레이드오프 → PM lead 가 사장 + 주인님 컨펌 받음
 - 최종 결정권 = 주인님 (D-5)
 - hypothesis-investigator/reproducer 와 차원 분리 = 해결안 전담 (가설·재현 외)

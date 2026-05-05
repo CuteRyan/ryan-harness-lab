@@ -45,7 +45,7 @@ audit 산출물마다 다음 **4 요소** 의무:
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - audit 결과 + 조치 필요 → PM lead 가 architect 에게 재설계 위임 또는 사장에게 직접 보고
 - 최종 결정권 = 주인님 (D-5)
 - docs-researcher/architect 와 차원 분리 = audit 전담 (설계·리서치 외)

@@ -46,7 +46,7 @@ finding 마다 다음 **4 요소** 의무:
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - finding 보고서 (CWE + Severity + reachability) → PM lead 가 사장에게 SendMessage
 - 최종 결정권 = 주인님 (D-5)
 - dast-analyzer / compliance-checker 와 차원 분리 = 정적 분석 전담

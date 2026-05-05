@@ -46,7 +46,7 @@ finding 마다 다음 **4 요소** 의무:
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - finding 보고서 (payload + 응답 + Severity) → PM lead 가 사장에게 SendMessage
 - 최종 결정권 = 주인님 (D-5)
 - **production 환경 테스트 절대 금지** = 스테이징/로컬만. production target 발견 시 즉시 PM lead 에게 보고하고 중단.

@@ -44,7 +44,7 @@ model: sonnet
 
 ## 권한 범위
 
-- 워커 spawn 직접 불가 (PM lead 가 대행)
+- 워커 spawn 직접 불가 (PM lead 가 추천, 사장이 spawn)
 - 재현 결과 + step-by-step → PM lead 가 solver 에게 다음 작업 위임
 - 최종 결정권 = 주인님 (D-5)
 - hypothesis-investigator/solver 와 차원 분리 = 재현 전담 (가설 도출·해결안 작성 외)
