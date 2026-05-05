@@ -1,6 +1,6 @@
 ---
 name: agent-team
-description: 에이전트 팀 구성·실행·관리 (Phase 1 본격 운영 — PM·preset·hooks 全 구현 완료, ② 회의실 5 preset 즉시 호출 가능). 새 팀을 만들거나 기존 팀을 실행할 때 사용. "팀 만들어줘", "에이전트 팀 실행", "팀 목록", "리뷰 팀 돌려줘" 등의 요청에 반응.
+description: 에이전트 팀 구성·실행·관리 (Phase 1 본격 운영 — PM·preset·hooks 全 구현 완료, ② 회의실 7 preset 즉시 호출 가능). 새 팀을 만들거나 기존 팀을 실행할 때 사용. "팀 만들어줘", "에이전트 팀 실행", "팀 목록", "리뷰 팀 돌려줘", "보안 감사 팀", "기능 개발 팀" 등의 요청에 반응.
 trigger: /agent-team
 argument-hint: "[create|run|list|show|edit|delete] [팀이름|--preset 이름] [추가 인자...]"
 user-invocable: true
@@ -11,7 +11,7 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 
 ## 0. 본 스킬의 위치
 
-> **현 단계 (Phase 1)**: 정식 PM (`agents/pm.md`, Opus, turn 11 신설) + ② 회의실 5 preset (`presets/*.yaml`, Day 20 turn 1 신설) + 글로벌 강제 훅 (`hooks/pretooluse-agent-model-required.{sh,py}`, turn 7 신설, fallback C+ 영구 적용 turn 8 #019 PASS) **全 구현 완료**.
+> **현 단계 (Phase 1)**: 정식 PM (`agents/pm.md`, Opus, turn 11 신설) + ② 회의실 7 preset (`presets/*.yaml`, Day 20 turn 1 5건 + turn 7 2건 = 마스터플랜 §2.4 7/7 完) + 글로벌 강제 훅 (`hooks/pretooluse-agent-model-required.{sh,py}`, turn 7 신설, fallback C+ 영구 적용 turn 8 #019 PASS) **全 구현 완료**.
 > **다음 단계 (Phase 2)**: `/agent-office` 통합 진입점 — 본 스킬 + 자동 분류 + UI 통합 + `validate-team.ps1`/`shutdown-team.ps1` 자동화. 본 스킬은 `/agent-office` 신설 후에도 그대로 호환.
 > **마스터플랜 SSOT**: `docs/research/agent-office-masterplan/04_masterplan.md` (814줄+)
 > **비전 SSOT**: `docs/research/agent-office-masterplan/agent-office-vision.md` (D-1~D-18 / R-1~R-12)
@@ -118,18 +118,20 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 | 복잡 협업에 ① 인턴 단독 | ② 회의실 | 1× 비용이나 품질 저하 |
 | 외부 검증에 ② 회의실 | ③ 외부 CLI | 5~10× 절감 |
 
-### 2.4 ② 회의실 preset 카탈로그 (5종, Phase 1 정식)
+### 2.4 ② 회의실 preset 카탈로그 (7종, Phase 1 정식 完)
 
 > **1차 참조**: `reference/presets.md` (preset 요약 + 트리거 키워드 + 호출 흐름). LLM 이 본 §2.4 표 + reference 후 `presets/<name>.yaml` Read.
-> Step B (Day 20 turn 1) 산출물 = `presets/*.yaml` 5건. Step A (turn 11) 의 정식 직책별 agent 12명 호출 박음. 마스터플랜 §2.4 ② 회의실 preset 표 1:1 정합 5/5 PASS (feature·security 2/7 보류 = 별도 turn #009-E).
+> Step B (Day 20 turn 1) 5건 + Day 20 turn 7 신설 2건 (#009-E feature·security). Step A (turn 11) 12 agent + Day 20 turn 7 신설 6 agent 호출 박음. 마스터플랜 §2.4 ② 회의실 preset 표 **1:1 정합 7/7 PASS** (Day 20 turn 7 #009-E PASS, 보류 0건).
 
-| Preset | YAML | team_size | members (Step A 12 agent) | 단계 의존성 | 적합 작업 |
+| Preset | YAML | team_size | members (Step A 12 + turn 7 6) | 단계 의존성 | 적합 작업 |
 |--------|------|----------|--------------------------|------------|---------|
 | **review** | `presets/review.yaml` | 3 | security-reviewer · performance-reviewer · correctness-reviewer | 병렬 | 코드 리뷰 (보안/성능/정확성 3차원) |
 | **debug** | `presets/debug.yaml` | 3 | hypothesis-investigator → reproducer → solver | Pipeline | 버그 헌팅 (가설→재현→해결) |
 | **research** | `presets/research.yaml` | 3 | docs-researcher ‖ community-researcher → analyst | Parallel + 종합 | 기술 조사 (공식docs/커뮤니티 → 종합) |
 | **docs-research** | `presets/docs-research.yaml` | 4 | research 3 + architect ADR | 4단계 Pipeline | 하네스 리서치 (조사 → 종합 → ADR) |
 | **harness-design** | `presets/harness-design.yaml` | 3 | docs-researcher → architect → auditor | Pipeline | 규칙·스킬 설계 (D-15 researcher 통합) |
+| **feature** | `presets/feature.yaml` | 3 | frontend-developer ‖ backend-developer → tester (lead = pm 재사용) | fan-out + fan-in | 기능 개발 (UI ‖ API → 검증) |
+| **security** | `presets/security.yaml` | 3 | sast-analyzer → dast-analyzer → compliance-checker | Pipeline | 보안 감사 (정적 → 동적 → 정책) |
 
 **호출 방식**:
 
@@ -360,12 +362,11 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 
 | 미구현 | 이유 | 진입 조건 |
 |--------|------|---------|
-| **feature·security 2 preset** | 마스터플랜 §2.4 표 中 2/7 보류 + 새 agent 7 (lead/frontend/backend/tester + SAST/DAST/compliance) 신설 선행 필요 | #009-E 별도 turn (추정 2 turn) |
-| **운영 71 orphan 팀 정리** | Day 20 turn 3 R-14 부수 발견. `validate-team -AllTeams` 후 일괄 archive | #021 별도 turn (추정 30분) |
 | **bypass_threshold 자동 적용** | 작업 복잡도 자동 분석 → 워커 자동 선택 | Phase 2 dogfood 후 |
 | **`/agent-office` 통합 진입점** | 본 스킬 + 자동 분류 + UI 통합 | Phase 2 |
 | **자동 검증 hooks 추가** | PostToolUse sycophancy + 강제 훅 외 추가 (예: preset 자동 매핑 검증) | Phase 2 |
 | **Linux 서버 배포** | bash 버전 병행 (`pretooluse-agent-model-required.sh` 이미 신설, 나머지 헬퍼 별도) | Phase 3 |
+| **feature preset 도메인 전문 lead 분화** | 현재 lead = pm 재사용 (R-2 정합). 도메인별 (예: e-commerce-lead · saas-lead) 분화 가능성 | #009-F 백로그 (선택, 사용자 요청 시) |
 
 ---
 
@@ -393,6 +394,8 @@ config.json 또는 사용자 메모 (`docs/research/.../team_brief.md`) 편집. 
 
 ## 변경 이력
 
+- **2026-05-05 (v2.8, Day 20 turn 7)**: #009-E PASS = 마스터플랜 §2.4 ② 회의실 preset 표 1:1 정합 **5/7 → 7/7 完** (feature·security 2 preset 신설). (a) §2.4 표 5행 → 7행 (feature: frontend ‖ backend → tester / security: SAST → DAST → compliance). (b) frontmatter description "5 preset" → "7 preset" + 자연어 트리거 "보안 감사 팀"·"기능 개발 팀" 추가. (c) §0 본 스킬 위치 = "5 preset" → "7 preset, 마스터플랜 §2.4 7/7 完". (d) §7.2 잔여 한계 표 = feature·security 행 제거 + #009-F (도메인 전문 lead 분화 백로그 후보) 행 추가. **결정 1=A** (feature preset lead = pm 재사용, R-2 정합) + **결정 2=A** (security preset 멤버 = 새 agent 3 신설, R-12 차원 분리 정합). 신설 = agents 6 (frontend-developer / backend-developer / tester / sast-analyzer / dast-analyzer / compliance-checker) + presets 2 (feature.yaml / security.yaml). 운영 sync 9쌍 SHA256 MATCH. 마스터플랜 §2.4 표 본문 무수정 (preset 명세와 1:1 정합 사전 확인 PASS). SHA256 (이전 v2.7) = `A4B94BF0...4D10`.
+- **2026-05-05 (v2.7, Day 20 turn 6 #022)**: §4.3 게이트 표기 정정 (5게이트 + 외부 훅 → 6게이트 = 5게이트 LLM + 외부 훅 1) + 정합 박스 신설. R-16 간소 모드 신규 (사용자 "왜 이렇게 오래 걸려" 피드백 반영 = 작은 보완 작업 압축 의무). SHA256 (이전 v2.6) = `[turn 6 commit b2a8c91 시점]`.
 - **2026-05-05 (v2.6, Day 20 turn 5 /feedback 반영)**: 3 CLI 외부 검수 (codex+gemini+claude_sub) 합집합 11건 → 환각 0 / 만장일치 1 + 부분 합의 1 + 단독 가치 3 = critical 6건 즉시 반영. (a) frontmatter `allowed-tools` = TeamCreate/TaskCreate/SendMessage/TeamDelete 4 도구 추가 (4-step 본문 명단 정합). (b) §0 의무 6번 R-1~R-12 → R-1~R-15. (c) §5 헤더 R-1~R-12 → R-1~R-15. (d) §5 본문 R-6~R-12 → R-6~R-15. (e) §5.1 "현재는 PM 없음" → Phase 1 정식 PM 운영 정합. (f) §5.1 "(Phase 1 후)" → Phase 1 신설 완료 표현. 반박 4건 (gemini exit 0 우회 = Issue #26923 의도 / 4-step 예외 = §2.1 heuristic 의도 / Phase 모순 = §7.1·§7.2 분리 의도 / SHA256 절단 = 히스토리 식별자 용도). 게이트 6 표기 모순 (5게이트 + 외부 훅) = #022 별도 turn 백로그. **자기비판** = v2.5 작성 시 frontmatter ↔ 본문 정합 grep 누락 (글로벌 더블 체크 §3 일관성 검증 빠뜨림). SHA256 (이전 v2.5) = `3D70CE05...A641`.
 - **2026-05-05 (v2.5, Day 20 turn 4)**: scripts/ 6 + reference/ 4 호출 박기 (#009-D-2). §1.2 Phase 0~8 자동화 흐름 표 신설 (v2 spec §3.1 양식 차용 + 본 비전 양식 SSOT D-23). §2.4 `reference/presets.md` 1차 참조 박기. §5 가드레일 R-1~R-12 → R-1~R-15 확장 (R-13 §변경 이력 다중 entry 보존 + R-14 orphan 정리 + R-15 ps1 BOM 의무). §6 명령어 = scripts/ 6 호출 흐름 11단계 명시. §7.1 활용 자산 표 = scripts/ 6 + reference/ 4 행 추가 (6→8행). §7.2 잔여 한계 = scripts/ 6 + reference/ 4 행 제거, feature·security 2 preset (#009-E) + orphan 71 정리 (#021) 만 잔존. SHA256 (이전 v2) = `9FC078A6...AFFF`.
 - **2026-05-05 (v2, Day 20 turn 2)**: PM·preset·hooks 보류 3건 흡수 (#009-C). v1.5 §7 한계 표 中 3 행 (PM 비판자 + PM 동적 선택 + preset YAML) 제거 → §7.1 활용 자산 표로 전환. §0 부트스트랩 표현 제거. §1.1 글로벌 강제 훅 박스 신설 (turn 7 #018 + turn 8 #019 라이브 검증 인용). §2.4 ② 회의실 5 preset 카탈로그 신설 (마스터플랜 §2.4 1:1 정합 5/5 PASS). §2.5 preset 자동 매핑 heuristic 신설. §3.1 박스 의미 전환 = 종전 경고 박스 → "fallback C+ 영구 적용" (turn 8 #019 PASS, issue#32732 종결). §5 가드레일 R-1~R-5 → R-1~R-12 확장 (turn 8 R-7·R-8 + turn 10 R-9 + turn 11 R-10 + Day 20 turn 1 R-11·R-12). §6 명령어 = preset 옵션 + PM 협의 모드 추가. SHA256 (이전 v1.5) = `ED0A9DD1...8F0C`.

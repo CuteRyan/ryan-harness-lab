@@ -1,0 +1,103 @@
+# security preset — 보안 감사 (3명: SAST → DAST → compliance)
+#
+# 마스터플랜 §2.4 ② 회의실 preset 표 (L238) "security = 3명 (SAST/DAST/compliance)" 1:1 정합.
+# Day 20 turn 7 #009-E 결정 2=A: 새 agent 3 신설 (SAST/DAST/compliance), R-12 차원 분리 정합.
+# review preset 의 security-reviewer 와 차원 분리 = security-reviewer = 코드 리뷰 (수동 + 휴리스틱),
+#   본 preset = SAST 자동화 도구 + DAST 동적 검증 + 정책 매핑 (3차원 보안 감사).
+# 양식 출처: wshobson/agents HEAD `ece811f23310a37ceb43496dbac0e244fe6845b6` (2026-05-02)
+#   `plugins/agent-teams/skills/team-composition-patterns/references/preset-teams.md` (Security preset).
+# 본 비전 확장: 4-step 프로토콜 강제 + review_cycle_cap 3 (aws-samples HEAD `67840be3` `skills/spec-workflow/SKILL.md:65`).
+# 단계 의존성: zircote 7패턴 中 Pipeline (SAST → DAST → compliance, addBlockedBy 체인).
+#   - SAST 가 finding (정적) → DAST 가 reachability 동적 검증 → compliance 가 정책 매핑.
+
+name: security
+description: 보안 감사 — SAST (정적) → DAST (동적 검증) → compliance (정책 매핑) 순차 Pipeline.
+source:
+  - "마스터플랜 §2.4 ② 회의실 preset 표 (security = 3명 SAST/DAST/compliance)"
+  - "wshobson/agents HEAD ece811f2 preset-teams.md (Security preset)"
+  - "Day 20 turn 7 #009-E 결정 2=A (새 agent 3 신설, R-12 차원 분리 정합)"
+  - "Day 20 turn 7 신설 (agents/{sast|dast}-analyzer.md + agents/compliance-checker.md)"
+
+pm_lead: pm                    # 모든 ② 회의실 preset 의 lead = pm agent (Opus)
+team_size: 3
+display_mode: tmux             # wshobson 차용 (병렬 출력 가시성)
+
+members:
+  - name: sast-analyzer
+    model: sonnet
+    dimension: 정적
+    sequence: 1                # Pipeline 1단계 (선행, 정적 finding 우선)
+    focus_areas:
+      - "SAST 도구 (Semgrep · CodeQL · Bandit · gosec · Brakeman · ESLint security plugins)"
+      - "SCA (pip-audit · npm audit · cargo audit · OWASP Dependency-Check · Snyk · Dependabot)"
+      - "taint analysis (source → sanitizer → sink, CodeQL data flow query · Semgrep taint mode)"
+      - "secret detection (gitleaks · trufflehog · detect-secrets · entropy + 정규식)"
+      - "CWE 분류 (Top 25 2026 · CWE-79 XSS · CWE-89 SQLi · CWE-22 Path Traversal · CWE-78 OS Command · CWE-352 CSRF)"
+      - "license compliance (GPL · MIT · Apache · FOSSA · ScanCode)"
+
+  - name: dast-analyzer
+    model: sonnet
+    dimension: 동적
+    sequence: 2                # SAST 후 (addBlockedBy: sast-analyzer)
+    blocked_by: [sast-analyzer]
+    focus_areas:
+      - "HTTP 프록시 도구 (Burp Suite · OWASP ZAP · mitmproxy · Caido)"
+      - "fuzzing (ffuf · wfuzz · Burp Intruder · AFL++ · libFuzzer · property-based testing)"
+      - "인증/세션 공격 (세션 hijacking · CSRF · OAuth flow · JWT none algorithm · token replay)"
+      - "인젝션 검증 (SQL sqlmap · NoSQL · OS Command · LDAP · XXE · SSRF · SSTI)"
+      - "클라이언트 공격 (XSS reflected/stored/DOM · CORS · postMessage · clickjacking)"
+      - "API 보안 (REST/GraphQL fuzzing · rate limit 우회 · BOLA · mass assignment)"
+      - "환경 명시 의무 (스테이징/로컬만, production 절대 금지)"
+
+  - name: compliance-checker
+    model: sonnet
+    dimension: 정책
+    sequence: 3                # SAST + DAST 후 (addBlockedBy: dast-analyzer, transitive: sast-analyzer)
+    blocked_by: [dast-analyzer]
+    focus_areas:
+      - "OWASP ASVS (V1~V14 categories · L1/L2/L3 verification levels)"
+      - "PCI-DSS v4.0 (12 requirements · cardholder data scope · SAQ · QSA)"
+      - "SOC 2 Type II (Trust Service Criteria: Security/Availability/Confidentiality/Privacy/Processing Integrity)"
+      - "GDPR EU 2016/679 (Art. 5 principles · Art. 32 security · DPIA · Art. 33 breach notification 72h)"
+      - "HIPAA (PHI · Security Rule Administrative/Physical/Technical · BAA)"
+      - "ISO 27001/27002 (ISMS · Annex A 114 controls in 14 categories)"
+      - "NIST (CSF Identify/Protect/Detect/Respond/Recover · SP 800-53 · SP 800-171)"
+      - "법률 자문 아님 명시 의무"
+
+task_template:
+  subject: "[명사형 - 감사 대상 + 규정 범위] (예: '결제 모듈 보안 감사 — PCI-DSS v4.0 + OWASP ASVS L2')"
+  description: |
+    감사 대상 (file:line 범위 + 환경 스테이징/로컬) + 적용 규정 (PCI-DSS · GDPR · SOC2 等) + 우선순위.
+    SAST → DAST → compliance 순차 진행. 각 단계 출력은 다음 단계 입력.
+    SAST finding → DAST reachability 동적 검증 → compliance 정책 매핑.
+  output_format_required:
+    - 결론 (1~2줄): 단계별 결과 (SAST finding 수 / DAST reachability 검증 / compliance 위반 control 수) + Severity
+    - 출처: URL + 발행일 + 직접 인용 1~2줄 (CWE · CVE · 규정 본문 + control 번호 · 도구 rule docs)
+    - 추측 표현 금지 (`아마 취약`·`보통 OK` 사용 금지, 정확한 CWE/CVE/control 번호 의무)
+    - 자기비판 1줄 (false positive 가능성 · WAF 우회 미시도 · 법률 자문 아님 · scope 한계 명시)
+
+protocol:
+  enforcement: 4-step 강제 (글로벌 ~/.claude/rules/agent-spawn-model.md)
+  steps:
+    - "1. TeamCreate (팀 생성)"
+    - "2. TaskCreate (태스크 정의 + addBlockedBy 체인 = SAST → DAST → compliance Pipeline)"
+    - "3. Agent spawn (model 명시 의무 — pm=opus, 워커=sonnet, 강제 훅 활성)"
+    - "4. SendMessage (단계 결과 다음 단계로 전달)"
+
+review_cycle_cap: 3
+escalation_after_cap: |
+  3 사이클 초과 시 (false positive 분류 반복·DAST 환경 차이 반복·compliance 매핑 모호) PM 이 (a) 감사 scope 재정의 또는 (b) 사장 에스컬레이션.
+  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+
+variations:
+  default:                     # 기본 3 단계 Pipeline
+    members: [sast-analyzer, dast-analyzer, compliance-checker]
+    description: "기본 SAST → DAST → compliance Pipeline"
+  sast_only:                   # SAST + compliance (스테이징 환경 부재 시, DAST 불가)
+    members: [sast-analyzer, compliance-checker]
+    team_size: 2
+    description: "SAST + compliance (스테이징 환경 부재 시 DAST 생략, 정적만)"
+  audit_focused:               # compliance 중심 (감사 대비, 신규 코드 없이 기존 시스템)
+    members: [compliance-checker]
+    team_size: 1
+    description: "compliance 단독 (감사 대비, 기존 시스템 정책 매핑만)"

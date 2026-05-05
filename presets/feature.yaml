@@ -1,0 +1,96 @@
+# feature preset — 기능 개발 (4명: lead + frontend + backend + tester)
+#
+# 마스터플랜 §2.4 ② 회의실 preset 표 (L237) "feature = 4명 (lead/frontend/backend/tester)" 1:1 정합.
+# Step A 12 agent (#009-A turn 11 PASS) + Day 20 turn 7 신설 4 agent 中 frontend-developer / backend-developer / tester 호출.
+# lead = pm 재사용 (Day 20 turn 7 결정 1=A, R-2 정합 = 기존 12 agent 활용 DRY).
+# 양식 출처: wshobson/agents HEAD `ece811f23310a37ceb43496dbac0e244fe6845b6` (2026-05-02)
+#   `plugins/agent-teams/skills/team-composition-patterns/references/preset-teams.md` (Feature preset).
+# 본 비전 확장: 4-step 프로토콜 강제 + review_cycle_cap 3 (aws-samples HEAD `67840be3` `skills/spec-workflow/SKILL.md:65`).
+# 단계 의존성: zircote 7패턴 中 fan-out (frontend ‖ backend 병렬) → fan-in (tester 검증).
+
+name: feature
+description: 기능 개발 — frontend ‖ backend 병렬 → tester 검증. lead = pm (도메인 전문 lead 분화는 #009-F 후보).
+source:
+  - "마스터플랜 §2.4 ② 회의실 preset 표 (feature = 4명 lead/frontend/backend/tester)"
+  - "wshobson/agents HEAD ece811f2 preset-teams.md (Feature preset)"
+  - "Day 20 turn 7 #009-E 결정 1=A (lead = pm 재사용, R-2 정합)"
+  - "Step A 12 agent (#009-A turn 11 PASS, agents/pm.md) + Day 20 turn 7 신설 (agents/{frontend|backend}-developer.md + agents/tester.md)"
+
+pm_lead: pm                    # Day 20 turn 7 결정 1=A: pm 재사용 (도메인 전문 lead 분화는 #009-F 백로그 후보)
+team_size: 3                   # lead 제외 멤버 수 (frontend/backend/tester) — 마스터플랜 표 "4명" 은 lead 포함
+display_mode: tmux             # wshobson 차용 (병렬 출력 가시성)
+
+members:
+  - name: frontend-developer
+    model: sonnet
+    dimension: 프론트엔드
+    sequence: 1                # frontend ‖ backend 병렬 (fan-out)
+    focus_areas:
+      - "컴포넌트 설계 (React · Vue · Svelte · Web Components · 합성 · prop drilling 회피)"
+      - "상태 관리 (Redux · Zustand · Pinia · TanStack Query · SWR)"
+      - "스타일링 (CSS-in-JS · Tailwind · CSS Modules · 디자인 토큰 · mobile-first)"
+      - "접근성 (WCAG 2.1 AA · ARIA · 키보드 · 스크린리더 NVDA/VoiceOver)"
+      - "성능 (code splitting · lazy loading · LCP/FID/CLS · 번들 분석)"
+
+  - name: backend-developer
+    model: sonnet
+    dimension: 백엔드
+    sequence: 1                # frontend ‖ backend 병렬 (fan-out)
+    focus_areas:
+      - "API 설계 (REST · GraphQL · gRPC · OpenAPI 3.x · idempotency · 페이지네이션 · 버저닝)"
+      - "DB 스키마 (정규화 · 인덱스 · FK · 마이그레이션 forward+rollback · 파티셔닝)"
+      - "트랜잭션 (ACID · 격리 수준 · 락 row/advisory · saga 패턴)"
+      - "비즈니스 로직 (invariant · 도메인 모델 · 이벤트 소싱 · CQRS · DDD)"
+      - "메시지 큐 (RabbitMQ · Kafka · SQS · at-least-once / at-most-once / exactly-once · DLQ)"
+      - "인증·권한 (JWT · OAuth 2.0 · OIDC · RBAC · ABAC · CSRF · CORS)"
+
+  - name: tester
+    model: sonnet
+    dimension: 테스트
+    sequence: 2                # frontend + backend 후 (fan-in, addBlockedBy: frontend-developer + backend-developer)
+    blocked_by: [frontend-developer, backend-developer]
+    focus_areas:
+      - "단위 테스트 (AAA 패턴 · TDD · mock vs stub vs fake · DI)"
+      - "통합 테스트 (실제 DB · contract test · 트랜잭션 롤백 · fixture)"
+      - "E2E 테스트 (Playwright · Cypress · Selenium · 사용자 시나리오 · cross-browser)"
+      - "회귀 테스트 (snapshot · golden master · visual regression Percy/Chromatic · CI 통합)"
+      - "flaky 분석 (race · timing · 외부 의존 · retry · quarantine)"
+      - "커버리지 (line · branch · function · 의도적 제외 명시)"
+
+task_template:
+  subject: "[명사형 - 기능 요약] (예: '사용자 프로필 페이지 + API 신설 — 검색·필터·페이지네이션')"
+  description: |
+    기능 요구사항 (사용자 시나리오 + 입출력 + 비기능 요구사항).
+    frontend ‖ backend 병렬 진행 (계약 = OpenAPI 스펙 사전 합의 의무).
+    완료 후 tester 가 통합/E2E/회귀 검증.
+  output_format_required:
+    - 결론 (1~2줄): 산출물 요약 + 의존 라이브러리 버전 + 커버리지 % (tester)
+    - 출처: URL + 발행일 + 직접 인용 1~2줄 (MDN · WCAG · 공식 docs · RFC · DB 매뉴얼 · 테스트 패턴 원전)
+    - 추측 표현 금지 (`아마`·`보통`·`일반적으로` 사용 금지, 출처 없는 단언 금지)
+    - 자기비판 1줄 (한계 · 미검증 영역 · 회귀 위험 명시)
+
+protocol:
+  enforcement: 4-step 강제 (글로벌 ~/.claude/rules/agent-spawn-model.md)
+  steps:
+    - "1. TeamCreate (팀 생성)"
+    - "2. TaskCreate (태스크 정의 + addBlockedBy 체인 = frontend ‖ backend → tester)"
+    - "3. Agent spawn (model 명시 의무 — pm=opus, 워커=sonnet, 강제 훅 PreToolUse Task|Agent matcher 활성)"
+    - "4. SendMessage (계약 합의 + 산출물 전달)"
+
+review_cycle_cap: 3            # 리뷰 사이클 cap (tester 회귀 발견 → frontend/backend fix 사이클)
+escalation_after_cap: |
+  3 사이클 초과 시 (회귀 반복·계약 합의 실패 반복·flaky 미해결) PM 이 (a) 기능 분할 또는 (b) 사장 에스컬레이션.
+  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+
+variations:
+  default:                     # 기본 (3명, lead = pm)
+    members: [frontend-developer, backend-developer, tester]
+    description: "기본 frontend ‖ backend → tester (lead = pm 재사용)"
+  backend_only:                # 백엔드 + 테스트만 (UI 없는 기능, 예: cron job · API 신설)
+    members: [backend-developer, tester]
+    team_size: 2
+    description: "백엔드 + 테스트만 (UI 없는 기능 = cron · queue worker · API endpoint)"
+  frontend_only:               # 프론트엔드 + 테스트만 (정적 페이지 · 디자인 시스템 컴포넌트)
+    members: [frontend-developer, tester]
+    team_size: 2
+    description: "프론트엔드 + 테스트만 (정적 페이지 · 디자인 시스템 · 스토리북 컴포넌트)"
