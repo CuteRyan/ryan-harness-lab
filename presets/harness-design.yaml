@@ -81,9 +81,14 @@ protocol:
     - "4. SendMessage (단계 결과 다음 단계로 전달, auditor 결과는 PM 이 사장에게 종합 보고)"
 
 review_cycle_cap: 3
-escalation_after_cap: |
-  3 사이클 초과 시 (ADR 결정 합의 실패 · auditor 적합도 < 임계 반복) PM 이 (a) 설계 재시도 또는 (b) 사장 에스컬레이션.
-  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+escalation_after_cap:
+  primary_actor: pm
+  primary_action: "설계 재시도"
+  primary_trigger: "3 사이클 초과 (ADR 결정 합의 실패 · auditor 적합도 < 임계 반복)"
+  fallback_actor: main
+  fallback_action: "SendMessage 로 사장 에스컬레이션 (R-5 컨펌 트리거)"
+  source: "aws-samples/sample-claude-code-agent-team HEAD 67840be3 skills/spec-workflow/SKILL.md:65"
+  source_quote: "Max 3 review cycles per group, then escalate"
 
 variations:
   default:

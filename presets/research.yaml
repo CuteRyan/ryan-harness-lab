@@ -73,9 +73,14 @@ protocol:
     - "4. SendMessage (병렬 결과 → analyst 로 종합)"
 
 review_cycle_cap: 3
-escalation_after_cap: |
-  3 사이클 초과 시 (출처 신뢰도 부족 반복 · 충돌 해소 실패 반복) PM 이 (a) 조사 범위 재정의 또는 (b) 사장 에스컬레이션.
-  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+escalation_after_cap:
+  primary_actor: pm
+  primary_action: "조사 범위 재정의"
+  primary_trigger: "3 사이클 초과 (출처 신뢰도 부족 반복 · 충돌 해소 실패 반복)"
+  fallback_actor: main
+  fallback_action: "SendMessage 로 사장 에스컬레이션 (R-5 컨펌 트리거)"
+  source: "aws-samples/sample-claude-code-agent-team HEAD 67840be3 skills/spec-workflow/SKILL.md:65"
+  source_quote: "Max 3 review cycles per group, then escalate"
 
 variations:
   default:

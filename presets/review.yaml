@@ -68,10 +68,15 @@ protocol:
     - "4. SendMessage (lead ↔ 멤버 통신)"
 
 review_cycle_cap: 3            # 리뷰 사이클 cap (PM 재설계 또는 사장 컨펌 트리거)
-escalation_after_cap: |
-  3 사이클 초과 시 PM 이 (a) 산출물 재설계 또는 (b) 사장 (메인 Claude) 에게 SendMessage 로 에스컬레이션.
-  근거: aws-samples/sample-claude-code-agent-team HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` 인용
-        "Max 3 review cycles per group, then escalate"
+escalation_after_cap:
+  # B-9 (Day 20 turn 9 /feedback 반영): 비구조화 string → 구조화 필드. cap 자동 실행 가능 (PM 이 primary_action 시도, 실패 시 fallback_actor 로 escalate).
+  primary_actor: pm
+  primary_action: "산출물 재설계"
+  primary_trigger: "3 사이클 초과 (false positive 반복 · 차원 충돌 미해소)"
+  fallback_actor: main           # 사장 (메인 Claude)
+  fallback_action: "SendMessage 로 사장 에스컬레이션 (R-5 컨펌 트리거)"
+  source: "aws-samples/sample-claude-code-agent-team HEAD 67840be3 skills/spec-workflow/SKILL.md:65"
+  source_quote: "Max 3 review cycles per group, then escalate"
 
 variations:
   full_review:               # 기본 (3명 全)

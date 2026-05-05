@@ -78,9 +78,14 @@ protocol:
     - "4. SendMessage (계약 합의 + 산출물 전달)"
 
 review_cycle_cap: 3            # 리뷰 사이클 cap (tester 회귀 발견 → frontend/backend fix 사이클)
-escalation_after_cap: |
-  3 사이클 초과 시 (회귀 반복·계약 합의 실패 반복·flaky 미해결) PM 이 (a) 기능 분할 또는 (b) 사장 에스컬레이션.
-  근거: aws-samples HEAD 67840be3 `skills/spec-workflow/SKILL.md:65` "Max 3 review cycles per group, then escalate"
+escalation_after_cap:
+  primary_actor: pm
+  primary_action: "기능 분할"
+  primary_trigger: "3 사이클 초과 (회귀 반복 · 계약 합의 실패 반복 · flaky 미해결)"
+  fallback_actor: main
+  fallback_action: "SendMessage 로 사장 에스컬레이션 (R-5 컨펌 트리거)"
+  source: "aws-samples/sample-claude-code-agent-team HEAD 67840be3 skills/spec-workflow/SKILL.md:65"
+  source_quote: "Max 3 review cycles per group, then escalate"
 
 variations:
   default:                     # 기본 (3명, lead = pm)
