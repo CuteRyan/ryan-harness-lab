@@ -226,7 +226,10 @@ allowed-tools: Agent, TeamCreate, TaskCreate, SendMessage, TeamDelete, Bash, Rea
 & "$HOME\.claude\skills\feedback\scripts\orchestrate.ps1" -SourceFile "<경로>" -TimeoutSeconds 600
 ```
 
-### 4.3 5게이트 + 외부 훅
+### 4.3 6게이트 (5게이트 LLM + 외부 훅 1)
+
+> **표기 정합** (Day 20 turn 6 #022 정정): 5게이트 = LLM 자체 검증, 게이트 6 = 외부 훅 자동 검수 = 합쳐서 **6게이트** 운영.
+
 - **게이트 1** 라인 실측 (환각 차단)
 - **게이트 2** 반박/유보 최소 1건 (sycophancy 방지)
 - **게이트 3** 근거 강도 표시 (강/중/약, 약 ≥ 50% 시 ⚠️)
