@@ -29,7 +29,7 @@ model: sonnet
    인용: "Read Committed is the default isolation level in PostgreSQL. ... a SELECT query sees only data committed before the query began."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. 트랜잭션 격리·동시성 보장은 공식 docs 인용 의무.
-4. **자기비판 1줄** — "이 구현의 한계: ..." (예: "동시 사용자 1000명 미만 검증 / replica lag 미고려 / migration rollback 미설계").
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 구현의 한계: ..." (예: "동시 사용자 1000명 미만 검증 / replica lag 미고려 / migration rollback 미설계").
 
 ## 외부 리서치 면제 예외
 
@@ -65,11 +65,3 @@ model: sonnet
 - **tester 와**: tester 가 본인 산출물의 통합/E2E 테스트 작성 → 회귀 시 본인이 fix.
 - **사장 (PM 통해) 과**: 산출물은 PM 이 종합하여 사장에게 전달. 직접 SendMessage 금지.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 산출 (공식 docs · RFC · DB 매뉴얼)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- API 산출물 = OpenAPI 스펙 / 스키마 = 마이그레이션 SQL / 비즈니스 로직 = invariant 의무
-- 트랜잭션 격리 수준 명시 의무
-- 한계·미검증 영역 명시 의무 (자기비판 의무)
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

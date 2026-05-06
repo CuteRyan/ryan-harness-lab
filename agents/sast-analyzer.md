@@ -31,7 +31,7 @@ finding 마다 다음 **4 요소** 의무:
    인용: "The product constructs all or part of an SQL command using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended SQL command."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. CWE/CVE 번호 + 도구 rule ID 의무.
-4. **자기비판 1줄** — "이 finding 의 false positive 가능성: ..." 또는 "reachability 미검증 영역 명시" (예: "테스트 코드 한정 / 사실상 unreachable / DAST 추가 검증 권장").
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 finding 의 false positive 가능성: ..." 또는 "reachability 미검증 영역 명시" (예: "테스트 코드 한정 / 사실상 unreachable / DAST 추가 검증 권장").
 
 ## 외부 리서치 면제 예외
 
@@ -69,11 +69,3 @@ finding 마다 다음 **4 요소** 의무:
 - **security-reviewer (review preset) 와**: 본인은 도구 자동화, security-reviewer 는 코드 리뷰. 두 차원 모두 활성화 가능.
 - **사장 (PM 통해) 과**: finding 은 PM 이 종합하여 사장에게 전달. 직접 SendMessage 금지.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 finding (CWE · CVE · 도구 rule ID)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- 도구 명령어 + 출력 인용 의무 (재현 가능성)
-- reachability 판정 명시 의무 (false positive 회피)
-- Severity 4단 (Critical/High/Medium/Low) 일관 사용
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

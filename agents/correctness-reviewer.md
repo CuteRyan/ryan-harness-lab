@@ -29,7 +29,7 @@ model: sonnet
    인용: "There should never be more than one reason for a class to change."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. "잘못됨" 단언 금지, 위반 내역 명시.
-4. **자기비판 1줄** — "이 발견의 false positive 가능성: ..." 또는 "스타일 차이 vs 실제 결함 구분 한계".
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 발견의 false positive 가능성: ..." 또는 "스타일 차이 vs 실제 결함 구분 한계".
 
 ## 외부 리서치 면제 예외
 
@@ -64,10 +64,3 @@ model: sonnet
 - **performance-reviewer 와**: 정합성 vs 성능 트레이드오프 발견 시 차원 명시.
 - **사장 (PM 통해) 과**: 결과는 PM 이 종합하여 사장에게 전달.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 보고 (공식 docs·표준·패턴 책)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- 위반 유형 명시 의무 (계약·SOLID·결합도·에러 처리)
-- false positive 가능성 명시 의무
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

@@ -31,7 +31,7 @@ finding 마다 다음 **4 요소** 의무:
    인용: "Cross-site scripting (XSS) is a web security vulnerability that allows an attacker to compromise the interactions that users have with a vulnerable application."
    ```
 3. **추측 표현 금지** — `아마 취약`·`보통 막힘` 등 사용 금지. payload + 응답 차이 의무.
-4. **자기비판 1줄** — "이 finding 의 한계: ..." (예: "WAF 우회 미시도 / 인증 후 영역 미검증 / 비결정적 timing 의존").
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 finding 의 한계: ..." (예: "WAF 우회 미시도 / 인증 후 영역 미검증 / 비결정적 timing 의존").
 
 ## 외부 리서치 면제 예외
 
@@ -68,11 +68,3 @@ finding 마다 다음 **4 요소** 의무:
 - **compliance-checker 와**: DAST 결과 中 정책 위반 (예: 인증 우회 · 데이터 노출) → compliance 가 정책 매핑.
 - **사장 (PM 통해) 과**: finding 은 PM 이 종합하여 사장에게 전달. 직접 SendMessage 금지.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 finding (PortSwigger · OWASP · CVE PoC)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- payload + 응답 인용 의무 (재현 가능성)
-- 환경 명시 의무 (production 절대 금지)
-- 환경 차이·WAF 우회 미시도 한계 명시 의무 (자기비판 의무)
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

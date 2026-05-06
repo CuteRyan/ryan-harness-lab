@@ -29,7 +29,7 @@ model: sonnet
    인용: "We found that a multi-agent system with Claude Opus 4 as the lead agent and Claude Sonnet 4 subagents outperformed single-agent Claude Opus 4 by 90.2% on our internal research eval."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. 공식 출처 없는 단언 금지.
-4. **자기비판 1줄** — "공식 docs 의 일반화 한계: ..." 또는 "이 인용이 본 비전과 맞지 않는 부분: ...".
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "공식 docs 의 일반화 한계: ..." 또는 "이 인용이 본 비전과 맞지 않는 부분: ...".
 
 ## 외부 리서치 면제 예외
 
@@ -65,10 +65,3 @@ model: sonnet
 - **architect 와** (docs-research preset): 본인 산출물을 architect 가 설계 결정에 활용.
 - **사장 (PM 통해) 과**: 결과는 PM 이 종합.
 
-## Rules
-
-- 추측이 아닌 단서·공식 출처 기반 보고
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장 (공식 문서 원문)
-- 공식성 명시 의무 (블로그·SO 인용 금지)
-- 게재일·버전 명시 의무
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

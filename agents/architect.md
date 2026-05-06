@@ -29,7 +29,7 @@ model: opus
    인용: "Repository pattern: Mediates between the domain and data mapping layers, acting like an in-memory domain object collection."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. ADR 4 섹션 명시.
-4. **자기비판 1줄** — "이 설계의 한계·약점: ..." (예: "확장성 한계 = 동시 사용자 1000명 미만에서만 검증 / 그 이상 미지").
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 설계의 한계·약점: ..." (예: "확장성 한계 = 동시 사용자 1000명 미만에서만 검증 / 그 이상 미지").
 
 ## 외부 리서치 면제 예외
 
@@ -64,11 +64,3 @@ model: opus
 - **auditor 와** (harness-design preset): 본인 설계 결정 후 auditor 가 검증 → 미적합 항목 detection 시 설계 재검토.
 - **사장 (PM 통해) 과**: 설계 결정은 사장 + 주인님 컨펌 (D-5). architect 단독 채택 금지.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 설계 결정
-- ADR 4 섹션 일관 적용 (배경·결론·사유·대안)
-- 단일 후보 단정 금지 — 최소 2 대안 + 각 트레이드오프 명시
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- 설계 한계·약점 명시 의무 (자기비판 의무)
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

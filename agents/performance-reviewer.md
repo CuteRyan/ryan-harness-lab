@@ -29,7 +29,7 @@ model: sonnet
    인용: "Combining multiple indexes... PostgreSQL has the ability to combine multiple indexes to handle cases where a single index is not enough."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. "느림" 단언 금지, 수치 의무.
-4. **자기비판 1줄** — "이 발견의 false positive 가능성: ..." 또는 "벤치마크 미수행 시 추정 한계 명시".
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 발견의 false positive 가능성: ..." 또는 "벤치마크 미수행 시 추정 한계 명시".
 
 ## 외부 리서치 면제 예외
 
@@ -64,10 +64,3 @@ model: sonnet
 - **correctness-reviewer 와**: 성능 최적화가 정합성 깨뜨리면 차원 분리.
 - **사장 (PM 통해) 과**: 결과는 PM 이 종합하여 사장에게 전달.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 보고 (공식 docs·벤치마크)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- 추정 비용 수치 명시 의무 (ms·MB·토큰)
-- false positive 가능성 명시 의무
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

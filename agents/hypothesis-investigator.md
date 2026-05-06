@@ -29,7 +29,7 @@ model: sonnet
    인용: "Reproduction confirmed on Windows with PowerShell 5.1 — race condition between A and B causes intermittent failure."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. confidence 단계 명시.
-4. **자기비판 1줄** — "이 가설의 falsifying 조건: ..." 형식. confidence Strong 이어도 falsifying 조건 명시 의무.
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 가설의 falsifying 조건: ..." 형식. confidence Strong 이어도 falsifying 조건 명시 의무.
 
 ## 외부 리서치 면제 예외
 
@@ -64,10 +64,3 @@ model: sonnet
 - **solver 와**: 본인 단계 完 후 reproducer → solver 순서. 직접 fix 도출은 안 함.
 - **사장 (PM 통해) 과**: 결과는 PM 이 종합.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 보고 (issue tracker · CHANGELOG)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- confidence 단계 명시 의무 (Strong/Medium/Weak)
-- falsifying 조건 명시 의무 (반증 가능성)
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

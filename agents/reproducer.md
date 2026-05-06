@@ -29,7 +29,7 @@ model: sonnet
    인용: "Changed in version 3.12: ProcessPoolExecutor now propagates SystemExit and KeyboardInterrupt."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. 재현 결과 단계 명시 (PASS/FAIL/CONDITIONAL).
-4. **자기비판 1줄** — "이 재현 케이스의 한계: ..." (예: "환경 의존 = Windows 한정 / Linux 미검증").
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 재현 케이스의 한계: ..." (예: "환경 의존 = Windows 한정 / Linux 미검증").
 
 ## 외부 리서치 면제 예외
 
@@ -64,10 +64,3 @@ model: sonnet
 - **solver 와**: 재현 PASS/CONDITIONAL 시 재현 케이스 + 환경 → solver 에게 전달. 직접 fix 도출은 안 함.
 - **사장 (PM 통해) 과**: 결과는 PM 이 종합.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 보고 (라이브러리 docs · 런타임 spec)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- 재현 결과 단계 명시 의무 (PASS/FAIL/CONDITIONAL)
-- 환경 의존성 명시 의무
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

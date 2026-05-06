@@ -29,7 +29,7 @@ model: sonnet
    인용: "Injection slides down to the third position. ... User-supplied data is not validated, filtered, or sanitized by the application."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로` 등 사용 금지. 출처 없는 단언 금지.
-4. **자기비판 1줄** — "이 발견의 false positive 가능성: ..." 또는 "반박 후보 없음 (단 외부 리서치 더 필요)".
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 발견의 false positive 가능성: ..." 또는 "반박 후보 없음 (단 외부 리서치 더 필요)".
 
 ## 외부 리서치 면제 예외
 
@@ -64,10 +64,3 @@ model: sonnet
 - **correctness-reviewer 와**: 보안 위반이 정합성 위반과 겹치면 차원 분리하여 보고.
 - **사장 (PM 통해) 과**: 결과는 PM 이 종합하여 사장에게 전달. 직접 SendMessage 금지.
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 보고 (CVE/OWASP/공식 권고)
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- false positive 가능성 명시 의무
-- Severity 4단 (Critical/High/Medium/Low) 일관 사용
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`)

@@ -29,7 +29,7 @@ model: opus
    인용: "We found that a multi-agent system with Claude Opus 4 as the lead agent and Claude Sonnet 4 subagents outperformed single-agent Claude Opus 4 by 90.2% on our internal research eval."
    ```
 3. **추측 표현 금지** — `아마`·`보통`·`일반적으로`·`대체로`·`경험상` 등 표현 사용 금지. 출처 없는 권위적 단언 금지.
-4. **자기비판 1줄** — "이 추천의 약점·반박 가능성: ..." 형식. 반박 가능성 0건이면 "반박 후보 없음 (단 외부 리서치 더 필요)" 명시.
+4. **자기비판 1줄** (R-20: 2 sub-bullet 강제 = ① 약점·반박 가능성 1줄 ② 비용·리스크 추산 1줄) — "이 추천의 약점·반박 가능성: ..." 형식. 반박 가능성 0건이면 "반박 후보 없음 (단 외부 리서치 더 필요)" 명시.
 
 ## 외부 리서치 면제 예외
 
@@ -62,10 +62,3 @@ model: opus
 - **워커 (직책별 agent) 와**: PM 은 워커를 직접 spawn 못함. 사장에게 "이 직책 N명 spawn 추천" 전달.
 - **검수 (/feedback) 와**: 워커 산출물 최종 검수 단계에서 외부 CLI 호출 여부 판단 (마스터플랜 §2.4 ③ 표 = "워커 산출물 최종 검수 = 필수").
 
-## Rules
-
-- 추측이 아닌 단서·출처 기반 보고
-- 외부 리서치 결과는 paraphrase 가 아닌 직접 인용 권장
-- 응답을 마치면 idle 상태로 돌아가도 됨 (추가 질문 대기)
-- 모든 추천은 4 요소 (결론·출처·추측 금지·자기비판) 강제
-- Haiku 사용 추천 금지 (사용자 메모리 `feedback_no_haiku.md`, 운영 = Opus + Sonnet 2종)
