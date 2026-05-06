@@ -345,3 +345,50 @@ related_docs:
 **작성**: 2026-05-01 Day 17 후속4 turn 메인 Claude
 **검토**: 주인님 (본 turn 진행 중 직접 정리·수정·확정)
 **SSOT**: 본 문서 (마스터플랜 4인 리서치 입력)
+
+---
+
+## 12. 진행 상황 갱신 (Day 20 turn 12 기준, 2026-05-06)
+
+> **갱신 사유**: 본 SSOT (D-1~D-5 + R-1~R-5) 가 Day 17 후속4 시점 박힘. Day 18~20 누적 결정 (D-6~D-29 + R-6~R-21) 미반영 = SKILL.md §5 (R-1~R-20 박힘) + 글로벌 메모리 (`~/.claude/projects/.../agent-office-vision.md`) 와 drift. 본 turn 12 일괄 갱신.
+
+### Phase 진행도
+
+**Phase 1 정식 운영 + Phase 2 hooks 신설 完**:
+- ✅ **#009 大 사이클** (Day 19 turn 11 ~ Day 20 turn 7): 18 agent + 7 preset (review/debug/research/docs-research/harness-design/feature/security) + 6 헬퍼 ps1 + 4 reference + 정식 PM (Opus, `agents/pm.md`)
+- ✅ **#018 + #019 글로벌 강제 훅** (Day 19 turn 7·8): `hooks/pretooluse-agent-model-required.{sh,py}` 신설 + settings.json `Task|Agent` matcher 등록 + 라이브 검증 PASS (turn 7 #018 = 세계 1호 검증, turn 8 #019 = fallback C+ 효과 검증). issue#32732 종결.
+- ✅ **#024 + #025 양식 정합** (Day 20 turn 11): 18 agent 자기비판 본문 + Rules 섹션 全 삭제 (β 변형 + R-20 신설, Haiku 글로벌 금지 흡수)
+- ✅ **#027 R-19 가드레일 훅** (Day 20 turn 12): `hooks/pretooluse-pm-research-guard.{sh,py}` 신설 = PM agent + 내부 메타 작업 키워드 매칭 → permissionDecision:deny + exit 0 우회. 단위 테스트 5/5 PASS.
+- ✅ **#026 DAST production hooks** (Day 20 turn 12): `hooks/pretooluse-dast-prod-guard.{sh,py}` 신설 + `presets/security.yaml` enforcement 4 필드 schema 신설 (type/pattern/exclude_patterns/action). 단위 테스트 5/5 PASS.
+
+### 신설 결정 (D-6 ~ D-29, 본 SSOT 누적)
+
+- **D-6 ~ D-25** (Day 18~Day 20 turn 4): scripts/reference/SKILL.md v2~v2.5 신설 + agents 스테이징 정책 + agent-team-manager 양식 SSOT 진화 (마스터플랜 §6 본문 참조)
+- **D-26** 양식 SSOT 5번째 확장 = `blocked_by_policy: any_available` (turn 8, variations 데드락 해결)
+- **D-27** β 변형 + R-20 가드레일 채택 (turn 11, 자기비판 칸 = 4 요소 SSOT 보존 + sub-bullet 분리)
+- **D-28** PreToolUse 사전 차단 정책 (turn 12, R-19/R-20 자동화)
+- **D-29** WebFetch matcher 별도 항목 등록 정책 (turn 12, pm-research-guard `WebSearch|WebFetch` + dast-prod-guard `WebFetch` 중첩, agent_type 분기 충돌 0)
+
+### 신설 가드레일 (R-6 ~ R-21, 본 SSOT 누적)
+
+- **R-6 ~ R-18** (Day 18~Day 20 turn 9): SendMessage 회신 의무·3종 valid model·일반화 한계·양식 일관·dimension 차원 분리·간소 모드·정합 grep·agent 양식 共通 결함 (SKILL.md §5 본문 참조)
+- **R-19** PM 외부 리서치 = 외부 사실 인용 시만 (turn 10 사용자 정정 = "할 때만 해야지", 무차별 강제 금지)
+- **R-20** 자기비판 칸 = 2 sub-bullet 강제 (① 약점 1줄 ② 비용 추산 1줄) + Haiku 글로벌 금지 (turn 11)
+- **R-21 잠정** PM 협의 외부 출처 N건 + 자기비판 R-20 PASS 시 /feedback 검수 생략 가능 (turn 12, dogfood 2회차 누적, 정식 등록 = 다음 세션 사용자 컨펌 의무)
+
+### Agent Teams dogfood 누적
+
+- PM 협의 3회차 (turn 8 + turn 11 + turn 12) — 4 요소 형식 + R-2 반박 우선 + R-8 회신 의무 全 정합
+- ② 회의실 dogfood 2회 (Day 20 turn 12 첫) = harness-design preset default 3 (docs-researcher → architect → auditor Pipeline). audit "PASS with conditions" 양 회 = 안전 디폴트 정합
+
+### 잔여 (Phase 1-1 후속, #028 백로그)
+
+- 라이브 검증 (메인 재시작 후 PM·dast-analyzer spawn → WebSearch/WebFetch → hook 차단 결정적 재현)
+- #027 키워드 외부 파일화 (`hooks/data/pm-research-guard-keywords.txt` 패턴, auditor C-3 권장)
+- #026 Bash matcher 확장 (curl/wget URL 검출, ADR-026 D-4 보류)
+- #027 agent_type 라이브 검증 결과 문서화 (architect 자기비판 ①)
+- #026 namesilo CI/CD 출처 (c) URL 특정 + 직접 인용 보강 (auditor 자기비판 ①)
+- R-21 정식 등록 (사용자 컨펌)
+
+**갱신 시점**: 2026-05-06 Day 20 turn 12 (commit `cb131d2` 다음, 메모리 정합 작업)
+**SSOT 정합**: SKILL.md §5 R-1~R-20 + 글로벌 메모리 `agent-office-vision.md` + 본 docs/ vision 3 위치 全 정합 (R-17 정합 grep 의무 = 본 turn 적용)
