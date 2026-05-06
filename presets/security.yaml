@@ -108,11 +108,39 @@ variations:
     team_size: 1
     description: "compliance 단독 (감사 대비, 기존 시스템 정책 매핑만). compliance.blocked_by_policy=any_available 로 SAST·DAST 부재 시 즉시 진행 (D-26)."
 
+# Day 20 turn 12 #026 신설: DAST production 환경 차단 enforcement (PM 협의 PASS + audit PASS with conditions 78%)
+# 외부 출처: StackHawk ZAP guide (2026-03-04) + NIST SP 800-115 (2008-09) + namesilo CI/CD (2025) + 본 프로젝트 #027 양식 차용
+# Hook 구현: hooks/pretooluse-dast-prod-guard.{sh,py} + settings.json WebFetch matcher 별도 항목
+# GAP-A (.kr 단독 TLD) + GAP-B (외부 리서치 도메인) + GAP-D (matcher 별도 항목) 즉시 반영
+enforcement:
+  type: pretooluse_url_pattern
+  agent_type_filter: dast-analyzer
+  matcher: WebFetch
+  enforcement_hook: hooks/pretooluse-dast-prod-guard.{sh,py}
+  pattern:
+    - "^https?://api\\.[\\w-]+\\.(com|io|net|co\\.kr)/"
+    - "^https?://prod\\."
+    - "^https?://www\\."
+    - "^https?://([\\w-]+)\\.(com|io|net|co\\.kr|org)/"
+    - "^https?://[\\w.-]+\\.kr/"   # GAP-A: .kr 단독 TLD (auditor 권장)
+  exclude_patterns:
+    - "(staging|stage|dev|test|qa|uat|preview|preprod)\\."
+    - "\\.(internal|local|test|localhost)"
+    - "^https?://(127\\.0\\.0\\.1|localhost|0\\.0\\.0\\.0)"
+    - "^https?://10\\.|^https?://172\\.(1[6-9]|2\\d|3[01])\\.|^https?://192\\.168\\."
+    # GAP-B: dast-analyzer 외부 리서치 도메인 (R-19 정합, auditor Critical 조치)
+    - "portswigger\\.net"
+    - "owasp\\.org"
+    - "cve\\.mitre\\.org"
+    - "nvd\\.nist\\.gov"
+    - "zaproxy\\.org"
+  action: deny
+
 self_critique:
   # B-8 (Day 20 turn 8 /feedback 결과 반영): DAST production 강제는 현재 focus_areas 의 단순 문자열 선언만 = 기술적 강제 미구현.
   # 위험: DAST 가 production 환경에 실행되면 서비스 장애 + 실제 취약점 트리거 가능.
   # 현재 의존 = (a) dast-analyzer.md 핵심 행동 규칙 5번 + 권한 범위 명시 (b) 사용자 컨펌 (R-5)
   # Phase 2 후속: hooks 차원 차단 신설 예정 (preset YAML 의 enforcement 필드 + PreToolUse 훅 = production URL pattern detect → 차단).
   # 본 turn 限 = 자기비판 + 명시 + 향후 Phase 2 흡수 예고.
-  - "DAST production 금지 = focus_areas 문자열 선언만, 기술적 강제 미구현 (Phase 2 hooks 차단 신설 예정)"
+  - "DAST production 금지 = enforcement 블록 + hooks/pretooluse-dast-prod-guard.{sh,py} 신설 完 (Day 20 turn 12 #026 PASS, exclude_patterns: portswigger/owasp/cve/nvd/zaproxy 정합, agent_type=dast-analyzer 한정 R-12 차원 분리, settings.json WebFetch matcher 별도 항목)"
   - "blocked_by_policy 신규 필드 = 본 비전 양식 SSOT D-26 확장 (5번째 항목, wshobson preset-teams.md 양식 부재)"
