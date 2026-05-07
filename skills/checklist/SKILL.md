@@ -168,6 +168,12 @@ mode: code|doc|design|mixed
     - 배포 설정 (systemd, Dockerfile, CI 워크플로 등)
     - 테스트 비활성화 (skip/xfail/주석 처리)
     - 데이터 마이그레이션 스크립트
+- **간소 모드 — 단순 작업 자동 발동 (메모리 `feedback_harness_inflation.md` 정합)**:
+  - **트리거**: 단일 파일 1~2 곳 수정 / hook 추가 / bug fix / 문서 행 추가 등 본질이 명확한 단순 작업
+  - **양식**: 5~10줄 체크리스트만 작성 (배경 1줄·작업 항목 2~4줄·검증 1~2줄·롤백 1줄)
+  - **금지 (자동 묶음 X)**: 정책 등록(R-N·D-N) / dogfood 카운트 / sync MATCH grep / 자기비판 N sub-bullet / 라이브 검증 4종 / 마스터플랜 §갱신 / history 100줄+ 작성
+  - **메타 작업은 주인님 명시 요청 시만**, 또는 별도 turn 묶음 처리
+  - **Why**: 매 작업마다 메타를 본 작업과 자동 묶으면 단순 작업도 부풀어 오름. 자기 강화 루프 차단
 - **백업은 doc-protection 훅이 담당** — 이 스킬에서 별도 백업하지 않음
 - **체크리스트 보존** — Phase 6에서 삭제 금지, `.backups/`로 이동
 - **/todo 와 책임 분리** — 세션 완료 가능 항목만 `.checklist.md` 보관; 세션 횡단 백로그는 `/todo` 가 담당
