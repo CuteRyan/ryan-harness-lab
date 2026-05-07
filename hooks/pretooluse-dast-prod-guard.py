@@ -36,45 +36,35 @@ subagent_type 식별 (Day 21 turn 1 옵션 E):
 """
 
 import sys
+import io
 import json
-import re
 import os
 
-# subagent_type 식별 helper (Day 21 turn 1 #028 옵션 E)
+# 한글 메시지 깨짐 방지 (#029 R-15 후속, Day 21 turn 2)
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+try:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+except (AttributeError, ValueError):
+    pass
+
+# helper import (subagent 식별 + URL 차단 검사)
 _HOOK_DIR = os.path.dirname(os.path.abspath(__file__))
 _LIB_DIR = os.path.join(_HOOK_DIR, "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 try:
     from subagent_lookup import lookup_subagent_type
+    from dast_url_check import check_url
 except ImportError:
     def lookup_subagent_type(agent_id="", spawn_name="", fallback=""):  # noqa: ARG001
         return fallback
 
+    def check_url(url):  # noqa: ARG001
+        return False, None, None
+
 WATCHED_TOOLS = ("WebFetch",)
 DAST_AGENTS = ("dast-analyzer",)
-
-# GAP-A: .kr 단독 TLD 추가 (auditor 권장)
-PRODUCTION_PATTERNS = [
-    re.compile(r"^https?://api\.[\w-]+\.(com|io|net|co\.kr)/"),
-    re.compile(r"^https?://prod\."),
-    re.compile(r"^https?://www\."),
-    re.compile(r"^https?://([\w-]+)\.(com|io|net|co\.kr|org)/"),
-    re.compile(r"^https?://[\w.-]+\.kr/"),
-]
-
-# GAP-B: dast-analyzer 외부 리서치 도메인 (R-19 정합) 명시 추가
-EXCLUDE_PATTERNS = [
-    re.compile(r"(staging|stage|dev|test|qa|uat|preview|preprod)\."),
-    re.compile(r"\.(internal|local|test|localhost)"),
-    re.compile(r"^https?://(127\.0\.0\.1|localhost|0\.0\.0\.0)"),
-    re.compile(r"^https?://10\.|^https?://172\.(1[6-9]|2\d|3[01])\.|^https?://192\.168\."),
-    re.compile(r"portswigger\.net"),
-    re.compile(r"owasp\.org"),
-    re.compile(r"cve\.mitre\.org"),
-    re.compile(r"nvd\.nist\.gov"),
-    re.compile(r"zaproxy\.org"),
-]
 
 
 def main():
@@ -104,26 +94,17 @@ def main():
     if not url:
         return 0
 
-    # (4) exclude_patterns 우선 평가 (allowlist)
-    for pat in EXCLUDE_PATTERNS:
-        if pat.search(url):
-            sys.stderr.write(
-                "[pretooluse-dast-prod-guard] PASS via exclude "
-                "(agent_type=dast-analyzer, url={}, pattern={})\n".format(
-                    url, pat.pattern
-                )
+    # (4)~(6) helper 호출 = exclude 우선 + production 매칭 + 보수적 디폴트
+    blocked, matched_pattern, exclude_matched = check_url(url)
+    if exclude_matched:
+        sys.stderr.write(
+            "[pretooluse-dast-prod-guard] PASS via exclude "
+            "(agent_type=dast-analyzer, url={}, pattern={})\n".format(
+                url, exclude_matched
             )
-            return 0
-
-    # (5) production_patterns 매칭
-    matched_pattern = None
-    for pat in PRODUCTION_PATTERNS:
-        if pat.search(url):
-            matched_pattern = pat.pattern
-            break
-
-    # (6) 매칭 X = 통과 (보수적 디폴트)
-    if not matched_pattern:
+        )
+        return 0
+    if not blocked:
         sys.stderr.write(
             "[pretooluse-dast-prod-guard] PASS "
             "(agent_type=dast-analyzer, url={}, no production match)\n".format(url)

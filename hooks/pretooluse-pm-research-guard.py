@@ -26,9 +26,18 @@ Claude Code PreToolUse hook — PM agent 의 R-19 면제 예외 영역 외부 �
 """
 
 import sys
+import io
 import json
 import re
 import os
+
+# 한글 메시지 깨짐 방지 (#029 R-15 후속, Day 21 turn 2)
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+try:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+except (AttributeError, ValueError):
+    pass
 
 # subagent_type 식별 helper (Day 21 turn 1 #028 옵션 E)
 _HOOK_DIR = os.path.dirname(os.path.abspath(__file__))
