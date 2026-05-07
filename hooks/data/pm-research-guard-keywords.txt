@@ -1,0 +1,17 @@
+# pm-research-guard 키워드 사전 — pretooluse-pm-research-guard.py 사용
+# 한 줄 = 한 키워드. # 주석. 빈 줄 무시.
+# 추가/삭제는 이 파일만 수정 (훅 코드 무수정).
+# 매칭은 단순 부분문자열 (대소문자 구분, 한국어/영어 그대로).
+# false positive 폭주 시 단어 축소, 검출 미달 시 단어 추가.
+# 파일 부재 시 hook 본체의 hardcoded fallback 사용 (안전 디폴트).
+
+# === 면제 예외 영역 (~/.claude/rules/research-mandatory.md section 4) ===
+HANDOFF
+.checklist.md
+체크리스트
+정합 grep
+세션 인계
+운영 정리
+메모리 정리
+.todo.md
+HISTORY.md

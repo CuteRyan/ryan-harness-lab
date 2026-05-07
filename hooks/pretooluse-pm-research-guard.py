@@ -43,9 +43,11 @@ except ImportError:
 
 WATCHED_TOOLS = ("WebSearch", "WebFetch")
 
-# 면제 예외 영역 키워드 (~/.claude/rules/research-mandatory.md section 4 + agents/pm.md 정합)
-# 도메인 고유어 = false positive 낮음 (EMNLP 2024 Industry Track 인용)
-INTERNAL_META_KEYWORDS = [
+# 면제 예외 영역 키워드 외부 파일 (Day 21 turn 1 #028 b — sycophancy-keywords.txt 양식 차용)
+# 우선순위: hooks/data/pm-research-guard-keywords.txt → fallback hardcoded
+_KEYWORDS_FILE = os.path.join(_HOOK_DIR, "data", "pm-research-guard-keywords.txt")
+
+_HARDCODED_FALLBACK = [
     "HANDOFF",
     ".checklist.md",
     "체크리스트",
@@ -56,6 +58,30 @@ INTERNAL_META_KEYWORDS = [
     ".todo.md",
     "HISTORY.md",
 ]
+
+
+def _load_keywords():
+    """외부 파일 우선 + 부재 시 hardcoded fallback. 운영 sync 부담 최소화."""
+    if not os.path.isfile(_KEYWORDS_FILE):
+        sys.stderr.write(
+            "[pretooluse-pm-research-guard] WARN: keywords file not found "
+            "({}); using hardcoded fallback.\n".format(_KEYWORDS_FILE)
+        )
+        return list(_HARDCODED_FALLBACK)
+    try:
+        with open(_KEYWORDS_FILE, encoding="utf-8") as f:
+            keywords = []
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                keywords.append(line)
+        return keywords if keywords else list(_HARDCODED_FALLBACK)
+    except Exception:
+        return list(_HARDCODED_FALLBACK)
+
+
+INTERNAL_META_KEYWORDS = _load_keywords()
 
 # 추가 regex = "Day NN turn NN" 양식 (본 프로젝트 history 고유)
 INTERNAL_META_REGEX = re.compile(r"Day \d+ turn \d+")

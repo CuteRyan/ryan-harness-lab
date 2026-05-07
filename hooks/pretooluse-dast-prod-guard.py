@@ -17,8 +17,13 @@ Claude Code PreToolUse hook — DAST production 환경 차단.
 - NIST SP 800-115 (2008-09): "Any time that a test or tester directly interacts
   with a system or network, the potential exists for unexpected system halts
   and other denial of service conditions."
-- namesilo CI/CD 가이드 (2025): env prefix 없음 = production
+- namesilo CI/CD 가이드 (2025, https://www.namesilo.com/blog/en/domain-names/domain-naming-conventions-ci-cd):
+  "If your staging environment sometimes uses staging.example.com and sometimes
+  example.com/stage, you're setting yourself up for confusion—and possibly downtime."
+  → exclude_patterns 의 staging/dev/test/qa/uat/preview/preprod 정확 prefix 의무 정합
 - agents/dast-analyzer.md 권한 범위: "production 환경 테스트 절대 금지"
+- 2026-05-07 Day 21 turn 1 #028 (a) 라이브 검증 PASS — 4 검증 全 PASS (verifier-4 v2 spawn,
+  옵션 E subagent_lookup helper 적용 후) = production URL 차단 + staging URL exclude 통과
 
 근거 룰:
 - 본 프로젝트 2026-05-06 Day 20 turn 12 #026 신설 (PM 협의 PASS + audit PASS)

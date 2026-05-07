@@ -109,9 +109,14 @@ variations:
     description: "compliance 단독 (감사 대비, 기존 시스템 정책 매핑만). compliance.blocked_by_policy=any_available 로 SAST·DAST 부재 시 즉시 진행 (D-26)."
 
 # Day 20 turn 12 #026 신설: DAST production 환경 차단 enforcement (PM 협의 PASS + audit PASS with conditions 78%)
-# 외부 출처: StackHawk ZAP guide (2026-03-04) + NIST SP 800-115 (2008-09) + namesilo CI/CD (2025) + 본 프로젝트 #027 양식 차용
+# 외부 출처: StackHawk ZAP guide (2026-03-04) + NIST SP 800-115 (2008-09)
+#         + namesilo CI/CD (2025, https://www.namesilo.com/blog/en/domain-names/domain-naming-conventions-ci-cd
+#           인용: "If your staging environment sometimes uses staging.example.com and sometimes example.com/stage,
+#           you're setting yourself up for confusion—and possibly downtime.")
+#         + 본 프로젝트 #027 양식 차용
 # Hook 구현: hooks/pretooluse-dast-prod-guard.{sh,py} + settings.json WebFetch matcher 별도 항목
 # GAP-A (.kr 단독 TLD) + GAP-B (외부 리서치 도메인) + GAP-D (matcher 별도 항목) 즉시 반영
+# Day 21 turn 1 #028 (a) 라이브 검증 PASS — verifier-4 v2 spawn = production URL 차단 + staging URL exclude 통과 결정적 재현
 enforcement:
   type: pretooluse_url_pattern
   agent_type_filter: dast-analyzer
