@@ -1,84 +1,57 @@
-# HANDOFF — 2026-05-06 Day 20 turn 12 인계서 (Phase 2 hooks 신설 完, 라이브 검증 잔여)
+# HANDOFF — 2026-05-07 Day 21 turn 1 인계서 (#028 a PASS, 잔여 b·c·d·e·f + #029)
 
-> 생성: 2026-05-06 turn 12 종료 시점 | 소멸 조건: 다음 세션 확인 후 `/handoff done`
-> 작성자: Day 20 turn 12 메인 Claude (Opus 4.7 1M)
-> **양식 v2 간소 모드** (R-16 정합) + 양식 v2 dogfood 21건째
+> 생성: 2026-05-07 turn 1 종료 시점 | 소멸 조건: 다음 세션 확인 후 `/handoff done`
+> 양식 v2 간소 모드 (R-16) + dogfood 22건째
 
 ---
 
-## 🚨 다음 세션 진입 전 사용자 결정 (CRITICAL, R-5 정합)
+## 🚨 다음 세션 진입 전 사용자 결정 (있음)
 
-**Phase 1 정식 운영 + Phase 2 hooks 신설 完** = R-19/R-20 자동 차단 hooks 2종 신설 完, 단 라이브 검증 미수행 (메인 재시작 의존). 다음 세션 사용자 직접 컨펌 의무 결정 3건:
-
-**결정 1 — R-21 정식 등록**
-- 본 turn dogfood 2회차 누적 (turn 11 + turn 12) = 정식 등록 후보
-- 잠정 정책: "PM 협의 외부 출처 N건 + 자기비판 R-20 PASS 시 /feedback 검수 생략 가능"
-- (A) 정식 등록 (SKILL.md §5 R-21 행 신설 + §0 의무 6번 R-1~R-21 갱신 + §변경 이력 v3.5 entry)
-- (B) 1회 더 dogfood 후 (3회차) 정식 등록
-- **현재 기울기 = A** (2회차 누적 = 충분, 외부 출처 인용 패턴 결정적 정합)
-
-**결정 2 — #028 라이브 검증 진입 시점**
-- (A) 즉시 진입 (#027 + #026 라이브 검증 = PM/dast-analyzer spawn → WebSearch/WebFetch → hook 차단 결정적 재현, ~30분)
-- (B) 다른 작업 우선 (다른 프로젝트 등)
-- **PM 권장 = A** (메인 재시작 후 즉시 검증 = turn 7 #018 패턴 정합)
-
-**결정 3 — #028 잔여 GAP 처리 순서** (결정 2 = A 시 적용)
-- 라이브 검증 (a) → 키워드 외부 파일화 (b) → Bash matcher 확장 (d) → 기타 (c·e·f)
-- **PM 권장 순서 = (a) → (b) → (d) → (c·e·f)** (핵심 검증 → 운영 위생 → 기능 확장 순)
+**결정 1 — 다음 turn 진입 작업 우선순위**:
+- (A) #028 잔여 5건 + #029 R-15 후속 (이번 turn 흐름 이어가기)
+- (B) 다른 프로젝트 우선 (Harness-engineering 잠시 휴식)
+- **현재 기울기 = A** (PM 권장 순서 b→d→c·e·f 그대로 + #029 R-15 fix 묶음)
 
 ## 마지막 상태
 
-- **commit `[turn 12 commit]`** (working tree clean + push 完 후)
-- **Phase 1 정식 운영 + Phase 2 hooks 신설 完** = #009 大 사이클 + #024 + #025 + #026 + #027 全 PASS
-- **자산 누적**: 18 agent + 7 preset + 6 헬퍼 + 4 reference + PM (Opus) + 글로벌 강제 훅 + R-19/R-20 자동 차단 hooks 2종
+- commit `[turn 1 commit]` (working tree clean)
+- **#028 (a) 라이브 검증 全 PASS** = 4 검증 全 PASS (PM hook 차단/통과 + DAST hook 차단/통과)
+- **신설 자산**: `hooks/lib/subagent_lookup.py` (~70줄, agent_id+name+fallback 3차 매칭)
+- **누적 정책**: D-30 (옵션 E Team config 매칭) + R-23 잠정 (subagent_lookup 의무) + #029 (R-15 후속 = CP949 fix)
 
-## 미완 작업 (Phase 1-1 후속)
+## 미완 작업 (#028 잔여 5건 + #029 신설)
 
-- [ ] **#028 Phase 2 후속** (라이브 검증 + 잔여 GAP, `.todo.md` #028 참조)
-  - (a) #027 + #026 라이브 검증 (메인 재시작 후 spawn → WebSearch/WebFetch → hook 차단 재현)
-  - (b) #027 키워드 외부 파일화 (`hooks/data/pm-research-guard-keywords.txt` 패턴)
-  - (c) #027 agent_type 라이브 검증 결과 문서화 (turn 11 architect 자기비판 ①)
-  - (d) #026 Bash matcher 확장 (curl/wget URL 검출, ADR-026 D-4 보류)
-  - (e) #026 namesilo CI/CD 출처 (c) URL 특정 + 직접 인용 보강 (turn 12 auditor 자기비판 ①)
-  - (f) R-21 정식 등록 (결정 1 컨펌 후)
-
-(잡다 백로그 = `.todo.md` #001·#002·#003·#006·#007·#008·#016·#017·#020 참조)
+- [ ] #028 (b) 키워드 외부 파일화 (`hooks/data/pm-research-guard-keywords.txt`)
+- [ ] #028 (c) agent_type 라이브 검증 결과 마스터플랜 §10.x 신설 (Day 21 turn 1 PASS 사실)
+- [ ] #028 (d) Bash matcher 확장 (옵션 B + R-22 helper 추출 = `hooks/lib/dast_url_check.py`)
+- [ ] #028 (e) namesilo CI/CD URL 특정 + 직접 인용 보강
+- [ ] #028 (f) R-21 정식 등록 (현재 dogfood 4회차 누적, 1회 더 dogfood 후 등록 = 결정 1=B 정합)
+- [ ] #029 R-15 후속 = 양 hook 한글 메시지 UTF-8 강제 (PYTHONIOENCODING + io.TextIOWrapper)
+- [ ] R-23 정식 등록 (옵션 E + name 매칭 fallback 정책, dogfood 1회차 누적)
 
 ## 다음 세션 시작 지점
 
-### Quick Start (메인 Claude 가 새 세션 진입 직후 즉시 실행)
+### Quick Start (메인 Claude 새 세션 진입 직후)
 1. PowerShell `Get-ChildItem Env:CLAUDE_CODE_SUBAGENT_MODEL` 부재 확인
 2. `git status --short` clean + 마지막 commit 본 turn 확인
-3. **settings.json `hooks.PreToolUse` 6 matcher 확인** (Bash·Edit·Write·MultiEdit·`Task|Agent`·`WebSearch|WebFetch`·`WebFetch` = 7 matcher 신규 #027 + #026 등록 確認)
-4. 본 HANDOFF Read → `/handoff done` (소멸 정책 18회차 검증)
+3. settings.json `hooks.PreToolUse` 7 matcher 확인 (Bash·Edit·Write·MultiEdit·Task\|Agent·WebSearch\|WebFetch·WebFetch)
+4. 본 HANDOFF Read → `/handoff done` (소멸 정책 19회차 검증)
 
-### 정식 절차 (사용자 결정 1·2·3 컨펌 후)
-1. `.todo.md` Read → #028 진입 결정
-2. (결정 1=A 시) SKILL.md §5 R-21 행 신설 + §0 + §변경 이력 v3.5 entry
-3. (결정 2=A 시) PM 협의 (선택) → #028 라이브 검증 진입 → `/checklist mode=mixed` 작성
-
-## 미결 결정 (위 🚨 섹션 참조)
-
-위 §🚨 결정 1·2·3 = 다음 세션 진입 전 사용자 직접 컨펌 의무.
+### 정식 절차 (사용자 결정 1 컨펌 후)
+1. `.todo.md` Read → #028 (b)·(d)·(c)·(e)·(f) 진입 + #029 R-15 후속 묶음 결정
+2. `/checklist mode=mixed` 작성 (Step 별 분할)
+3. (결정 1=A 시) PM 협의 dogfood 5회차 → R-21 정식 등록 후보 (5회차 누적 시)
 
 ## 컨텍스트
 
-- **본 세션 (Day 20 turn 11 + 12)**: 사용자 명시 "한번에 다 마무리" → turn 11 #024+#025 PASS (R-20 신설) + turn 12 #027+#026 PASS (Phase 2 hooks 신설 完)
-- **누적 dogfood**: /checklist mode=mixed 13건째 / 양식 v2 21건째 / PM 협의 (Agent Teams) 3회차 / ② 회의실 dogfood 2회 (Day 20 첫) / R-18 dogfood 3회 / R-19 dogfood 2회 (정정 → 자동 차단 폐쇄 루프) / R-20 dogfood 5회
-- **신설 정책 (turn 12)**: D-28 (PreToolUse 사전 차단 채택) + D-29 (WebFetch matcher 별도 항목) + R-21 잠정 (/feedback 생략 가능 dogfood 2회차)
-- **잠재 #028 라이브 검증 결정적 가치**: turn 7 #018 패턴 정합 = 메인 재시작 후 spawn 4건 결정적 재현 = "agent_type 필드 라이브 검증" + "exclude_patterns 정확성" 양면 검증 가능
+- 본 turn = 라이브 검증 진단 5 라운드 + 옵션 E v2 적용 = critical 결함 (hook silent pass) 결정적 해결
+- 옵션 E (사용자 안) > 추천 B+A (내 안) 우월 입증
+- 사용자 시간 우려 표명 → 진척도 1/6 = critical 결함 발견의 자연 결과 = 결과적 가치 高 (회귀 잠복 차단)
 
 ## 관련 파일
 
-- `skills/agent-team-manager/SKILL.md` v3.4 (turn 12 최종, R-13 다중 entry 정합)
-- `hooks/pretooluse-pm-research-guard.{sh,py}` (turn 12 #027 신설)
-- `hooks/pretooluse-dast-prod-guard.{sh,py}` (turn 12 #026 신설)
-- `presets/security.yaml` (turn 12 enforcement 4 필드 schema + self_critique B-8 갱신)
-- `~/.claude/settings.json` (turn 12 PreToolUse 7 matcher, 백업 `_phase2_027` + `_phase2_026`)
-- `docs/history/2026-05-06.md` (turn 11 + turn 12 통합 본문)
-- `.todo.md` (#024·#025·#026·#027 完, #028 신설)
-- 외부 출처 SSOT = `docs/research/agent-office-masterplan/04_masterplan.md §8.3`
-
-### Git
-- 마지막 commit (turn 12): 본 turn commit
-- push 한 단위 (메모리 `feedback_commit_push.md`)
+- `hooks/lib/subagent_lookup.py` (신설, ~70줄)
+- `hooks/pretooluse-pm-research-guard.py` + `hooks/pretooluse-dast-prod-guard.py` (subagent_lookup 호출 추가, 디버그 라인 cycle 후 제거)
+- `~/.claude/hooks/lib/subagent_lookup.py` + `~/.claude/hooks/pretooluse-{pm,dast}-*.py` 운영 sync (3쌍 SHA256 MATCH)
+- `docs/history/2026-05-07.md` (본 turn 상세)
+- `.todo.md` (#028 a 完, b·c·d·e·f 잔여, #029 신설)

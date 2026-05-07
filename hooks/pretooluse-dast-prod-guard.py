@@ -23,11 +23,28 @@ Claude Code PreToolUse hook — DAST production 환경 차단.
 근거 룰:
 - 본 프로젝트 2026-05-06 Day 20 turn 12 #026 신설 (PM 협의 PASS + audit PASS)
 - exclude_patterns: dast-analyzer 외부 리서치 의무 도메인 (R-19 정합) = portswigger/owasp/cve/nvd/zaproxy
+- 본 프로젝트 2026-05-07 Day 21 turn 1 #028 (a) 진단 PASS — agent_type 의미 발견 + 옵션 E 적용
+
+subagent_type 식별 (Day 21 turn 1 옵션 E):
+- stdin 의 agent_type 은 spawn name (임의값) 가 들어오므로 frontmatter name 과 다름
+- Team config (~/.claude/teams/*/config.json) 의 members[].agentType 에서 정확한 식별값 추출
 """
 
 import sys
 import json
 import re
+import os
+
+# subagent_type 식별 helper (Day 21 turn 1 #028 옵션 E)
+_HOOK_DIR = os.path.dirname(os.path.abspath(__file__))
+_LIB_DIR = os.path.join(_HOOK_DIR, "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+try:
+    from subagent_lookup import lookup_subagent_type
+except ImportError:
+    def lookup_subagent_type(agent_id="", spawn_name="", fallback=""):  # noqa: ARG001
+        return fallback
 
 WATCHED_TOOLS = ("WebFetch",)
 DAST_AGENTS = ("dast-analyzer",)
@@ -65,8 +82,16 @@ def main():
     if tool_name not in WATCHED_TOOLS:
         return 0
 
-    agent_type = data.get("agent_type", "") or ""
-    if agent_type not in DAST_AGENTS:
+    # subagent_type 식별 (Day 21 turn 1 옵션 E):
+    #   1차: agent_id 정확 매칭 / 2차: name 매칭 / 3차: stdin agent_type fallback
+    agent_id = data.get("agent_id", "") or ""
+    raw_agent_type = data.get("agent_type", "") or ""
+    subagent_type = lookup_subagent_type(
+        agent_id=agent_id,
+        spawn_name=raw_agent_type,
+        fallback=raw_agent_type,
+    )
+    if subagent_type not in DAST_AGENTS:
         return 0
 
     tool_input = data.get("tool_input") or {}
