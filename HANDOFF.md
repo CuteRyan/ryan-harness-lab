@@ -21,7 +21,7 @@
    - `deployment.md` → 스킬 전환 (실제 배포 작업 시)
    - 마스터플랜 04·06 문서 압축 (agent-office-masterplan, 814+600줄)
    - `/feedback` 자동 호출 의무 재검토 / R/D 번호 체계 자연 소멸
-3. **메모리 콤팩트 (주인님 요청)** — `shared-ec2-infra.md`가 stale (EC2 → Hostinger VPS 2026-07-03 미반영). MEMORY.md 전반 정합 재점검.
+3. **메모리 콤팩트 (주인님 요청)** — ✅ `shared-ec2-infra.md` → `shared-vps-infra.md` 갱신 완료(EC2 폐기 → VPS). 나머지 메모리 정합은 필요 시 재점검.
 
 ## Quick Start
 1. `git status --short` clean 확인
