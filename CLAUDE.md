@@ -57,6 +57,6 @@ CLAUDE.md 헌법 (SSOT 5원칙) — 이 블록의 원본은 오직
 ## 참고 (세부는 @import 로 분리)
 - @docs/history/index.md
 - @docs/templates/CLAUDE.md.template
-- @docs/project_harness_architecture.md
+- docs/project_harness_architecture.md — ⚠️ ARCHIVED (2026-07-06): 문서 하네스 서브시스템(`.harness.yml`) 실사용 소비자 0 확인 → `@import` 해제로 매 세션 ~500줄 상시로드 차단. 기록은 보존, 자동 로드 안 함 (필요 시 직접 Read).
 
 <!-- 개인 오버라이드가 필요하면 CLAUDE.local.md 를 작성하고 .gitignore 에 등재 -->
