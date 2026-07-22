@@ -1,10 +1,10 @@
-# 코딩 규칙
+# Coding Rules
 
-1. **기본 가상환경: `.venv`** — VS Code 자동 탐색 대상. 직접 호출: Windows `./.venv/Scripts/python.exe`, POSIX `./.venv/bin/python`. 시스템 Python은 **venv 생성 시에만** 허용. 예외(Conda·Docker·devcontainer·Poetry 외부 env 등)는 프로젝트 CLAUDE.md에 사유 기록.
-2. **VS Code 인터프리터 경로 커밋 금지** — 구체 실행파일 경로(`.venv/Scripts/python.exe`) 커밋 ❌, User 전역 상대경로 ❌. 팀 공유 필요 시 폴더 경로(`${workspaceFolder}/.venv`)만 허용. 기본은 자동 탐색에 맡김. 수동 선택 시 `.vscode/settings.json`에 절대경로·홈·실행파일 경로 들어갔는지 커밋 전 검토.
-3. **`.env` 우선 (로컬 한정)** — 로컬은 `load_dotenv(override=True)` 가능. **운영/스테이징은 시스템 env·secret manager가 `.env`보다 우선** (환경별 전략은 프로젝트 CLAUDE.md에). 시스템 env에 API 키 잔존 시 삭제.
-4. **테스트는 운영 규모로** — 소규모(5건) 통과만으로 "성공" 금지. 중규모(100건+) 검증 + DB 저장 확인까지.
-5. **커밋 전 관련 테스트 필수** — 수정 모듈을 import/호출하는 테스트를 로컬에서 통과 확인 후 커밋. 특히 함수 시그니처 변경·새 Phase/단계 추가·import 경로 변경 시.
+1. **Default virtualenv: `.venv`** — auto-discovered by VS Code. Direct call: Windows `./.venv/Scripts/python.exe`, POSIX `./.venv/bin/python`. System Python is allowed **only for creating the venv**. Exceptions (Conda, Docker, devcontainer, Poetry external env, …) must be justified in the project CLAUDE.md.
+2. **Never commit interpreter paths to VS Code settings** — no concrete executable paths (`.venv/Scripts/python.exe`), no user-global relative paths. If the team needs a shared setting, folder path only (`${workspaceFolder}/.venv`). Default to auto-discovery. Before committing `.vscode/settings.json`, check it for absolute/home/executable paths.
+3. **`.env` wins locally only** — local dev may use `load_dotenv(override=True)`. **Production/staging: system env and secret manager take precedence over `.env`** (per-environment strategy in the project CLAUDE.md). Delete stale API keys left in system env.
+4. **Test at production scale** — passing a small sample (5 rows) is not "success". Verify at medium scale (100+ rows) including DB persistence.
+5. **Run related tests before committing** — locally pass the tests that import/call the modified module, especially on function-signature changes, new phases/steps, or import-path changes.
 
-> 서버/CI/컨테이너 배포는 `deployment.md` 참조.
-> `venv/` → `.venv/` 마이그레이션 절차 → `Harness-engineering/docs/rules-appendix/coding-venv-migration.md`
+> Server/CI/container deployment: see `deployment.md`.
+> `venv/` → `.venv/` migration procedure → `Harness-engineering/docs/rules-appendix/coding-venv-migration.md`

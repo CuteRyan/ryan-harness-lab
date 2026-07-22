@@ -1,28 +1,28 @@
-# 외부 리서치 의무 (글로벌)
+# External Research Mandate (global)
 
-**핵심**: 외부 사실은 자체 지식(training data)만 믿지 말 것. 스스로 판단 못 하는 영역에 들어가면 **먼저 리서치 → 출처 인용**. 출처 없는 단언 금지. 목적 = 추측·환각 차단.
+**Core**: never rely on training-data knowledge alone for external facts. When entering territory you cannot verify yourself: **research first → cite sources**. No unsourced assertions. Purpose: block guessing and hallucination.
 
-## 의무 조건 (하나라도 해당 시)
-- 외부 사실·통계·시장·뉴스 인용
-- 라이브러리·프레임워크·도구의 동작·옵션·버전 사양
-- 공식 문서·표준·규격·논문
-- 모범 사례·업계 패턴·설계 결정 근거
-- 자체 지식이 불확실하거나 cutoff 이후 바뀌었을 수 있는 사실
-- 주인님이 "찾아봐 / 리서치해 / 근거 가져와 / 외부로 확인해" 요청
+## Required when any of these apply
+- Citing external facts, statistics, markets, news
+- Behavior/options/version specs of libraries, frameworks, tools
+- Official docs, standards, specifications, papers
+- Best practices, industry patterns, design-decision rationale
+- Own knowledge is uncertain or may have changed after cutoff (includes AI model specs and pricing — never answer from hardcoded stale info)
+- 주인님 asks: "찾아봐 / 리서치해 / 근거 가져와 / 외부로 확인해"
 
-## 도구 (우선순위)
-1. **WebSearch** — 1순위 (넓게, 최신)
-2. **WebFetch** — 결과가 약하거나 URL 지정 시 특정 URL 깊이 읽기
-3. 외부 CLI (Codex/Gemini via `/feedback`) — 코드 리뷰·2차 시각 한정
-4. `/research-knowledge` — 오래 재사용할 지식일 때 적재
+## Tools (priority)
+1. **WebSearch** — first (broad, current)
+2. **WebFetch** — deep-read a specific URL when results are weak or a URL is given
+3. External CLIs (Codex/Gemini via `/feedback`) — code review / second opinion only
+4. `/research-knowledge` — when the knowledge is worth persisting for reuse
 
-## 출력 형식 (인용 시 필수)
-출처 URL·제목 · 발행일/버전(가능 시) · 핵심 **직접 인용 1~2줄**(요약 아님).
-"아마도 · 보통 · 일반적으로" 등 얼버무림 금지.
+## Output format (mandatory when citing)
+Source URL & title · publish date/version when available · 1–2 lines of **direct quotation** (not a paraphrase).
+No hedging ("아마도", "보통", "일반적으로").
 
-## 예외 — 내부 사실은 리서치 불필요
-코드명·시그니처·경로 · 프로젝트 파일(CLAUDE.md·docs·skills·rules) · 이전 turn 결정·메모리·`.todo`·HANDOFF · git 이력 · Task* 출력 · 로컬 환경/시스템 상태.
-→ **내부는 직접 확인, 외부는 리서치 + 인용.**
+## Exception — internal facts need no research
+Code names/signatures/paths · project files (CLAUDE.md, docs, skills, rules) · prior-turn decisions, memory, `.todo`, HANDOFF · git history · Task* output · local environment/system state.
+→ **Internal: check directly. External: research + cite.**
 
 ---
-> 왜 만들었나 · 출처 4건 · 적용 이력 → `Harness-engineering/docs/rules-appendix/research-mandatory.md`
+> Origin, 4 sources, application history → `Harness-engineering/docs/rules-appendix/research-mandatory.md`

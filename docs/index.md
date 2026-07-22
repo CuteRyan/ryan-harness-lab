@@ -22,6 +22,7 @@
 ## 피드백
 
 - [피드백 인덱스](feedback/index.md) — Codex/Gemini 크로스 리뷰 이력
+- [규칙·문서 작성 방식 피드백](claude_harness_writing_feedback_2026-07-22.md) — 2026-07-22 주인님 전달: 절차 최소화 + 평범한 말 + 4요소 기록. 반영처: 글로벌 CLAUDE.md Documentation 항목
 
 ## 리서치
 

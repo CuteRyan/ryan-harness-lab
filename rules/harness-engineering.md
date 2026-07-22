@@ -1,18 +1,17 @@
-# 대전제: 하네스 엔지니어링
+# Premise: Harness Engineering
 
-모든 프로젝트는 **하네스 엔지니어링** 기법으로 설계·관리한다. 이것은 예외 없는 대전제다.
+Every project is designed and managed through harness engineering. Since 2026-07-22 the harness follows one governing principle: **verify outcomes — don't choreograph process.**
 
-## 핵심 원칙
-- 엔지니어는 코드를 직접 쓰지 않고 **환경을 설계하고, 의도를 명세하고, 피드백 루프를 구축**한다
-- 모델에 투자하지 말고, **하네스에 투자**한다 — 모델은 병목이 아니라 하네스가 아키텍처다
+## Principles
+- The engineer designs the environment, specifies intent, and builds feedback loops; the model does the work. The four jobs remain: environment design (repo structure, CI, linters, per-directory CLAUDE.md), intent specification (rules, prompts, constraints), feedback loops (tests, guards, monitoring), lifecycle management.
+- **Guardrails belong only where mistakes are hard to reverse** (data loss, deploys, external sends, git history rewrites). Reversible mistakes are handled by git + review, not by hooks.
+- **Every rule must pay rent**: a rule that taxes every action to prevent a rare or reversible mistake gets removed. Prefer one outcome check (test, lint) over N process gates.
+- **Re-audit scaffolding when the model generation upgrades** — controls built to compensate for an older model's weaknesses become interference for a newer one.
+- Add guardrails after a real incident, not speculatively.
 
-## 하네스 엔지니어의 4대 업무
-1. **환경 설계** — 리포 구조, CI 설정, 린터, 포매터, 디렉토리별 CLAUDE.md
-2. **의도 명세** — 프로젝트 지침, 프롬프트, 제약 조건, rules/
-3. **피드백 루프 구축** — pre-commit 훅, 테스트, 가드레일, 모니터링
-4. **생명주기 관리** — 에이전트의 시작·재시도·종료 흐름
+## Applying to a project
+- New project: set up CLAUDE.md, tests/lint, and the minimum rules first; grow the harness only from observed failures.
+- DevOps principles (CI/CD, IaC, shift-left, observability) fold naturally into the harness.
 
-## 프로젝트 적용
-- 새 프로젝트 시작 시 반드시 하네스 구조(CLAUDE.md, rules/, hooks, CI)부터 설계
-- 코드 작성 전에 환경·규칙·검증 체계가 먼저 갖춰져야 함
-- DevOps 원칙(CI/CD, IaC, Shift-Left, 관측 가능성)은 하네스에 자연 포함
+## History
+- 2026-07-22: direction change from process control (mandatory checklists, blanket pre-approval, forced agent hierarchy/model params, per-call audit hooks) to outcome verification — the process layer slowed work more than it prevented errors. Details: `Harness-engineering/docs/history/2026-07-22.md`.

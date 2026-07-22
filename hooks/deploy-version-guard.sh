@@ -1,6 +1,7 @@
 #!/bin/bash
-# PreToolUse(Bash) 글로벌 훅: 배포 명령 감지 시 버전업 + CI 상태 확인
-# 조건: scp 명령에 EC2 서버(3.36.211.91) 포함 시 동작
+# PreToolUse(Bash) global hook: on deploy commands, verify version bump + CI status
+# Trigger: scp/rsync command targeting the shared VPS (187.127.123.81)
+# (EC2 3.36.211.91 retired 2026-07-03 — IP updated 2026-07-22)
 # 체크 항목:
 #   1. pyproject.toml 버전업 여부
 #   2. HISTORY.md 업데이트 여부
@@ -14,7 +15,7 @@ else
 fi
 
 # SCP 배포 명령인지 확인
-if ! echo "$CMD" | grep -q "scp" || ! echo "$CMD" | grep -q "3.36.211.91"; then
+if ! echo "$CMD" | grep -qE "scp|rsync" || ! echo "$CMD" | grep -q "187.127.123.81"; then
   exit 0
 fi
 

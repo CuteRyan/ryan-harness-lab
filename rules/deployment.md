@@ -1,17 +1,17 @@
-# 배포 규칙 (훅 강제)
+# Deployment Rules (hook-enforced)
 
-> `deploy-version-guard.sh` 훅이 버전업/HISTORY 확인. 접속정보는 프로젝트 메모리 `deployment.md` 참조.
+> The `deploy-version-guard.sh` hook checks version bump / HISTORY / CI. Connection details live in each project's memory `deployment.md`.
 
-## 인프라 (2026-07-03, 전 프로젝트)
-- **AWS EC2 폐기 → Hostinger VPS 단일화.** 모든 프로젝트를 1대 VPS로 통합, 신규 배포는 VPS 기준. EC2 신규 투자 금지.
-- 공용 VPS: `root@187.127.123.81` (Hostinger KVM4, Ubuntu 24.04). SSH: `ssh -i C:/Users/rlgns/.ssh/hostinger_vps root@187.127.123.81`.
-- **앱 경로·서비스명·도메인·시크릿은 각 프로젝트 메모리 `deployment.md`에.** 배포 전 대상 프로젝트가 VPS로 이전됐는지 프로젝트 메모리 확인.
+## Infrastructure (2026-07-03, all projects)
+- **AWS EC2 retired → consolidated on a single Hostinger VPS.** All projects run on one VPS; new deployments target the VPS. No new EC2 investment.
+- Shared VPS: `root@187.127.123.81` (Hostinger KVM4, Ubuntu 24.04). SSH: `ssh -i C:/Users/rlgns/.ssh/hostinger_vps root@187.127.123.81`.
+- **App paths, service names, domains, secrets → each project's memory `deployment.md`.** Before deploying, confirm in project memory that the target project has been migrated to the VPS.
 
-## 핵심 원칙
-- **런타임 경로 변경(venv·Python 버전·실행 유저)은 배포 변경**으로 간주 — HISTORY 기록(무엇을·왜·이전 값) + 롤백 플랜 + 서비스 재시작·헬스체크 필수.
-- **경로를 바꾸기 전에** 새 환경이 이미 준비돼 있을 것 (auto-restart 장애 방지).
-- 배포 전 **경로 하드코딩 지점 전수 확인** (systemd·컨테이너·cron·CI·nginx).
-- 문제 발생 시 즉시 롤백 (`venv.old/` 최소 1~2주 보존).
+## Core principles
+- **Runtime path changes (venv, Python version, run user) count as deployment changes** — HISTORY entry (what/why/previous value) + rollback plan + service restart & health check required.
+- **Prepare the new environment before switching paths** (prevents auto-restart outages).
+- Before deploying, **sweep every hardcoded-path location** (systemd, containers, cron, CI, nginx).
+- On failure, roll back immediately (keep `venv.old/` for at least 1–2 weeks).
 
 ---
-> 상세 체크리스트 (경로 하드코딩 전수 · 프로덕션 적용 A~H · 롤백 절차 · Blue-Green · Docker/CI/Jupyter 특수 케이스 · VPS 진행 현황) → `Harness-engineering/docs/rules-appendix/deployment-checklist.md`
+> Detailed checklists (path sweep · production steps A–H · rollback · Blue-Green · Docker/CI/Jupyter special cases · VPS migration status) → `Harness-engineering/docs/rules-appendix/deployment-checklist.md`

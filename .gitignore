@@ -9,3 +9,4 @@ __pycache__/
 .doc-checklist.md
 memory/
 settings/settings.json
+.checklist.md

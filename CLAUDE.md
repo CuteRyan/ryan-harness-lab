@@ -21,7 +21,7 @@ CLAUDE.md 헌법 (SSOT 5원칙) — 이 블록의 원본은 오직
 - **역할**: 하네스 인프라의 설계·구현·테스트·문서화
 - **⚠️ 리서치 문서(하네스 개념, 비교 분석 등)는 `문서/지식/` 프로젝트에 보관**
 - **스테이징/운영 분리**: 스킬·훅·rules는 이 프로젝트(`Harness-engineering/`) = 스테이징, `~/.claude/` = 운영. 편집 후 동기화 책임은 이 프로젝트에 있음. 상세: `~/.claude/rules/dev-checklist.md` SSOT 섹션.
-- **프리플라이트 SSOT**: `/checklist`·훅 차단 대응 등 프리플라이트는 글로벌 `~/.claude/CLAUDE.md`가 SSOT. **이 파일에 프리플라이트 블록 중복 추가 금지** (모든 프로젝트에 자동 적용되므로 중복 시 drift 원인).
+- **프리플라이트 폐지 (2026-07-22)**: `/checklist` 의무·전면 사전 컨펌은 글로벌에서 제거됨 (과정 통제 → 결과 검증 전환). **글로벌 CLAUDE.md에 프리플라이트 블록을 되살리지 말 것.** 상세: `docs/history/2026-07-22.md`
 
 ## docs/ 구조
 - `docs/project_harness_architecture.md` — 하네스 아키텍처 설계안 (Phase 0~4)
