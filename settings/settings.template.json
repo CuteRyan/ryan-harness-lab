@@ -1,7 +1,5 @@
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
+  "env": {},
   "permissions": {
     "allow": [
       "WebFetch",
@@ -29,71 +27,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'pre-commit-guard.sh'\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'deploy-version-guard.sh'\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'pre-bash-guards.sh'\""
           }
         ]
       },
       {
-        "matcher": "Edit",
+        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
             "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
-          }
-        ]
-      },
-      {
-        "matcher": "MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'post-edit-verify.sh'\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'post-edit-verify.sh'\""
-          }
-        ]
-      },
-      {
-        "matcher": "MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'post-edit-verify.sh'\""
           }
         ]
       }

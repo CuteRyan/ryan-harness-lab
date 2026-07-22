@@ -1,7 +1,7 @@
-# Document Safety (hook + skill)
+# Document Safety
 
-> The `doc-protection.sh` hook **enforces** document protection: Write on existing docs is blocked (use Edit) + auto-backup to `.backups/`. Checklist via `/checklist` skill (optional, not hook-enforced). Details: `docs/workflows/document-work.md`
-
-## Slides / papers
-- Edit the md source first, then propagate to HTML (never the reverse).
-- Never regenerate via generate scripts (they overwrite manual edits).
+- Read an existing document before editing it, and change only the relevant part.
+- Use Edit for existing documents and Write for new files.
+- Do not overwrite, delete, or regenerate hand-edited documents through shell commands.
+- Automatic backups are disabled. Use Git or the editor's history for normal recovery.
+- Edit the Markdown source before generated HTML, slides, or paper outputs.

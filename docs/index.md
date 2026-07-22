@@ -16,7 +16,7 @@
 
 - [개발 체크리스트 워크플로우](workflows/dev-checklist.md) — Phase 1~6 상세 + 템플릿
 - [문서 작업 워크플로우](workflows/document-work.md) — 신규/기존 문서 작업 절차 + 교차검증
-- [위키 관리 워크플로우](workflows/wiki-management.md) — index/log 포맷, lint 절차
+- [위키 관리 워크플로우](workflows/wiki-management.md) — 현재 적용하지 않는 과거 절차 기록
 - [Graphify 가이드](workflows/graphify-guide.md) — 지식 그래프 생성/업데이트 가이드
 
 ## 피드백
@@ -27,8 +27,9 @@
 ## 리서치
 
 - [/feedback 인코딩 깨짐 근본 원인 분석](research/feedback-encoding-fix/01_root-cause.md) — PS 5.1 3 레이어(stdout/argv/Start-Job) 진단, 웹 근거, 수정안
-- [agent-team-manager 스킬 v2 재설계](research/agent-team-skill-redesign/HANDOFF.md) — 공식/커뮤니티/실측 기반 리서치·스펙 (진행 중)
+- [agent-team-manager 스킬 v2 재설계 기록](research/agent-team-skill-redesign/HANDOFF.md) — 2026-04-22 당시 조사와 설계안
 
 ## 관리 파일
 
+- [변경 기록](HISTORY.md) — 현재 하네스 변경의 결론·이유·검증 요약
 - [히스토리 인덱스](history/index.md) — 진행 중 섹션(SSOT) + 일별 파일 인덱스. 세션 인계는 항상 여기 최상단부터

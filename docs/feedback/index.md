@@ -7,6 +7,14 @@ created: 2026-04-17
 
 # 피드백 인덱스
 
+## 2026-07-22
+
+### 글로벌 하네스 경량화 Claude 검토
+- [검토 및 실제 파일 대조](2026-07-22_claude_global-harness-review.md) — 4건 중 1건 반영(`git push -f` 차단), 1건 반박, 1건 위험 수용, 1건 실행 확인 보류
+
+### 경량화 이후 핸드오프 검증 (Claude Fable)
+- [핸드오프 검증](2026-07-22_claude-fable_handoff-review.md) — 동기화·설정·차단·humanize·지시 충돌 이상 없음, 강제 푸시 우회 1건 재현(`git push -f;…`), 잔여물 5건 목록화
+
 ## /feedback 스킬 관련 피드백 (archive)
 
 > 2026-04-18 ~ 2026-04-20 동안 /feedback 스킬 자체에 대한 피드백이 3단계 누적(4차 개정 → 비판 검토 강화 → MVP 반영 검증 → B옵션 3차 개정). 2026-04-21 수렴 시점에 전부 `drafts/2026-04-20_proposal_feedback-skill-rewrite.md`(v4)로 흡수됨 (~85% 직접 반영, 나머지 9건 중 4건은 v4 패치 예정·5건은 후속/폐기).

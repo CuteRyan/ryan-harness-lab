@@ -1,26 +1,26 @@
 #!/bin/bash
-# Claude Code PreToolUse hook: 문서/설정 파일 보호 + 자동 백업
+# Claude Code PreToolUse hook: 문서/설정 파일 보호
 # - Write로 기존 문서/설정 파일을 전체 덮어쓰는 작업 차단
 # - Bash로 문서/설정 파일을 직접 수정하는 우회 경로 차단
-# - Edit 시 기존 문서를 .backups/에 자동 백업
-# - 신규 파일 Write는 허용하고, 내용 변경은 Edit 도구 사용을 유도
+# - Edit/MultiEdit은 그대로 허용
+# - 신규 파일 Write는 허용하고, 기존 파일 전체 덮어쓰기만 차단
 
-SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
-source "$SCRIPT_DIR/_harness_common.sh" 2>/dev/null || source ~/.claude/hooks/_harness_common.sh 2>/dev/null || true
-if command -v harness_timer_start >/dev/null 2>&1; then
-  harness_timer_start
-  trap 'harness_timer_stop "doc-protection"' EXIT
-fi
-
-INPUT=$(cat)
-if command -v jq &>/dev/null; then
-  TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
-  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-  COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+if [ -n "${HARNESS_TOOL_NAME+x}" ]; then
+  TOOL_NAME="$HARNESS_TOOL_NAME"
+  FILE_PATH="${HARNESS_FILE_PATH:-}"
+  COMMAND="${HARNESS_COMMAND:-}"
+elif [ -n "${HARNESS_COMMAND+x}" ]; then
+  TOOL_NAME="Bash"
+  FILE_PATH=""
+  COMMAND="$HARNESS_COMMAND"
 else
-  TOOL_NAME=$(echo "$INPUT" | python -c "import sys,json; data=json.load(sys.stdin); print(data.get('tool_name',''))" 2>/dev/null)
-  FILE_PATH=$(echo "$INPUT" | python -c "import sys,json; data=json.load(sys.stdin); print(data.get('tool_input',{}).get('file_path',''))" 2>/dev/null)
-  COMMAND=$(echo "$INPUT" | python -c "import sys,json; data=json.load(sys.stdin); print(data.get('tool_input',{}).get('command',''))" 2>/dev/null)
+  INPUT=$(cat)
+  if command -v jq &>/dev/null; then
+    PARSED=$(printf '%s' "$INPUT" | jq -r '[.tool_name // "", .tool_input.file_path // "", (.tool_input.command // "" | gsub("[\\r\\n]"; " "))] | join("\u001f")' 2>/dev/null)
+  else
+    PARSED=$(printf '%s' "$INPUT" | python -c "import sys,json; d=json.load(sys.stdin); v=[d.get('tool_name',''),d.get('tool_input',{}).get('file_path',''),d.get('tool_input',{}).get('command','')]; print(chr(31).join(str(x).replace(chr(10),' ').replace(chr(13),' ') for x in v))" 2>/dev/null)
+  fi
+  IFS=$'\x1f' read -r TOOL_NAME FILE_PATH COMMAND <<< "$PARSED"
 fi
 
 DOC_EXT='\.(md|markdown|html|htm|docx|doc|txt|rst|tex|csv|json|yaml|yml|xml|toml)$'
@@ -33,19 +33,6 @@ normalize_path() {
 is_doc_path() {
   local path="$1"
   echo "$path" | grep -qiE "$DOC_EXT"
-}
-
-backup_doc() {
-  local filepath="$1"
-  if [ -z "$filepath" ] || [ ! -f "$filepath" ]; then
-    return 0
-  fi
-  local dir=$(dirname "$filepath")
-  local name=$(basename "$filepath")
-  local backup_dir="$dir/.backups"
-  local timestamp=$(date '+%Y%m%d_%H%M%S')
-  mkdir -p "$backup_dir" 2>/dev/null
-  cp "$filepath" "$backup_dir/${name}.${timestamp}.bak" 2>/dev/null
 }
 
 block() {
@@ -68,15 +55,10 @@ fi
 
 case "$TOOL_NAME" in
   Edit|MultiEdit)
-    # Edit/MultiEdit은 허용하되, 기존 문서 파일이면 자동 백업
-    if [ -n "$FILE_PATH" ] && is_doc_path "$FILE_PATH" && [ -f "$FILE_PATH" ]; then
-      backup_doc "$FILE_PATH"
-    fi
     exit 0
     ;;
   Write)
     if [ -n "$FILE_PATH" ] && is_doc_path "$FILE_PATH" && [ -f "$FILE_PATH" ]; then
-      backup_doc "$FILE_PATH"
       block "기존 문서/설정 파일에 Write 사용" "$FILE_PATH"
     fi
     exit 0
@@ -92,27 +74,20 @@ if [ -z "$COMMAND" ]; then
   exit 0
 fi
 
-# 백업 디렉토리 자체 조작(ls, cat 등)만 허용 — 대상 경로가 .backups/ 아래인 경우만
-# 주의: 명령 문자열에 .backups가 포함되었다고 전체 면제하면 우회됨
-# .backups 디렉토리 관련 명령 허용:
-#   - 조회(ls, cat 등): .backups 경로 포함이면 허용
-#   - cp/mv → .backups: 목적지가 .backups 아래이면 허용 (백업 목적)
-if echo "$COMMAND" | grep -qE '\.backups[/\\]'; then
-  # cp/mv 명령이면 마지막 인자(목적지)가 .backups 아래인지 확인
-  if echo "$COMMAND" | grep -qiE '(^|[[:space:];|&])(cp|copy|mv|move)[[:space:]]'; then
-    # 목적지(.backups)가 포함되어 있으므로 백업 목적 허용
-    exit 0
-  fi
-  # 그 외 조회 명령(.backups 경로 포함, 문서 확장자 없음)
-  if ! echo "$COMMAND" | grep -qiE "$DOC_EXT_IN_COMMAND" || echo "$COMMAND" | grep -qE '\.backups[/\\][^[:space:]]*'"$DOC_EXT_IN_COMMAND"; then
-    exit 0
-  fi
+# cp/mv의 마지막 인자가 .backups 아래 문서일 때만 백업 작업으로 허용합니다.
+# .backups가 원본에만 등장하면 아래 일반 덮어쓰기 검사로 보냅니다.
+if echo "$COMMAND" | grep -qiE '(^|[[:space:];|&])(cp|copy|mv|move)[[:space:]]' && \
+   echo "$COMMAND" | grep -qiE "[[:space:]]+([\"'][^\"']*\.backups[/\\\\][^\"']*${DOC_EXT_IN_COMMAND}[\"']|[^[:space:]]*\.backups[/\\\\][^[:space:]]*${DOC_EXT_IN_COMMAND})[[:space:]]*$"; then
+  exit 0
 fi
 
 # --- git 명령 처리 ---
-# 파괴적 git 명령은 즉시 차단 (확장자/경로 무관)
-if echo "$COMMAND" | grep -qE '(^|[[:space:];|&])git[[:space:]]+(checkout|restore|rm|reset|clean|push)'; then
-  block "git 파괴적 명령 차단 (checkout/restore/rm/reset/clean/push)" ""
+# 복구하기 어려운 Git 명령만 차단합니다. 일반 push와 브랜치 전환은 허용합니다.
+if echo "$COMMAND" | grep -qE '(^|[[:space:];|&])git[[:space:]]+(rm|restore|clean)([[:space:]]|$)' || \
+   echo "$COMMAND" | grep -qE '(^|[[:space:];|&])git[[:space:]]+reset[[:space:]].*--hard' || \
+   echo "$COMMAND" | grep -qE '(^|[[:space:];|&])git[[:space:]]+checkout[[:space:]].*--' || \
+   echo "$COMMAND" | grep -qiE '(^|[[:space:];|&])git([^;|&])*[[:space:]]push([^;|&])*([[:space:]]-[[:alnum:]]*f[[:alnum:]]*([=[:space:];|&]|$)|[[:space:]]--force[^[:space:];|&]*([=[:space:];|&]|$)|[[:space:]]\+[^[:space:];|&]+)'; then
+  block "복구하기 어려운 Git 명령" ""
 fi
 
 # git 읽기 전용 명령 허용 조건:

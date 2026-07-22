@@ -1,286 +1,61 @@
-﻿---
+---
 name: feedback
-description: 대상 파일을 Claude Sub / Codex / Gemini 3개 CLI에 병렬로 리뷰받아 `docs/feedback/`에 저장 + Claude 메인이 종합.
+description: 파일을 다른 모델로 검토하고, 확인된 문제만 짧게 정리한다.
+trigger: /feedback
+argument-hint: "<파일 경로> [--full]"
+user-invocable: true
 ---
 
-# /feedback 스킬
+# Feedback
 
-**용도**: 지정한 파일(들)에 대해 3개 계열 LLM의 병렬 비판 리뷰 + Claude 메인 합성.
+사용자가 `/feedback`을 요청했을 때만 실행한다. 일반 작업에 자동으로 붙이지 않는다.
 
-**설계 원칙**: 실행 로직은 PowerShell 스크립트(`scripts/`)가 담당하고, 이 md는 **LLM이 합성 단계에서 참조할 규칙**만 기술. PowerShell 코드블록을 md에서 해석해 실행하던 과거 방식(31회 백업의 원인)을 제거하고, `orchestrate.ps1` 1회 호출로 통합.
+## 실행 방식
 
-**3개 모두 병렬 시도는 필수**, 성공은 부분 허용 (≥1 성공이면 종합 작성). 다른 계열 교차검증이 /feedback의 핵심 목적.
-
----
-
-## 실행 절차 (LLM이 수행)
-
-### Step 1. 오케스트레이션 스크립트 호출
-
-파일 1개당 1회 호출. 스크립트가 격리 디렉토리 준비·3 CLI 병렬 실행·타임아웃(5분)·재시도(1회)·실패 마커 기록까지 모두 수행.
+- 기본 `Quick`: Codex 한 번만 호출한다.
+- `Full`: 사용자가 `--full`, “여러 모델”, “정밀 검토”를 요청했을 때만 Claude Sub, Codex, Gemini를 함께 호출한다.
+- 모델 호출 전에 별도 승인이나 중간 보고를 요구하지 않는다.
 
 ```powershell
-& "$HOME\.claude\skills\feedback\scripts\orchestrate.ps1" -SourceFile "<대상 파일 절대경로>"
+# 기본
+& "$HOME\.claude\skills\feedback\scripts\orchestrate.ps1" `
+  -SourceFile "<대상 파일 절대경로>"
+
+# 정밀 검토
+& "$HOME\.claude\skills\feedback\scripts\orchestrate.ps1" `
+  -SourceFile "<대상 파일 절대경로>" -Mode Full
 ```
 
-- stdout으로 JSON 반환: `{claude_sub, codex, gemini, slug, isolated_dir, source_file}`
-- N파일 처리는 파일당 1회 호출 (병렬로 여러 호출 가능)
-- `-FeedbackDir` 인자로 저장 디렉토리 재정의 가능 (기본: 현재 경로의 `docs/feedback`)
-- `-TimeoutSeconds` 인자로 병렬 대기 타임아웃 재정의 가능 (기본 300초 = 5분). hang 방지용 안전장치이므로 제거는 비추 — 큰 파일은 `-TimeoutSeconds 900` 등으로 늘려서 사용
-- Gemini 호출 시 `GEMINI_SYSTEM_MD` 환경변수로 시스템 프롬프트를 critic 모드로 교체 (`scripts/gemini-system.md`). `run-gemini.ps1`이 try/finally로 set·cleanup 자동 처리 — sycophancy 우회 (근거: GitHub gemini-cli #13801, `docs/research/2026-04-27_gemini_sycophancy.md` §8.2)
-- **B 방식 (2026-04-28~)**: 사용자 prompt SSOT 는 `prompts/review.md`. `prepare-isolation.ps1`이 격리 디렉토리에 대상 파일과 함께 복사. CLI 는 자기 read 도구로 review.md 를 직접 읽고 그 안의 형식·규칙을 따름. orchestrate.ps1 은 짧은 메타 지시("이 폴더의 review.md 읽고 따르라")만 argv 로 전달. Why: PowerShell argv 로 긴 한글 prompt 를 옮기는 인코딩 위험 회피 + prompt 수정 시 코드 무수정.
+기본 저장 위치는 현재 프로젝트의 `docs/feedback/`이다. 필요하면 `-FeedbackDir`로 바꾼다.
 
-### Step 2. Validation Gate
+## 결과 확인
 
-3개 결과 파일을 디스크 기반으로 검증. LLM 해석이 아닌 스크립트 판정.
+스크립트가 실행과 결과 검사를 한 번에 처리하고 JSON을 반환한다.
 
-```powershell
-& "$HOME\.claude\skills\feedback\scripts\validate-outputs.ps1" -FilePaths @("<claude_sub 경로>", "<codex 경로>", "<gemini 경로>")
-```
+- `outputs`: 실행한 모델의 결과 파일 경로
+- `validation`: 결과 파일의 유효 여부와 실패 사유
+- `validation.valid_count = 0`: 자동 종합을 중단하고 실패 사유만 알린다.
+- `validation.valid_count >= 1`: 원본 파일과 지적 내용을 대조한다.
 
-- JSON 반환: `{summary, valid_count, total, results: [{file, path, status, reason}]}`
-- `status = VALID` 조건 (모두 만족): 파일 존재 + 크기 > 0 + 실패 마커 없음 + 중요도 태깅 접두사 `[치명]`·`[높음]`·`[중간]`·`[낮음]` 중 1개 이상이 **줄 시작 위치**(선택적 불릿 `-`/`*`, 번호 `1.`, ATX 헤더 `#`~`######` 허용)에 존재. 본문 인용 형태는 우회로 판정.
+## 정리 원칙
 
-### Step 3. 종합 작성 (LLM 본 작업) — **5게이트 강제**
+1. 원본에서 확인되지 않는 지적은 제외한다.
+2. 같은 문제는 하나로 합친다.
+3. 실제 영향이 큰 문제부터 최대 5개만 제시한다.
+4. 각 항목에는 파일 위치, 문제, 이유를 짧게 쓴다.
+5. 반박이나 자기비판 항목을 수량 맞추기 위해 만들지 않는다.
+6. 문제가 없으면 “확인된 문제 없음”이라고 쓴다.
 
-`valid_count ≥ 1` 이면 종합 작성. `valid_count = 0` 이면 "리뷰 불가, 수동 리뷰 필요"로 보고.
+사용자가 문서 저장을 요청하지 않았다면 채팅으로만 보고한다. 저장 요청이 있으면 `docs/feedback/`에 짧은 종합 문서 하나를 만든다.
 
-종합 파일: `docs/feedback/{YYYY-MM-DD}_claude_{슬러그}-종합.md`
+## 제약
 
-#### Why 5게이트?
+- 리뷰 모델은 격리된 복사본만 읽는다.
+- 원본 파일의 줄 번호와 내용은 메인 세션이 다시 확인한다.
+- 삭제된 훅이나 별도 사후 검사에 의존하지 않는다.
+- 과거 피드백, 히스토리, 할 일 문서를 자동으로 갱신하지 않는다.
 
-LLM(메인 Claude 포함)은 RLHF·확률분포 영향으로 **종합 단계에서 sycophancy로 회귀할 위험**이 상존. 의지가 아니라 "표 채워야 끝남"을 강제하는 시스템 게이트로 분포를 비판 모드 쪽으로 강제 이동시킴. 게이트 형식만 채우고 실질 검증 안 하는 것도 자체 검열 항목으로 막음.
+## 관리 위치
 
-#### 게이트 1 — 라인 실측 검증 (환각 차단)
-
-각 지적의 라인 번호를 **원본 파일과 직접 대조**. 다음 경우 자동 `[반박] 환각`:
-- 인용 라인 번호가 원본 파일 총 라인 수 초과
-- 인용 라인의 실제 내용과 지적 내용이 무관
-
-종합 파일에 별도 섹션 `## 환각 검증` 강제. 형식: `CLI별 환각 N건 / 총 지적 N건`. 0건이어도 "0건 (라인 번호 1:1 대조 완료)" 명시.
-
-#### 게이트 2 — 반박/유보 최소 1건
-
-전체 지적이 모두 `[반영]`이면 **자기 검열 의무**. LLM 3개가 우연히 모두 valid한 지적만 한 경우는 드뭄. 진짜 다 valid면 종합 파일에 다음 한 줄 강제:
-
-> "전 지적 [반영] 사유: <왜 [반박]·[유보] 후보가 없었는지 1줄 설명>"
-
-이 줄이 없으면 **게으름 신호** — 다시 검토.
-
-#### 게이트 3 — 근거 강도 표시
-
-각 지적에 `근거 강도: 강/중/약` 부착:
-- **강** = 실측 코드 라인 직접 인용 + 구체 결함 (예: SQL 파라미터 미검증 + 인용)
-- **중** = 일반 원리·표준 위반 (예: bcrypt 라운드 NIST 미준수)
-- **약** = 추상 권고·이식성 우려 (예: "환경변수 사용 권장")
-
-"약" ≥ 50% 면 종합 헤더에 다음 경고 강제:
-
-> ⚠️ 근거 강도 약: 전체 N건 중 N건. 추상 권고 비중 높음 — 후속 실측 권장.
-
-#### 게이트 4 — 통계 표 강제
-
-종합 파일 **첫 블록**에 다음 표 무조건 박기:
-
-```
-## 통계
-- 전체 합집합 지적: N건
-- [반영]: N건
-- [유보]: N건
-- [반박]: N건
-- [환각]: N건 (게이트 1 결과)
-- 근거 강도 분포: 강 N / 중 N / 약 N
-- VALID CLI: N/3
-```
-
-`[유보] 0 / [반박] 0 / [환각] 0` 이면 게이트 2 의무 발동 (자기 검열 사유 1줄).
-
-#### 게이트 5 — 자기 비판 한 줄
-
-종합 파일 **마지막 블록**에 강제:
-
-```
-## 이번 종합에서 제가 놓쳤을 가능성
-
-<구체 1줄 — "없음" 답변 금지>
-```
-
-답변 후보 예시:
-- "Gemini가 잡은 라인 N의 근거 강도 평가가 자의적일 수 있음 (기준 명문화 미흡)"
-- "맥락 부족으로 X 영역의 추가 결함 평가 부재 가능성"
-- "3 CLI 모두 못 본 사각지대(예: 인터페이스 계약·동시성)에 대한 능동 탐색 부재"
-
-"없음"·"전반적 잘 됨" 류 답변은 **게이트 5 위반** — 다시 작성.
-
-#### 게이트 6 — 외부 훅 검수 의무 (3단계 훅)
-
-종합 파일 저장 직후 `feedback-sycophancy-check.sh` 훅이 자동으로 7개 카테고리 의심 항목을 검출해 stdout 에 표시한다 (차단 X / 정보 제공형 / `exit 0` 보장).
-
-**검출이 표시되면 LLM(메인 Claude)은 다음을 즉시 수행한다**:
-
-1. **항목을 1개씩 다시 검토** — 종합 파일·1차 보고·원본 코드 직접 Read 후 판정 (선언만 금지, 실제 Read 결과 인용 의무)
-2. **진짜 문제로 판정 시** → 종합 파일 수정 (해당 항목을 `[반박]`/`[유보]`로 재마킹 + 근거 강도 재산정 + 통계 표 갱신)
-3. **오탐 판정 시** → 종합 파일 끝 `## 외부 훅 검수 결과` 섹션에 다음 형식으로 기록:
-
-```
-## 외부 훅 검수 결과
-- [1] sycophancy "탁월" (line 42) — 오탐 사유: <왜 sycophancy 아닌지 1줄>
-- [3] 누락 codex L120 — 오탐 사유: <종합 어디에 처리되었는지 라인 인용>
-```
-
-검출 0건이면 훅이 침묵 → 이 의무도 무발동.
-
-**검출 카테고리 7종**:
-
-| # | 무엇 |
-|---|---|
-| [1] sycophancy 키워드 | 종합 보고 본문에 사전 등재 아부 단어 |
-| [2] 환각 | 인용 라인이 실파일 라인 수 초과 / 파일 미존재 |
-| [3] 누락 | 1차 `[치명]/[높음]` 항목이 종합에 처리 흔적 0 |
-| [4] 1차 sycophancy 전이 | 1차 보고에 아부 키워드 多 + 종합이 그 1차를 `[반영]` 처리 = 무비판 수용 의심 |
-| [5] 약한 반박 | 종합 `[반박]` 블록 안에 코드 인용 0건 |
-| [6] 1차 충돌 무시 | 같은 위치(파일:줄)를 일부 1차만 `[치명]` + 종합 보고에 그 충돌 미언급 |
-| [7] 약한 비판 | 1차 `[치명]/[높음]`이 코드 인용 없는 추상 비판 — 받아들임 신중히 |
-
-**Why 게이트 6?** 게이트 1~5 가 LLM 자체 self-discipline 이라면, 게이트 6 은 외부 정규식·grep 기반 검수로 게이트 1~5 를 형식만 채우고 빠뜨릴 위험을 보완. 두 짝 구조 = 내부 의무 + 외부 표시.
-
-**훅 위치**:
-- 본체: `~/.claude/hooks/feedback-sycophancy-check.sh` + `feedback-sycophancy-check.py`
-- 키워드 사전: `~/.claude/hooks/data/sycophancy-keywords.txt` (단어 추가·삭제 시 이 파일만 수정, 훅 코드 무수정)
-- settings.json PostToolUse 등록 — `Write`/`Edit`/`MultiEdit` 매칭
-
-#### 종합 파일 골격
-
-```markdown
-# 종합 리뷰: <대상 파일>
-
-## 통계 (게이트 4)
-[표]
-
-## 환각 검증 (게이트 1)
-- Codex: N건 환각 / N건 지적
-- Gemini: N건 환각 / N건 지적
-- Claude Sub: N건 환각 / N건 지적
-
-## 합집합 지적 (각 행에 CLI별 ✓ + 판정 + 근거 강도)
-| 지적 | Codex | Gemini | Claude | 판정 | 근거강도 | 사유 |
-|---|---|---|---|---|---|---|
-| ... | ✓ | ✓ |    | [반영] | 강 | ... |
-
-## Top 3 반영 우선순위
-1. [치명] ...
-2. [높음] ...
-3. [중간] ...
-
-## 실패한 CLI
-(있다면 "CLI명 — 사유: X" 명시. Validation Gate reason 활용)
-
-## 이번 종합에서 제가 놓쳤을 가능성 (게이트 5)
-<구체 1줄>
-
-## (게이트 2 발동 시) 전 지적 [반영] 사유
-<왜 반박·유보 후보가 없었는지 1줄>
-
-## (게이트 3 발동 시) ⚠️ 근거 강도 약 경고
-<해당 지적 N건 / 후속 실측 권장 항목>
-
-## (게이트 6 발동 시) 외부 훅 검수 결과
-- [N] <카테고리> <원시 표시> — <진짜 문제 → 수정 반영 결과 / 오탐 → 사유 1줄>
-```
-
-### Step 4. 인덱스 갱신
-
-`docs/feedback/index.md`에 1줄 추가 (날짜·대상 파일·슬러그·validation 요약).
-
----
-
-## 프롬프트 템플릿
-
-**SSOT**: `prompts/review.md` (B 방식, 2026-04-28~). 수정 시 그 파일만 편집.
-
-`scripts/orchestrate.ps1` Step 3 의 `$promptLines` 는 짧은 메타 지시("이 폴더의 review.md 읽고 따르라")만 담음. 사용자 prompt 본문은 review.md 에 있음.
-
-여기에 review.md 전문 복사 금지 — 두 곳 관리 시 필연적으로 어긋남 (2026-04-22 메타 리뷰 공통 지적).
-
----
-
-## 저장 규칙
-
-| 파일 | 내용 |
-|------|------|
-| `docs/feedback/{YYYY-MM-DD}_claude-sub_{슬러그}.md` | Claude Sub 원문 (또는 실패 마커) |
-| `docs/feedback/{YYYY-MM-DD}_codex_{슬러그}.md` | Codex 원문 (또는 실패 마커) |
-| `docs/feedback/{YYYY-MM-DD}_gemini_{슬러그}.md` | Gemini 원문 (또는 실패 마커) |
-| `docs/feedback/{YYYY-MM-DD}_claude_{슬러그}-종합.md` | Claude 메인 합성 (LLM 작성) |
-| `docs/feedback/index.md` | 전체 리뷰 인덱스 (1줄 추가) |
-
-슬러그 = `<대상파일basename>_<yyyyMMdd-HHmmss>` (격리 디렉토리명과 동일).
-
----
-
-## 유효성 판정
-
-**SSOT**: `scripts/validate-outputs.ps1` 의 판정이 **최종**. LLM은 이 판정을 그대로 수용.
-
-판정 규칙 (스크립트 내부 구현):
-1. 파일 존재 + 크기 > 0
-2. `orchestrate` 실패 마커(`# <cli> 실행 실패`) 없음
-3. 중요도 태깅 접두사 `[치명]`·`[높음]`·`[중간]`·`[낮음]` 중 1개 이상이 **줄 시작 위치**(불릿 `-`/`*`, 번호 `1.`, ATX 헤더 `#`~`######` 허용)에 존재. 본문 인용 불가.
-4. 근거 1개 이상 — `근거` 키워드 / URL / `파일.확장자:줄번호` 중 하나
-
-**환경 환각 감지** (LLM이 종합 시 체크): CLI가 "파일 mojibake/깨짐" 류 지적 → 원본 파일 UTF-8 정상이면 [반박] (CLI 자기 stdout 환경 문제, 2026-04-21 Codex dogfood 실측).
-
----
-
-## 실패 처리
-
-- **각 CLI 실패**: `orchestrate.ps1`이 async → sync 재시도 1회 후 실패 마커 파일 기록. LLM은 해당 CLI를 "실패" 처리.
-- **≥ 1개 VALID**: 종합 작성 (실패한 것은 "실패 — 사유: X"로 명시).
-- **3개 모두 INVALID**: 종합에 "리뷰 불가, 수동 리뷰 필요" 보고.
-
----
-
-## 권한 분리
-
-- **서브 리뷰 CLI (Claude Sub / Codex / Gemini)**: 읽기 전용
-  - Claude Sub: `--permission-mode plan` (쓰기 차단) — `run-claude-sub.ps1`에 고정
-  - Codex: `-C "$isolated"` 격리 디렉토리 고정 — CLI 자체 read-only 옵션 없어 격리로 완화
-  - Gemini: `--approval-mode plan` — `run-gemini.ps1`에 고정
-- **메인 /feedback 실행자 (Claude Code 본 세션)**: `docs/feedback/`에 파일 저장·인덱스 갱신 가능. "리뷰 도구는 읽기만"은 서브 CLI 한정.
-
----
-
-## 기타 제약
-
-- `claude /status` 등 슬래시 커맨드 호출 금지 (서브-서브 프로세스 발생).
-- 프롬프트의 절대경로는 **원본 아니라 격리 디렉토리 복사본 경로** (`orchestrate.ps1`이 자동 조립).
-- 세션 CWD 오염 방지는 `run-gemini.ps1`의 Push-Location/Pop-Location 로 처리됨.
-
----
-
-## 이전 피드백 참조
-
-같은 대상을 재리뷰할 때만 `docs/feedback/index.md`에서 과거 지적 1개를 프롬프트에 첨부 (맥락 제공용, 1회 한정). 프롬프트 수정이 필요하므로 `orchestrate.ps1`의 `$prompt`에 조건부 분기를 추가하거나 인자로 전달받아야 함 (MVP에서는 미구현 — Phase 2).
-
----
-
-## 스크립트 파일 목록
-
-- `prompts/review.md` — **사용자 prompt SSOT** (B 방식, 2026-04-28~). CLI 가 격리 디렉토리에서 직접 읽음.
-- `scripts/_encoding.ps1` — UTF-8 I/O 인코딩 고정 헬퍼 (dot-source 전용, PS 5.1 CP949 우회)
-- `scripts/gemini-system.md` — Gemini 시스템 프롬프트 (critic 모드 강제, GEMINI_SYSTEM_MD 환경변수로 주입)
-- `scripts/prepare-isolation.ps1` — 격리 디렉토리 생성 + 대상 파일 + `prompts/review.md` 복사
-- `scripts/run-claude-sub.ps1` — Claude Sub 호출
-- `scripts/run-codex.ps1` — Codex 호출
-- `scripts/run-gemini.ps1` — Gemini 호출 (Push/Pop-Location 내장)
-- `scripts/orchestrate.ps1` — 위 스크립트들 병렬 실행 + 타임아웃 + 재시도 (LLM이 Step 1에서 호출)
-- `scripts/validate-outputs.ps1` — Validation Gate (LLM이 Step 2에서 호출)
-
----
-
-## Phase 2 후보 (MVP 제외)
-
-- bash 버전 병행 (리눅스 서버 배포용)
-- Pester 유닛 테스트
-- 재리뷰 시 이전 피드백 자동 첨부
-- 로깅 (실행 시간·재시도 이력)
+- 작업본: `Harness-engineering/skills/feedback/`
+- Claude 사용본: `~/.claude/skills/feedback/`

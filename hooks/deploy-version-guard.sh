@@ -7,11 +7,15 @@
 #   2. HISTORY.md 업데이트 여부
 #   3. GitHub CI 최신 커밋 통과 여부
 
-INPUT=$(cat)
-if command -v jq &>/dev/null; then
-  CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+if [ -n "${HARNESS_COMMAND+x}" ]; then
+  CMD="$HARNESS_COMMAND"
 else
-  CMD=$(echo "$INPUT" | python -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
+  INPUT=$(cat)
+  if command -v jq &>/dev/null; then
+    CMD=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+  else
+    CMD=$(printf '%s' "$INPUT" | python -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
+  fi
 fi
 
 # SCP 배포 명령인지 확인

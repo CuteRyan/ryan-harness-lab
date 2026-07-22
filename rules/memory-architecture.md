@@ -1,26 +1,15 @@
-# Memory: 3-Layer Architecture
+# Project Memory
 
-## Auto-loaded (every session)
-| File | Role | Limit |
-|------|------|-------|
-| `CLAUDE.md` | project intro + core rules | ≤200 lines |
-| `{subdir}/CLAUDE.md` | scoped rules per part | loaded only when working there |
-| `.claude/rules/*.md` | detailed rules split out | same priority as CLAUDE.md |
-| `memory/MEMORY.md` | pure index (pointers only) | ≤200 lines |
+Keep instructions, pointers, and detailed records separate.
 
-## On-demand
-| File | Role |
-|------|------|
-| `memory/*.md` (topic) | pointer + 3–5 line judgment summary |
+- `CLAUDE.md` and `rules/`: instructions that must affect the current work.
+- `memory/MEMORY.md`: a short index of useful project memory.
+- `memory/*.md`: brief judgment and a link to the detailed record.
+- `docs/`: the detailed decision, design, or research record.
 
-## Role separation (absolute)
-- **CLAUDE.md + rules/** = enforcement ("do / don't")
-- **memory/** = pointers ("this exists here" + 3 lines of why it was decided)
-- **docs/** = single source of truth (actual content lives only here)
-- No duplication — never copy docs/ content into memory.
-- Topic file format: frontmatter (name, description, type) + 3-line judgment summary + docs/ pointer.
+Do not copy the same explanation into several layers. Keep the full version in one document and link to it elsewhere.
 
-## Conventions
-- Filenames: English kebab-case (e.g., `news-pipeline.md`); one file = one topic.
-- Memory repeated across 2+ projects → promote to global.
-- **Language policy (2026-07-22)**: machine-loaded files (CLAUDE.md, rules/, agents, skill instructions) are written in English (fewer tokens, more precise instruction-following); human-facing files (docs/, history, HANDOFF) stay in Korean. Korean examples inside English rules are kept whenever the rule is about Korean output itself.
+- Keep auto-loaded files short; move details to on-demand documents.
+- Use English kebab-case filenames for memory topics.
+- Promote a memory rule to global only when it applies to several projects.
+- Write machine-loaded instructions in clear English. Keep human-facing project records in Korean.

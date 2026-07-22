@@ -1,12 +1,15 @@
-# Work Checklist (/checklist — optional) + Staging/Ops SSOT
+# Work Checklist and Global Sync
 
-## /checklist is optional (mandate removed 2026-07-22)
-- `/checklist` builds a unified code/doc checklist (kind auto-detected). Use it when 주인님 asks for it, or for genuinely large multi-file work where it helps.
-- It is NOT required before edits. Why removed: the blanket mandate turned every small task into a multi-turn process (generate checklist → approve → execute → report) and cost more than the mistakes it prevented.
-- Details: `skills/checklist/SKILL.md`
+- `/checklist` is optional. Use it when 주인님 asks or when a large multi-file change benefits from a written list.
+- Reversible work already approved by 주인님 may proceed without another approval round.
 
-## Staging/Ops separation (SSOT)
-- **Staging**: `Harness-engineering/` repo (`skills/`, `rules/`, `hooks/`) — edit here first
-- **Ops**: `~/.claude/` — what Claude Code actually loads
-- After editing staging, always copy to ops (sync responsibility: Harness-engineering project)
-- On drift, reconcile deliberately: default is staging wins, but check history first — ops may hold a newer hotfix that must be back-ported to staging before overwriting (observed 2026-07-22 with work-style.md).
+## Global sync
+
+- Source: `C:\Python\harness-engineering`.
+- Runtime copy: `~/.claude/`.
+- Mirror `agents/`, `hooks/`, `rules/`, and `skills/`, excluding backups and test fixtures.
+- Edit the source first, copy only the changed files, then compare SHA-256 hashes.
+- If the runtime copy contains a newer fix, understand it and bring it into the source before overwriting.
+- `settings/CLAUDE.global.md` maps to the runtime `CLAUDE.md`; the project root `CLAUDE.md` does not.
+- `settings/settings.template.json` is the shared shape. Runtime `settings.json` is user-specific and requires manual review.
+- `skills/feedback/scripts/g3_sample.py` is a test fixture and is not deployed.

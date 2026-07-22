@@ -109,4 +109,4 @@ docs/ 내 모든 .md 파일의 YAML 프론트매터에서 `related_code` 필드�
 
 - audit/lint/reindex는 **읽기 전용** — 파일을 수정하지 않고 결과만 출력
 - init만 파일을 생성 — 주인님 확인 후 실행
-- reindex의 프론트매터 파서는 `code-doc-sync.sh` 훅과 동일한 로직 사용
+- reindex는 위의 파싱 규칙에 따라 프론트매터를 직접 읽는다.

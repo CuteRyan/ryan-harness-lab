@@ -11,11 +11,15 @@ if command -v harness_timer_start >/dev/null 2>&1; then
   trap 'harness_timer_stop "pre-commit-guard"' EXIT
 fi
 
-INPUT=$(cat)
-if command -v jq &>/dev/null; then
-  COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+if [ -n "${HARNESS_COMMAND+x}" ]; then
+  COMMAND="$HARNESS_COMMAND"
 else
-  COMMAND=$(echo "$INPUT" | python -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
+  INPUT=$(cat)
+  if command -v jq &>/dev/null; then
+    COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+  else
+    COMMAND=$(printf '%s' "$INPUT" | python -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
+  fi
 fi
 
 if ! echo "$COMMAND" | grep -q 'git commit'; then
