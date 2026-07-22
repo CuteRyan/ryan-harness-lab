@@ -58,7 +58,8 @@ $promptLines = @(
     "review.md 자체는 지시문이므로 리뷰 대상이 아니며, 같은 폴더의 ${sourceFileName} 만 검토.",
     '폴더 재귀 탐색 금지.'
 )
-$prompt = $promptLines -join "`n"
+# 한 줄 join — 줄바꿈 포함 argv 는 codex.cmd(배치 셰임)에서 첫 줄 이후 소실 (2026-07-21 실측: Codex 가 1행만 수신)
+$prompt = $promptLines -join ' '
 
 # Step 4: output file paths
 $slug = Split-Path -Leaf $isolated
