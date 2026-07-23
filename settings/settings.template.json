@@ -27,16 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'pre-bash-guards.sh'\""
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\run-hook.ps1' 'doc-protection.sh'\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\pretooluse-guard.ps1'\""
           }
         ]
       }

@@ -480,34 +480,25 @@ related_docs: []
 ### 4.3 훅 연동 전체 흐름
 
 ```
-전제:
-  - .harness.yml opt-in 대상: doc-template-guard, wiki-index-guard, code-doc-sync, graphify-reminder
-  - 기존 글로벌 정책 (opt-in 무관): doc-protection, doc-checklist-guard, dev-checklist-guard, auto-backup
-  - 아래 흐름은 문서 하네스 관련 훅 위주로 표시. 실제로는 글로벌 훅(dev-checklist-guard 등)도 함께 실행됨
+Bash 호출:
+  settings의 Bash PreToolUse
+    → pretooluse-guard.ps1
+      → 명령 체인에서 Git 호출 탐색
+      → Git 전역 옵션을 건너뛰고 서브커맨드 판정
+      → 복구하기 어려운 Git 명령은 차단
+      → force-with-lease는 경고
+      → 나머지는 통과
 
-에이전트가 docs/design/new-feature.md를 Write로 생성:
+Edit·Write 호출:
+  전역 훅 없음
+  → 프로젝트 지침과 작업 후 테스트가 담당
 
-  doc-protection.sh → 기존 파일 Write 덮어쓰기와 Bash 문서 직접 수정 차단 [글로벌]
-  doc-template-guard.sh → 메타데이터 없으면 차단 (신규 Write) [opt-in]
-  wiki-index-guard.sh → index.md 미등록이면 경고 (차단 아님) [opt-in]
-  doc-checklist-guard.sh → 체크리스트 확인 [글로벌]
-
-  → doc-protection + doc-template-guard + doc-checklist-guard 통과해야 문서 생성 가능
-  → wiki-index-guard는 경고만 — lint에서 최종 검증
-
-에이전트가 기존 docs/design/auth.md를 Edit:
-
-  auto-backup.sh → 백업 생성 [글로벌]
-  doc-checklist-guard.sh → 체크리스트 확인 [글로벌]
-  doc-template-guard.sh → 프론트매터 없으면 Stage별 차등 (통과→경고→차단) [opt-in]
-
-에이전트가 src/auth.py를 Edit:
-
-  auto-backup.sh → 백업 생성 [글로벌]
-  dev-checklist-guard.sh → 체크리스트 확인 [글로벌]
-  code-doc-sync.sh → 역색인 조회 → "관련 문서 확인하세요" 리마인더 [opt-in]
-  graphify-reminder.sh → GRAPH_REPORT.md 없으면 경고 [opt-in]
+배포:
+  전역 훅 없음
+  → 대상 프로젝트의 CI 또는 프로젝트별 검사에서 담당
 ```
+
+현재 전역 훅의 정확한 책임과 검증 결과는 [전역 훅 정책](hook-policy.md)을 기준으로 한다.
 
 ---
 

@@ -6,5 +6,4 @@
 - Run the relevant tests and health check, and confirm CI when the project uses it.
 - Record what changed, why, and the previous value.
 - Keep a tested rollback path and use it immediately when the health check fails.
-
-The active deploy hook performs only the checks encoded in `hooks/deploy-version-guard.sh`.
+- Keep deployment checks in the target project's CI or project-local tooling. Global hooks must not encode a project hostname, server address, version file, or release-history filename.
