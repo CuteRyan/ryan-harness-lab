@@ -109,12 +109,6 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 - `/todo` 는 **미래** 백로그, `/project-history` 는 **과거** 완료 기록
 - `/todo done` 시 자동 히스토리 기록 X (사용자가 명시 요청 시에만)
 
-## TaskCreate 호출 정책
-
-기본: `.todo.md` 만 수정. TaskCreate 별도 호출 안 함.
-
-이유: TaskCreate 는 팀/에이전트 작업 조율용. 개인 백로그와 혼용하면 TaskList 가 오염된다. 사용자가 "팀 작업으로도 등록" 명시할 때만 TaskCreate 병행.
-
 ## Rules
 - **결정 4 준수** — 글로벌 `~/.claude/.todo.md` 만들지 않음. 프로젝트별 루트 `.todo.md` 만 운영
 - **결정 1 준수** — `/checklist` 자동 트리거 없음, 사용자 명시 호출만

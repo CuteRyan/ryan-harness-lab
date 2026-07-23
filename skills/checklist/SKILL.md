@@ -55,3 +55,4 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 
 - 작업본: `Harness-engineering/skills/checklist/SKILL.md`
 - Claude 사용본: `~/.claude/skills/checklist/SKILL.md`
+- Codex 사용본: `~/.agents/skills/checklist/SKILL.md`

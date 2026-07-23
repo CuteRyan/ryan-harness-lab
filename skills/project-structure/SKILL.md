@@ -32,10 +32,9 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 3. `docs/index.md` 존재 여부
 4. `docs/log.md` 존재 여부
 5. `docs/templates/` 존재 여부 + 5종 템플릿 확인
-6. `graphify-out/GRAPH_REPORT.md` 존재 여부
-7. `pyproject.toml` 또는 `package.json` 존재 여부
-8. 루트에 산재한 코드 파일 수 (src/ 밖의 .py/.js/.ts)
-9. `.gitignore`에 `.backups/`, `__pycache__/` 등 포함 여부
+6. `pyproject.toml` 또는 `package.json` 존재 여부
+7. 루트에 산재한 코드 파일 수 (src/ 밖의 .py/.js/.ts)
+8. `.gitignore`에 `.backups/`, `__pycache__/` 등 포함 여부
 
 출력 형식:
 ```

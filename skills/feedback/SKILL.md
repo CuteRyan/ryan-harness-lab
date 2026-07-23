@@ -1,9 +1,6 @@
 ---
 name: feedback
 description: 파일을 다른 모델로 검토하고, 확인된 문제만 짧게 정리한다.
-trigger: /feedback
-argument-hint: "<파일 경로> [--full]"
-user-invocable: true
 ---
 
 # Feedback
@@ -59,3 +56,4 @@ user-invocable: true
 
 - 작업본: `Harness-engineering/skills/feedback/`
 - Claude 사용본: `~/.claude/skills/feedback/`
+- Codex 사용본: `~/.agents/skills/feedback/`
