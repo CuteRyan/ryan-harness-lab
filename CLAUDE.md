@@ -21,7 +21,7 @@
 
 ## 확인 위치
 
-- 현재 변경 기록: `docs/HISTORY.md`
-- 이전 작업 기록: `docs/history/`
+- 현재 전역 훅 정책: `docs/hook-policy.md`
+- 완료 기록: `docs/history/index.md`
 - 활성 훅 설정: `settings/settings.json`
 - 관련 테스트: `tests/`
