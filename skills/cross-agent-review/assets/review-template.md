@@ -9,6 +9,12 @@ completed_by:
 
 # Claude·Codex 교차 검토: {{TOPIC}}
 
+## 문서 이력
+
+| 날짜 | 작성자 | 내용 |
+|------|--------|------|
+| {{YYYY-MM-DD}} | {{Claude\|Codex}} | 검토 시작, Round 1 작성 |
+
 ## 작업 정의
 
 ### 목표

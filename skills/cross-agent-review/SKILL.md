@@ -43,9 +43,10 @@ Use one shared Markdown file for each review session. Treat every topic and date
 4. Re-read the review file immediately before writing.
 5. Append the next numbered round. Never rewrite, reorder, or remove earlier rounds.
 6. Identify the author as `Claude` or `Codex` and include the local timestamp.
-7. Address the other agent's latest material claims with agreement, disagreement, correction, or a focused question. Cite concrete file paths, tests, or other evidence.
-8. If the file changed while composing the response, reload it, recalculate the next round number, and merge the response after the new latest round.
-9. Do not append to a completed review.
+7. Add one row to the `문서 이력` table near the top: date, author, and a one-line summary such as `Round N 작성 — <핵심 내용>`. Do not edit earlier rows.
+8. Address the other agent's latest material claims with agreement, disagreement, correction, or a focused question. Cite concrete file paths, tests, or other evidence.
+9. If the file changed while composing the response, reload it, recalculate the next round number, and merge the response after the new latest round.
+10. Do not append to a completed review.
 
 Use this structure for every reply:
 
@@ -71,10 +72,13 @@ Complete a review only after an explicit user instruction such as “완료해,�
 2. Read all rounds and verify important unresolved claims against the actual materials.
 3. Change the frontmatter `status` from `open` to `completed`.
 4. Fill `completed` and `completed_by`.
-5. Append:
+5. Add a final row to the `문서 이력` table: date, author, and `검토 완료`.
+6. Append:
 
 ```markdown
 ## 최종 정리
+
+### 논의 경과
 
 ### 합의한 내용
 
@@ -84,6 +88,8 @@ Complete a review only after an explicit user instruction such as “완료해,�
 
 ### 후속 작업
 ```
+
+In `논의 경과`, summarize in a few lines how the discussion moved across rounds: which claims were raised, challenged, corrected, or dropped.
 
 Do not force agreement. Record unresolved differences and decisions that still belong to the user.
 Treat a completed file as immutable. Start a new dated review if the topic needs further discussion.
