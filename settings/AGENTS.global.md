@@ -11,6 +11,9 @@
 ## Work
 
 - Check the actual files, code, database, and active settings before changing anything.
+- Treat requests to inspect, analyze, diagnose, explain, review, summarize, compare, or report status as read-only. Do not change files or external state unless the user clearly requests a change.
+- If it is unclear whether a request authorizes a change, ask before writing or acting.
+- Once the user approves a change and its scope, proceed with reversible edits within that scope without asking again for each edit.
 - Explain why a decision is needed.
 - Use current sources for facts that may have changed, and cite them near the claim.
 - If a hook blocks an action, read the path in its message before retrying.

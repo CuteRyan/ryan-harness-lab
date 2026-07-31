@@ -1,0 +1,4 @@
+interface:
+  display_name: "Claude·Codex 교차 검토"
+  short_description: "공유 문서에서 두 에이전트의 의견을 릴레이합니다"
+  default_prompt: "Use $cross-agent-review to start or continue a shared Claude-Codex review for this topic."

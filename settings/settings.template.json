@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\rlgns\\.claude\\hooks\\pretooluse-guard.ps1'\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\rlgns\\.claude\\hooks\\pretooluse-guard.ps1\""
           }
         ]
       }

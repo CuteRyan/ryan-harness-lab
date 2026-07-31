@@ -7,6 +7,7 @@
 
 - Source: `C:\Python\harness-engineering`.
 - Runtime copy: `~/.claude/`.
+- Skills shared with Codex have a second runtime copy in `~/.agents/skills/`; sync and hash-check it the same way.
 - Mirror `agents/`, `hooks/`, `rules/`, and `skills/`, excluding backups and test fixtures.
 - Edit the source first, copy only the changed files, then compare SHA-256 hashes.
 - If the runtime copy contains a newer fix, understand it and bring it into the source before overwriting.

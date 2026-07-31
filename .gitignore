@@ -10,3 +10,4 @@ __pycache__/
 memory/
 settings/settings.json
 .checklist.md
+_workspace/

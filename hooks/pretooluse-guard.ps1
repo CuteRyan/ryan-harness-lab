@@ -212,6 +212,42 @@ function Get-HarnessGitDecision {
   return [pscustomobject]@{ Action = "allow"; Reason = "" }
 }
 
+function Get-HarnessDeleteDecision {
+  param([Parameter(Mandatory = $true)][string]$Command)
+
+  $DeleteExecutables = @("rm", "rm.exe", "rmdir", "rd", "del", "erase", "unlink", "shred", "trash", "remove-item", "ri")
+
+  foreach ($Segment in Split-HarnessShellSegments $Command) {
+    $Tokens = @(ConvertTo-HarnessTokens ($Segment.Trim().TrimStart("(", "{")))
+    if ($Tokens.Count -eq 0) {
+      continue
+    }
+
+    $Index = 0
+    while ($Index -lt $Tokens.Count -and $Tokens[$Index] -match '^[A-Za-z_][A-Za-z0-9_]*=') {
+      $Index++
+    }
+    if ($Index -lt $Tokens.Count -and $Tokens[$Index].ToLowerInvariant() -eq "command") {
+      $Index++
+    }
+    if ($Index -ge $Tokens.Count) {
+      continue
+    }
+
+    $ExecutableName = ($Tokens[$Index].Replace("\", "/") -split "/")[-1].ToLowerInvariant()
+    if ($DeleteExecutables -contains $ExecutableName) {
+      return [pscustomobject]@{ Action = "ask"; Reason = "deletion command '$ExecutableName' requires explicit user confirmation" }
+    }
+
+    $LowerTokens = @($Tokens | ForEach-Object { $_.ToLowerInvariant() })
+    if ($LowerTokens -contains "remove-item" -or $LowerTokens -contains "-delete") {
+      return [pscustomobject]@{ Action = "ask"; Reason = "deletion inside command requires explicit user confirmation" }
+    }
+  }
+
+  return [pscustomobject]@{ Action = "allow"; Reason = "" }
+}
+
 function Read-HarnessHookCommand {
   $InputStream = [Console]::OpenStandardInput()
   $Reader = [System.IO.StreamReader]::new($InputStream, [System.Text.UTF8Encoding]::new($false), $true)
@@ -238,16 +274,27 @@ function Invoke-HarnessPreToolUseGuard {
   switch ($Decision.Action) {
     "block" {
       [Console]::Error.WriteLine("[hook] Blocked destructive Git command: $($Decision.Reason)")
-      return 1
+      # Exit 2 is the documented blocking code for PreToolUse hooks.
+      return 2
     }
     "warn" {
       [Console]::Error.WriteLine("[hook] Warning: $($Decision.Reason)")
-      return 0
-    }
-    default {
-      return 0
     }
   }
+
+  $DeleteDecision = Get-HarnessDeleteDecision $Command
+  if ($DeleteDecision.Action -eq "ask") {
+    $Response = @{
+      hookSpecificOutput = @{
+        hookEventName            = "PreToolUse"
+        permissionDecision       = "ask"
+        permissionDecisionReason = "pretooluse-guard: $($DeleteDecision.Reason)"
+      }
+    }
+    [Console]::Out.WriteLine(($Response | ConvertTo-Json -Compress -Depth 4))
+  }
+
+  return 0
 }
 
 if ($MyInvocation.InvocationName -ne ".") {
