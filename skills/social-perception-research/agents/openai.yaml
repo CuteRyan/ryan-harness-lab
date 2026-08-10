@@ -1,0 +1,4 @@
+interface:
+  display_name: "Social Perception Research"
+  short_description: "Compare social imagery and keywords across markets"
+  default_prompt: "Use $social-perception-research to compare how TWS is perceived in Japan and Indonesia across social platforms."
