@@ -1,0 +1,16 @@
+{
+  "source": "https://github.com/epoko77-ai/im-not-ai",
+  "ref": "v2.3.2",
+  "commit": "bad4ef0a2b514318b2278b65cb4545414ad84d82",
+  "installs": {
+    "claude_skills": ["skills/humanize-korean", "skills/humanize", "skills/humanize-redo"],
+    "claude_agents": [
+      "humanize-monolith",
+      "humanize-diagnostician",
+      "humanize-finalizer",
+      "korean-ai-tell-taxonomist"
+    ],
+    "codex_skill": "codex/skills/humanize-korean"
+  },
+  "note": "Vendored upstream, byte-identical. Do not hand-edit; re-vendor from the tag instead. The upstream references symlink is materialized as a real directory."
+}
