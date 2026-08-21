@@ -38,8 +38,11 @@ function Split-HarnessShellSegments {
     if (-not $InSingleQuote -and -not $InDoubleQuote -and
         ($Character -eq ";" -or $Character -eq "|" -or $Character -eq "&" -or
          $Character -eq "`r" -or $Character -eq "`n")) {
-      if ($Buffer.Length -gt 0) {
-        $Segments.Add($Buffer.ToString())
+      $Segment = $Buffer.ToString()
+      if (-not [string]::IsNullOrWhiteSpace($Segment)) {
+        $Segments.Add($Segment)
+        [void]$Buffer.Clear()
+      } elseif ($Buffer.Length -gt 0) {
         [void]$Buffer.Clear()
       }
       continue
@@ -48,8 +51,9 @@ function Split-HarnessShellSegments {
     [void]$Buffer.Append($Character)
   }
 
-  if ($Buffer.Length -gt 0) {
-    $Segments.Add($Buffer.ToString())
+  $Segment = $Buffer.ToString()
+  if (-not [string]::IsNullOrWhiteSpace($Segment)) {
+    $Segments.Add($Segment)
   }
 
   return $Segments

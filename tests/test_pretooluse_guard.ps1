@@ -77,6 +77,30 @@ if (($Output -join "`n") -notlike "*Blocked destructive Git command*") {
 }
 Write-Host "PASS stdin integration"
 
+foreach ($WhitespaceCommand in @(
+  "echo one`n   `necho two",
+  "echo one;   ;echo two"
+)) {
+  $WhitespacePayload = @{
+    tool_name = "Bash"
+    tool_input = @{ command = $WhitespaceCommand }
+  } | ConvertTo-Json -Compress -Depth 4
+
+  $PreviousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $WhitespaceOutput = $WhitespacePayload | & $PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$HookPath'" 2>&1
+    $WhitespaceExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $PreviousErrorActionPreference
+  }
+
+  if ($WhitespaceExitCode -ne 0) {
+    throw "[whitespace integration] expected exit code 0, got $WhitespaceExitCode`n$($WhitespaceOutput -join "`n")"
+  }
+}
+Write-Host "PASS whitespace-only shell segments"
+
 foreach ($SettingsName in @("settings.json", "settings.template.json")) {
   $SettingsPath = Join-Path $RepoRoot "settings\$SettingsName"
   $Settings = Get-Content -Raw -Encoding UTF8 $SettingsPath | ConvertFrom-Json
