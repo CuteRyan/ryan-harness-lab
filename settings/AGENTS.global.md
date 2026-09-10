@@ -24,7 +24,10 @@
 
 ## Harness
 
-- Prefer outcome checks such as tests, lint, and focused guards over process gates.
+- Choose the smallest solution that fully meets the need; keep code, instructions, and operations compact.
+- Fix a local problem locally; add shared machinery only when it serves a recurring need.
+- Give agents the objective and necessary constraints, with room to choose how to work.
+- Verify results with appropriate tests and review; keep controls proportionate to the consequences.
 - Keep global rules only when they apply to every project.
 - Before reusing another project's rule or memory, check that it fits the current project.
 - Shared harness source: `C:\Python\harness-engineering`.
@@ -36,6 +39,7 @@
 - Store project documentation in that project's `docs/` directory.
 - Record only: conclusion, what changed, why, and verification.
 - Keep one source for each decision; other files should link to it instead of repeating it.
+- Keep standing prompts and memory indexes brief; link to task details when needed.
 - Machine-loaded instructions use clear English. Korean examples are allowed when the rule concerns Korean output.
 
 ## Python

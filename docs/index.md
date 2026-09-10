@@ -15,8 +15,8 @@
 
 ## 워크플로우 가이드
 
-- [개발 체크리스트 워크플로우](workflows/dev-checklist.md) — Phase 1~6 상세 + 템플릿
-- [문서 작업 워크플로우](workflows/document-work.md) — 신규/기존 문서 작업 절차 + 교차검증
+- [체크리스트 안내](workflows/dev-checklist.md) — 현재 스킬과 과거 절차 구분
+- [문서 작업 안내](workflows/document-work.md) — 현재 지침과 과거 절차 구분
 - [위키 관리 워크플로우](workflows/wiki-management.md) — 현재 적용하지 않는 과거 절차 기록
 
 ## 피드백

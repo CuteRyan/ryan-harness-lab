@@ -1,0 +1,63 @@
+<!-- ============================================================
+CLAUDE.md 헌법 (SSOT 5원칙) — 이 블록의 원본은 오직
+`Harness-engineering/docs/templates/CLAUDE.md.template` 이다.
+다른 곳에서 이 블록 문구가 수정되면 다음 audit 에서 drift 로
+검출된다. 변경 필요 시 템플릿 파일에서만 고치고 재배포.
+
+1. 단일 출처 — 같은 정보는 한 곳에만. 다른 곳엔 @import 로 참조.
+2. 길이 세금 — 본체 60~100줄 유지. 넘으면 docs/ 로 이관 후 @import.
+3. 스테이징→운영 단방향 — 스킬·템플릿은 Harness-engineering 이 원본.
+   ~/.claude/ 운영 사본은 복사로만 갱신. 역방향 수정 금지.
+4. Drift 감지는 기계로 — /claude-md audit 가 주기 검증. 수동 점검 X.
+5. 내용 갱신은 사람이 — 스킬은 뼈대 생성·검증까지. 실제 수정은 사람.
+============================================================ -->
+
+# {{프로젝트명}}
+
+> 한 줄 설명 · 현재 Phase: {{예: Phase 2 운영 안정화}}
+
+## 개요
+- **목적**: {{무엇을 만드는가, 왜}}
+- **주 사용자**: {{누가 쓰는가}}
+- **운영 환경**: {{예: 로컬 개발 / EC2 / Docker}}
+
+## 기술 스택 & 선택 이유 (Why)
+- **언어**: {{예: Python 3.11}} — {{왜 이 버전·언어}}
+- **핵심 라이브러리**: {{예: FastAPI + SQLAlchemy}} — {{왜}}
+- **DB**: {{예: PostgreSQL 16}} — {{왜}}
+- **배포**: {{예: systemd on EC2}} — {{왜}}
+
+## 디렉토리 구조 (핵심만)
+```
+{{프로젝트명}}/
+├── src/              # {{역할}}
+├── tests/            # pytest
+├── docs/             # 설계·히스토리
+└── scripts/          # {{역할}}
+```
+
+## 개발 명령 (복붙 가능)
+- **설치**: `{{예: uv sync}}`
+- **테스트**: `{{예: pytest tests/ -v}}`
+- **린팅**: `{{예: ruff check .}}`
+- **실행**: `{{예: python -m src.main}}`
+- **배포**: `{{예: bash scripts/deploy.sh}}`
+
+## 코딩 컨벤션 (언어 기본과 다른 것만)
+- {{예: DB 접근은 repository 레이어 경유 — 서비스 로직에서 직접 SQL 금지}}
+- {{예: datetime 은 UTC 저장, 표시 시 Asia/Seoul 변환}}
+
+## 금지사항 (반복 실수·함정)
+- {{예: master/main 에 `git push --force` 금지}}
+- {{예: 봇 관련 변경은 운영 경로 그대로 재현 후 검증 — ~/.claude/rules/bot-deploy.md}}
+
+## 워크플로
+- **커밋**: `type: 설명` 형식 (feat/fix/chore/refactor/docs/test/deploy)
+- **검증**: 작업 전 `/checklist`, 커밋 전 테스트 필수
+- **히스토리**: 세션 종료 시 `/project-history update`
+
+## 참고 (세부는 @import 로 분리)
+- @docs/HISTORY.md
+- @docs/architecture.md
+
+<!-- 개인 오버라이드가 필요하면 CLAUDE.local.md 를 작성하고 .gitignore 에 등재 -->
