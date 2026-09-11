@@ -1,12 +1,12 @@
 # 하네스 관리 프로젝트
 
-이 저장소는 Claude와 Codex 글로벌 하네스의 공통 원본입니다. `agents/`, `hooks/`, `rules/`, `skills/`를 여기서 수정한 뒤 해당 운영본에 반영합니다.
+이 저장소는 Claude와 Codex 글로벌 하네스의 공통 원본입니다. `agents/`, `hooks/`, `skills/`를 여기서 수정한 뒤 해당 운영본에 반영합니다.
 
 ## 관리 범위
 
-- 공통 원본: `agents/`, `hooks/`, `rules/`, `skills/`
+- 공통 원본: `agents/`, `hooks/`, `skills/`
 - 공용 스킬 운영본: `~/.claude/skills/`, `~/.agents/skills/`
-- 글로벌 지침 원본: `settings/CLAUDE.global.md`
+- 글로벌 지침 원본: `settings/CLAUDE.global.md`(Claude), `settings/AGENTS.global.md`(Codex) — 두 파일은 실행 환경 관련 몇 줄만 다르고 나머지는 같게 유지합니다. 코덱스는 규칙 폴더를 읽지 못하므로 지침은 이 한 장에 모읍니다.
 - 설정 기본형: `settings/settings.template.json`
 - 사용자별 운영 설정: `~/.claude/settings.json` — 자동으로 덮어쓰지 않음
 - 프로젝트 안내인 이 파일은 글로벌 `CLAUDE.md`와 역할이 다름
