@@ -1,3 +1,6 @@
+<!-- Generated from settings/global-instructions.md; run python scripts/sync-global-instructions.py. -->
+<!-- Content SHA-256: c9b98dd93c4b1ccf8b4e213b25fccc42e7b1b9c6be9b3cc453605a6a5999c8ae -->
+
 # Global Instructions
 
 ## Communication
@@ -8,7 +11,7 @@
 - Keep familiar technical terms when a Korean replacement sounds forced.
 - Explain unfamiliar technical terms in plain Korean, and expand an abbreviation the first time it appears. Use a short analogy only when it makes the idea clearer.
 - Lead with the result. Keep headings, lists, and explanations only when they help.
-- Run `/humanize` or `/checklist` only when the user explicitly asks for it.
+- Run a writing-refinement or checklist skill only when the user explicitly asks for it.
 
 ## Work
 
@@ -20,7 +23,9 @@
 - Values the user owns — names, identifiers, credentials, formats, criteria — are theirs to choose. Ask, or show a sample first.
 - Deliver the whole scope asked for. Making it smaller is the user's call, not yours.
 - If a hook blocks an action, read the path in its message before retrying.
-- Use subagents only when they clearly reduce time or improve independent review.
+- Use additional agents only when they clearly reduce time or improve independent review.
+- Use only collaboration tools available in the current session. If a named team tool is unavailable, continue directly or use an available equivalent instead of blocking the task.
+- Do not claim that a repository requires a tool unless its current project instructions explicitly say so.
 - Confirm before actions that are hard to reverse, publish externally, or have multiple plausible meanings. A request to continue, or to deploy, is not permission to commit or push.
 
 ## Research
@@ -59,17 +64,18 @@
 
 ## Harness
 
-- Keep code, instructions, and operations compact. Avoid overengineering: build the smallest solution that meets current needs.
+- Apply compactness, ordinary language, no overfitting, and no overengineering to code, documents, and every prompt, including prompts inside bridges. Build only what current needs require.
 - Avoid overfitting: keep shared structures independent of a particular project, agent, model, or platform, while preserving real differences between tasks.
-- Limit standing prompts to role, essential principles, and a document index. Load detailed guides and records only when needed.
-- Enforce mandatory limits, including permissions, duplicate execution, and approval requirements, in runtime code rather than relying only on prohibition text.
+- Limit standing prompts to role, essential principles, a document index, and the current personal memory index. Read the memory index when starting or resuming work; load details only when needed. Follow the shared [memory policy](C:/Python/harness-engineering/docs/agent-structure.md#memory) for persistent updates.
+- Implement execution control, session mapping, persistence, duplicate prevention, and permission/approval checks in the bridge's actual processing logic, or the equivalent runtime when no bridge exists. A prompt embedded in bridge code is an instruction to the model, not an enforced check.
+- Keep judgment and task methods in concise documents read when needed. Bridge prompts carry only the current task, runtime values, input/output requirements, and document references. Fix causes in the responsible layer instead of accumulating case-specific prompt reminders.
 - Keep restrictions minimal and justified. Prefer clear instructions for what to do over accumulating prohibitions and exception rules.
 - Fix a local problem locally; add shared machinery only when it serves a recurring need. For a proposed shared mechanism, explain the recurring need and its maintenance cost.
 - Reassess existing controls when models or workflows change; retire controls whose maintenance cost exceeds the risk they reduce.
 - Give agents the objective and necessary constraints, with room to choose how to work.
 - Verify results with appropriate tests and review; keep controls proportionate to the consequences.
 - Keep global rules only when they apply to every project. Before reusing another project's rule or memory, check that it fits the current project.
-- Shared harness source: `C:\Python\harness-engineering`; read its `CLAUDE.md` for source and runtime locations.
-- Every agent design, build, and revision must apply the [four mandatory principles](C:/Python/harness-engineering/docs/agent-structure.md#four-mandatory-principles). Read that design before changing agent document, memory, capability, or feedback structure; team membership is optional.
-- Common `agents`, `hooks`, and `skills` are edited in the source repo, then copied to `~/.claude/` and verified by hash.
-- `settings.json` contains user-specific values and is never overwritten automatically.
+- Shared harness source: `C:\Python\harness-engineering`; read its `CLAUDE.md` for source and runtime locations. Edit global instructions only in `settings/global-instructions.md`, then run `python scripts/sync-global-instructions.py` to update and verify both Claude and Codex copies together.
+- Apply the [project and task boundaries](C:/Python/harness-engineering/docs/agent-structure.md#project-and-task-boundaries) when designing or changing shared-server access, project storage, or agent execution and sessions. Every agent design, build, and revision must also apply the [four mandatory principles](C:/Python/harness-engineering/docs/agent-structure.md#four-mandatory-principles). Read that design before changing agent documents, memory, capabilities, or feedback structure; team membership is optional.
+- Shared agents, hooks, and skills are edited in the source repo, then copied to the applicable Claude and Codex runtime directories and verified for equality.
+- User-specific Claude and Codex settings are never overwritten automatically.

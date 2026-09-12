@@ -1,6 +1,3 @@
-<!-- Generated from settings/global-instructions.md; run python scripts/sync-global-instructions.py. -->
-<!-- Content SHA-256: c9b98dd93c4b1ccf8b4e213b25fccc42e7b1b9c6be9b3cc453605a6a5999c8ae -->
-
 # Global Instructions
 
 ## Communication

@@ -6,7 +6,7 @@
 
 - 공통 원본: `agents/`, `hooks/`, `skills/`
 - 공용 스킬 운영본: `~/.claude/skills/`, `~/.agents/skills/`
-- 글로벌 지침 원본: `settings/CLAUDE.global.md`(Claude), `settings/AGENTS.global.md`(Codex) — 두 파일은 실행 환경 관련 몇 줄만 다르고 나머지는 같게 유지합니다. 코덱스는 규칙 폴더를 읽지 못하므로 지침은 이 한 장에 모읍니다.
+- 글로벌 지침 원본: `settings/global-instructions.md` 하나입니다. 수정 후 `python scripts/sync-global-instructions.py`로 Claude·Codex 지침을 함께 생성·반영하고, `--check`로 일치를 확인합니다. `settings/CLAUDE.global.md`, `settings/AGENTS.global.md`, `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`는 생성본이므로 따로 편집하지 않습니다. [동기화 절차](docs/global-instruction-sync.md)를 참고합니다.
 - 설정 기본형: `settings/settings.template.json`
 - 사용자별 운영 설정: `~/.claude/settings.json` — 자동으로 덮어쓰지 않음
 - 프로젝트 안내인 이 파일은 글로벌 `CLAUDE.md`와 역할이 다름

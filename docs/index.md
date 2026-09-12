@@ -6,6 +6,8 @@
 
 ## 설계
 
+- [클로드·코덱스 글로벌 지침 동기화](global-instruction-sync.md) — 공통 원본 하나와 양쪽 일괄 반영·검증 절차
+- [에이전트 공통 구조](agent-structure.md) — 서버·프로젝트·에이전트·작업의 경계, 프로젝트별 DB·권한, 세션과 문서 인덱스 설계의 원본
 - [전역 훅 정책](hook-policy.md) — 현재 전역 훅의 책임, 차단 범위, 검증 결과
 - [프로젝트 하네스 아키텍처 설계안](project_harness_architecture.md) — Phase 0~4 전체 설계, 훅/스킬/위키 체계
 - [하네스 리팩터링 실행 계획](harness_refactor_plan.md) — 얕은 훅 정리, 권한 축소, 체크리스트 품질 검증, PostToolUse 도입 계획
