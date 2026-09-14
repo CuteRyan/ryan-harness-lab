@@ -1,17 +1,12 @@
 ---
 name: agent-reach
 description: >
-  Provide fallback routing to specialized CLI, API, and authenticated browser
-  backends for web and platform research. Use only when the user explicitly asks
-  for Agent Reach, when the agent's native web or platform access has failed or is
-  materially insufficient, or when the task requires Agent Reach's authenticated
-  or specialized access to XiaoHongShu, X, Bilibili, Reddit, Facebook, Instagram,
-  V2EX, LinkedIn, YouTube, GitHub code search, podcasts, Xueqiu, or RSS. Do not use
-  merely because a request involves internet research, a URL, GitHub, or one of
-  these platforms when a native tool or a purpose-built connector can handle it.
-  Prefer purpose-built skills and connectors first. This skill retrieves source
-  material; it does not perform posting, commenting, liking, report writing,
-  translation, or data analysis.
+  Fallback access to specialized CLI, API, and logged-in browser backends for
+  platform research. Use only when the user asks for Agent Reach, native web or
+  platform access failed or is insufficient, or the task needs logged-in or
+  specialized access to XiaoHongShu, X, Bilibili, Reddit, Facebook, Instagram,
+  V2EX, LinkedIn, YouTube, GitHub code search, podcasts, Xueqiu, or RSS. Prefer
+  native tools and purpose-built connectors. Retrieves source material only.
 ---
 
 # Agent Reach — 互联网能力路由器

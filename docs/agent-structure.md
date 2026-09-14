@@ -25,14 +25,8 @@ Origin: the owner's 2026-08-03 [memory record](C:/Users/rlgns/.claude/projects/C
 
 1. Implement and maintain shared functionality once.
 2. Keep actual differences in each agent's role, permissions, tools, and task instructions.
-3. Keep standing prompts to role, essential principles, the entry index, and the personal memory index. Read details and records when needed.
-4. Enforce mandatory permissions, approvals, and duplicate-execution limits in code.
-5. Build for current needs. Keep shared structures independent of a specific project, agent, provider, or platform, while preserving real task differences.
-6. Keep restrictions minimal and justified. Describe useful actions instead of accumulating prohibitions and exceptions.
 
-Keep one authoritative location for each decision. Other documents link to it.
-
-For runtime enforcement and bridge-prompt responsibilities, apply the [global Harness rules](../settings/global-instructions.md#harness). Both Claude and Codex receive that single source through the [instruction sync procedure](global-instruction-sync.md).
+Standing-prompt limits, current-need scope, minimal restrictions, enforcement in code, and bridge-prompt responsibilities are maintained in the [global Harness rules](../settings/global-instructions.md#harness); one authoritative location per decision is maintained in [Documents and records](../settings/global-instructions.md#documents-and-records). Both Claude and Codex receive that single source through the [instruction sync procedure](global-instruction-sync.md).
 
 ## Project and task boundaries
 
@@ -466,6 +460,8 @@ Successful completion requires a recorded check result. Use task-appropriate ter
 Correcting the current output within the assigned task is distinct from changing standing guidance. Complete and check the current task, then record reusable lessons as proposals. Even a recurring, verified improvement needs human approval before it changes an authoritative source. After an approved change, check its effect in subsequent work.
 
 ## Verification
+
+Revision, 2026-09-14 (structure requirements): removed requirements that repeated the global Harness and Documents and records rules; this section now keeps only agent-specific requirements and links to the global source.
 
 Revision, 2026-09-14: human feedback and memory commands authorize their requested scope; self-feedback and memory candidates use the existing proposal store and require human approval before application. The changed source holds the effective content; feedback history records disposition and is read on demand. The current memory index remains mandatory at start and resume. This revision updates the design only; command names, runtime implementation, and deployment remain separate work.
 

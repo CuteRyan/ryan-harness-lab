@@ -1,6 +1,6 @@
 ---
 name: cross-agent-review
-description: Maintain a topic-and-date-specific Markdown relay where Claude and Codex review the same work, respond to each other's evidence, and close the discussion only when the user asks. Use when the user asks Claude and Codex to cross-review, exchange opinions through a shared file, continue an existing review relay, or complete one review record.
+description: Run a Claude–Codex cross-review in one shared Markdown file per topic and date. Use when the user asks Claude and Codex to review the same work, continue an existing review file, or close one; close only when the user asks.
 ---
 
 # Cross-Agent Review

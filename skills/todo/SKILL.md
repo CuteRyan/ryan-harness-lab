@@ -1,6 +1,6 @@
 ---
 name: todo
-description: 미래에 할 일 백로그 관리. 프로젝트 루트 .todo.md 에 항목 추가·완료·아카이브. 세션 횡단 백로그 전용 (지금 작업은 /checklist, 세션 인계는 /handoff).
+description: 나중에 할 일을 프로젝트 루트 .todo.md 백로그로 추가·완료·보관한다. 지금 작업은 /checklist, 세션 인계는 /handoff.
 trigger: /todo
 argument-hint: "[add|done|archive] [내용 또는 번호]"
 user-invocable: true
@@ -9,7 +9,7 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 # Todo (미래 백로그 관리자)
 
-세션 횡단 백로그 — "언제 할지 모르지만 잊으면 안 되는 것" 을 프로젝트 루트 `.todo.md` 에 누적 관리한다.
+세션을 넘어 유지되는 백로그 — "언제 할지 모르지만 잊으면 안 되는 것" 을 프로젝트 루트 `.todo.md` 에 누적 관리한다.
 
 비유: `.checklist.md` 가 오늘의 작업 지시서라면, `.todo.md` 는 냉장고 화이트보드 메모.
 
@@ -26,11 +26,11 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 - `/todo done [번호 또는 키워드]` — 완료 처리 (`[ ]` → `[x]`)
 - `/todo archive` — 완료 항목 10개 초과 시 `.backups/` 로 정리
 
-## 파일 위치 (결정 4 = 프로젝트별만)
+## 파일 위치
 
 - 백로그: `{프로젝트 루트}/.todo.md`
 - 완료 아카이브: `{프로젝트 루트}/.backups/.todo.done.{YYYY-MM-DD}.md`
-- **글로벌 `~/.claude/.todo.md` 는 만들지 않는다** (Day 15 결정 4)
+- 프로젝트마다 따로 둔다. 사용자 홈 등 전역 위치에는 `.todo.md`를 만들지 않는다.
 
 ## .todo.md 양식
 
@@ -52,7 +52,7 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 ### 필드 정의
 
-- **번호 `#NNN`**: 단조 증가, 완료 후에도 보존 (감사 추적, 재사용 금지)
+- **번호 `#NNN`**: 단조 증가, 완료 후에도 보존 (감사 추적용이라 재사용하지 않음)
 - **`added: YYYY-MM-DD`** (필수): 항목 추가일. 자동 부착
 - **`priority`** (필수): `high` | `normal` | `low` 중 1. 미지정 시 `normal`
 - **`due: YYYY-MM-DD`** (선택): 마감일. 시간 제약 있는 항목
@@ -85,16 +85,16 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 ## 다른 스킬과의 책임 경계
 
-### vs /checklist (Day 15 결정 1=A: 자동 트리거 없음)
+### vs /checklist
 | 구분 | /todo | /checklist |
 |------|-------|------------|
 | 시제 | 미래 ("나중에 할 것") | 현재 ("지금 하는 것") |
-| 파일 | `.todo.md` (상시 유지) | `.checklist.md` (작업 단위 생성·소멸) |
-| 승인 흐름 | 없음 (추가/완료 즉시) | 필수 (`approved: false` → 주인님 승인) |
-| 완료 시 | 목록에서 완료 마킹 후 보존 | `.backups/` 로 이동 |
-| 수명 | 프로젝트 존속 기간 내내 | 단일 작업 사이클 |
+| 파일 | `.todo.md` (상시 유지) | `.checklist.md` (작업 단위) |
+| 승인 흐름 | 없음 (추가/완료 즉시) | 없음 (사용자가 요청할 때만 실행) |
+| 완료 시 | 목록에서 완료 마킹 후 보존 | 사용자가 요청할 때 보관 |
+| 수명 | 프로젝트 존속 기간 내내 | 단일 작업 |
 
-**연계 정책**: `/todo` 의 항목을 본 세션에서 시작하면 사용자가 명시적으로 `/checklist` 호출. 자동 동기화 없음 (결정 1=A).
+**연계**: `/todo` 항목을 이번 세션에서 시작할 때 체크리스트가 필요하면 사용자가 `/checklist`를 요청한다. 자동으로 동기화하지 않는다.
 
 ### vs /handoff
 | 구분 | /todo | /handoff |
@@ -103,17 +103,17 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 | 미완 항목 성격 | "언제 할지 모르는 것" | "지금 하다 멈춘 것" (시급, 맥락 풍부) |
 | 소멸 조건 | `done` 또는 `archive` | 다음 세션 확인 후 즉시 |
 
-**연계 정책**: `/handoff done` 시 다음 세션이 미완 항목 중 지속 필요한 것을 `/todo add` 로 옮길 수 있다. 자동 이동 금지 (인계 받은 세션이 우선순위 재판단).
+**연계**: `/handoff done` 시 다음 세션이 미완 항목 중 지속 필요한 것을 `/todo add` 로 옮길 수 있다. 옮길지는 인계 받은 세션이 우선순위를 다시 판단해 정한다.
 
 ### vs /project-history
 - `/todo` 는 **미래** 백로그, `/project-history` 는 **과거** 완료 기록
 - `/todo done` 시 자동 히스토리 기록 X (사용자가 명시 요청 시에만)
 
 ## Rules
-- **결정 4 준수** — 글로벌 `~/.claude/.todo.md` 만들지 않음. 프로젝트별 루트 `.todo.md` 만 운영
-- **결정 1 준수** — `/checklist` 자동 트리거 없음, 사용자 명시 호출만
-- **번호 보존** — 완료 후에도 `#NNN` 유지 (감사 추적, 재사용 금지)
-- **추가 시 승인 불필요** — `.checklist.md` 와 달리 즉시 반영
+- **프로젝트별로만 운영** — 프로젝트 루트 `.todo.md` 만 쓴다
+- **`/checklist`는 사용자가 요청할 때만** — `/todo`가 자동으로 부르지 않음
+- **번호 보존** — 완료 후에도 `#NNN` 유지 (감사 추적용이라 재사용하지 않음)
+- **추가 시 승인 불필요** — 즉시 반영
 - **`.gitignore` 권장** — 개인 백로그이므로 (팀 공유 시 예외)
 
 ## File Locations

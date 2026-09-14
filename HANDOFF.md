@@ -1,29 +1,34 @@
-# 세션 인계 — 2026-09-11
+# HANDOFF — 2026-09-14 세션 인계서
 
-글로벌 지침을 한 장으로 합치고 `rules/` 폴더를 없앴다. 클로드와 코덱스가 같은 기본값을 읽는다. 상세는 [9월 11일 기록](docs/history/2026-09-11-single-instruction-file.md).
+> 생성: 2026-09-14 | 소멸 조건: 다음 세션 확인 후 `/handoff done`
 
-## 지금 구조
+## 마지막 상태 (어디까지 했나)
+- 작업: 네 가지 원칙 기준 하네스 셀프 점검과 정리
+- 진행률: 완료. 커밋 2개를 `main`에 올리고 푸시했다 (`git log -2`로 확인)
+- 결과: 옛 `rules/` 구조를 가르치던 `memory-manager` 재작성, `handoff`·`todo`·`project-history` 용어 정리, 스킬 설명 축소, 중복 문장 정리, 추적되지 않는 백업 폴더 삭제. 상세는 [9월 14일 기록](docs/history/2026-09-14.md)
+- 운영본: 바꾼 스킬 6개를 `~/.claude/skills`, `~/.agents/skills`에 복사했고 해시가 같다. Codex도 새 설명을 불러오는 것을 확인했다
 
-```
-settings/CLAUDE.global.md   →  ~/.claude/CLAUDE.md   (클로드가 읽는 것)
-settings/AGENTS.global.md   →  ~/.codex/AGENTS.md    (코덱스가 읽는 것)
-```
+## 미완 작업 (지금 하다 멈춘 것)
+- [ ] `agent-structure.md` Codex 지적 2건 — 이유: 설계 결정 대기 (아래 미결 결정)
+- [ ] 메모리 주제 파일 정리 — frontmatter가 현재 Claude 형식(`metadata.type`)과 다르고, "체크리스트·피드백은 요청할 때만" 줄이 글로벌 지침과 겹친다. 이유: 보고만 함
+- [ ] `.todo.md` #017(a) SSOT 표기, #016(d) Day 번호 추출은 이번 정리로 해결됨 — 이유: 완료 처리는 `/todo done` 요청 시
+- [ ] 범위 밖으로 남긴 것 — 루트·`docs/` 아래 `.backups`, 운영본 `~/.claude/skills/.backups`, `docs/history/index.md` 개요의 옛 `rules/` 언급, Claude 운영본에 빠진 `skills/feedback/scripts/g3_sample.py`
 
-- 지침은 이 두 장이 전부다. `rules/` 폴더는 없다.
-- 두 장은 같은 본문에서 만들며 실행 환경 관련 5줄만 다르다. 한쪽만 고치지 않는다.
-- 운영본 두 곳은 Git이 아니다. 거기서 고치면 이력이 안 남고 다음 복사 때 사라진다. 반드시 `settings/`를 고친 뒤 복사하고 바이트 비교로 확인한다.
+## 다음 세션 시작 지점
+1. 아래 미결 결정 두 가지를 주인님께 여쭙는다
+2. `agent-reach`가 줄인 설명으로도 필요할 때만 실행되는지 실제 조사 작업에서 살핀다
 
-## 다음 세션이 확인할 것
+## 미결 결정 (다음 세션에 결정 필요)
+- 공식 피드백·메모리 변경을 슬래시 명령으로만 받는 설계(`docs/agent-structure.md` Human feedback 절)가 글로벌 지침 "승인된 변경은 바로 진행"과 충돌해 보인다 | 선택지: A 설계 유지하고 적용 범위(에이전트 런타임 한정)를 명시 / B 자연어 요청도 허용 | 현재 기울기: A
+- `proposal store` 위치가 정의되지 않았다 | 선택지: A `self-feedback.md` 색인과 연결된 기록으로 명시 / B 구현 때 정함 | 현재 기울기: A
+- 9월 11일 인계에서 넘어온 항목: 글로벌 지침의 조사·배포 섹션을 더 줄일지 | 선택지: A 유지 / B 원칙 한 줄로 줄이고 문서로 분리 (Codex는 분리 문서를 따로 읽지 못함) | 현재 기울기: A
 
-- 새 규칙 4개가 실제로 지켜지는지 본다. 번역 병기, 주인님 소유 값은 묻기, 범위 유지, 커밋·푸시는 명시 지시에만.
-- 75줄이 여전히 길다고 보시면 더 줄일 후보는 조사·배포 섹션이다. 둘 다 원칙 한 줄로 줄이고 나머지는 필요할 때 읽는 문서로 뺄 수 있다. 다만 코덱스는 문서를 따로 못 읽으므로 빼는 순간 코덱스만 잃는다.
+## 컨텍스트 (배경 이해용)
+- 이 작업을 하는 이유: 네 가지 원칙(간결, 평범한 말, 과적합 금지, 과잉 설계 금지)이 스킬과 문서에도 적용되게 하려는 것
+- 주의 사항: humanize 계열은 외부 원본을 그대로 유지하는 결정(`skills/humanize-korean/.upstream.lock.json`)이라 손대지 않았다. 스킬 원본은 런타임 경로를 쓰지 않으므로 Claude·Codex 운영본에 같은 파일을 복사한다
 
-## 건드리지 않은 것
-
-다른 세션의 미커밋 변경 3개를 그대로 뒀다. 이 커밋에 담지 않았다.
-
-- `docs/index.md` 1줄 — 에이전트 공통 구조 문서 링크
-- `skills/handoff/SKILL.md` 5줄 — worktree별 인계서 규칙
-- `docs/agent-structure.md` — 미추적 새 문서 447줄
-
-위 셋은 작업하신 분이 자기 몫으로 커밋한다.
+## 관련 파일
+- `docs/history/2026-09-14.md` — 이번 작업 기록
+- `docs/agent-structure.md` — 미결 설계 결정 대상
+- `skills/memory-manager/SKILL.md`, `skills/handoff/SKILL.md` — 이번에 다시 쓴 스킬
+- `settings/global-instructions.md` — 충돌 여부를 비교할 글로벌 기준
