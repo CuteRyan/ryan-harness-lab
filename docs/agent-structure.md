@@ -1,10 +1,10 @@
 # Agent structure
 
-Status: agreed design, 2026-09-10; project and task boundaries clarified 2026-09-12. This document defines the target structure; it does not claim that existing agents implement it.
+Status: agreed design, 2026-09-10; feedback and memory approval clarified 2026-09-14. This document defines the target structure; it does not claim that existing agents implement it.
 
 Use this reference when creating agents or changing their execution, storage, sessions, documents, memory, capabilities, or feedback structure. It applies across projects, providers, models, and platforms. Existing agents are migrated through separately authorized work.
 
-Index: [Principles](#principles) · [Project and task boundaries](#project-and-task-boundaries) · [Ownership](#ownership) · [Documents](#documents) · [Index format](#index-format) · [Index examples](#index-examples) · [Reading and creation](#reading-and-creation) · [Capabilities](#capabilities) · [Human feedback](#human-feedback) · [Self-feedback](#self-feedback) · [Verification](#verification)
+Index: [Principles](#principles) · [Project and task boundaries](#project-and-task-boundaries) · [Ownership](#ownership) · [Documents](#documents) · [Memory](#memory) · [Index format](#index-format) · [Index examples](#index-examples) · [Reading and creation](#reading-and-creation) · [Capabilities](#capabilities) · [Human feedback](#human-feedback) · [Self-feedback](#self-feedback) · [Verification](#verification)
 
 ## Principles
 
@@ -17,7 +17,7 @@ Apply these principles to every agent design, build, and revision, including its
 3. **No overfitting:** write general rules rather than accumulating rules for individual cases; preserve real task differences.
 4. **No overengineering:** build the structure needed now, then improve it through actual use and feedback instead of trying to perfect it upfront.
 
-The fourth principle does not assume a particular agent framework or an existing self-improvement loop. Apply feedback within the authorization rules below.
+The fourth principle does not assume a particular agent framework or an existing self-improvement loop. Every agent follows the [human feedback](#human-feedback), [memory](#memory), and [self-feedback](#self-feedback) rules below: human commands authorize their requested scope; agent-originated proposals require human approval before application.
 
 Origin: the owner's 2026-08-03 [memory record](C:/Users/rlgns/.claude/projects/C--Python-plusalpha-agency/memory/feedback-compact-general-writing.md), reaffirmed on 2026-09-11 as mandatory for all agent building. This section is the maintained source; agent guidance links here.
 
@@ -189,7 +189,9 @@ A file such as `memory.md` or `handoff.md` is the category index; its associated
 
 Every agent has a persistent personal memory index. The runtime supplies its current contents when starting or resuming work. Use Date / Topic / Read when / Details; keep facts and context in linked detail files or an existing authoritative source, read only when relevant. An empty index is valid until there is something to remember.
 
-A human request to remember, correct, or forget something authorizes that update within the person's authority and requested scope. Follow [human feedback](#human-feedback): read the existing source, update the relevant detail and index, and verify the saved content and links without asking for the same approval again. Agent-originated findings follow [self-feedback](#self-feedback) and remain proposals until approved.
+A human memory command authorizes the requested save, update, deletion, or organization within that person's authority. Follow [human feedback](#human-feedback): read the existing source, update the relevant detail and index, and verify the saved content and links without asking for the same approval again. Ordinary conversation does not open a durable memory-change request. Agent-originated memory candidates remain in the existing [self-feedback](#self-feedback) proposal store until a human approves them; pending candidates do not enter the active memory index.
+
+Organize memory when requested: consolidate duplicates and repair links and reading conditions within the requested scope. Preserve valid facts and unresolved items unless their removal is authorized. Keep guidance in its owning rule, role, or procedure rather than duplicating it as memory.
 
 Use the applicable authorized write path and the owning project's persistent storage so later sessions can retrieve updates. Read access alone does not provide update capability; an update that cannot be saved remains unapplied with its reason recorded.
 
@@ -407,9 +409,11 @@ Generate or expose these views from the registered sources rather than manually 
 
 The `human-feedback.md` category index lists human requests and their application using Date / Topic / Status / Details. The shared rules index links to `rules/human-feedback.md`, the common recording and application policy in the example layout. The linked record identifies the original message, common/team/personal scope, affected source, application or unresolved result, and verification.
 
-Record the feedback, then apply requested changes to the appropriate SOP, rule, memory, role, or code within the human-authorized scope. The human request supplies authorization for that scope; ask when the intended change or authority is unclear. Structure changes also follow the confirmation step in [Reading and creation](#reading-and-creation).
+Accept formal human feedback and memory changes through their explicit slash commands. The runtime recognizes the invocation and checks the requester, permitted scope, persistence, and duplicate processing; the model interprets the content and appropriate target. Register command names and syntax in the existing shared command catalog when implementing them; this design does not choose those names. Ordinary task conversation can direct corrections to the current output without being treated as a standing-guidance or memory update.
 
-The original request stays in the conversation. The index tracks its disposition; the affected source holds the current guidance. This preserves feedback history without making a second set of operative instructions.
+Record feedback received by command, then apply the requested changes to the appropriate SOP, rule, memory, role, or code within the human-authorized scope. The command itself supplies authorization for that scope; do not ask for the same approval again. Ask when the intended change or authority is unclear. Structure changes also follow the confirmation step in [Reading and creation](#reading-and-creation).
+
+The original request stays in the conversation. The index tracks its disposition; the affected source holds the current guidance. Read feedback history when relevant, not automatically on every start or resume. Apply the corrected source in later work, without duplicating the feedback as standing instructions or memory. If an existing rule already covers the issue, correct the work rather than adding a case-specific rule.
 
 | Request | Target |
 |---|---|
@@ -421,27 +425,31 @@ The original request stays in the conversation. The index tracks its disposition
 | Require approval before sending | Runtime approval check |
 
 ```text
-Receive human feedback → index the request and source → determine authorized scope
+Receive human feedback command → index the request and source → determine authorized scope
 → update the authoritative source → verify → update the index with the result
 ```
 
 Change the SOP when the workflow changes; change a linked detail document when only that detail changes. Update an index when an item, location, or reading condition changes. A corrected source does not automatically require a new appendix.
 
+When asked to organize feedback, consolidate duplicate records and repair links and statuses while preserving original requests, approval evidence, and unresolved items.
+
 Record the changed source and verification before reporting a durable request as applied. Unapplied requests retain their unresolved state and reason; link them from the relevant handoff when crossing sessions. Code, deployment, and other operational changes remain subject to the authorized scope and applicable execution boundaries.
 
 ## Self-feedback
 
-Self-feedback covers problems encountered while working, their causes, useful methods, and proposed improvements. Its separate `self-feedback.md` category index uses Date / Topic / Status / Details. The shared rules index links to `rules/self-feedback.md` for the common recording and approval policy. The linked record contains the observation, task or evidence reference, proposed target and scope, and human approval/application references. Distinguish a verified method from an untested hypothesis.
+Self-feedback covers problems encountered while working, their causes, useful methods, proposed improvements, and memory candidates. Use the existing proposal store and `self-feedback.md` category index, with Date / Topic / Status / Details; distinguish feedback proposals from memory candidates in the record rather than adding a separate self-memory document hierarchy. The shared rules index links to `rules/self-feedback.md` for the common recording and approval policy. The linked record contains the kind, observation, task or evidence reference, proposed target and scope, and human approval/application references. Distinguish a verified method from an untested hypothesis.
 
 The agent may record its findings and proposals. Applying them to an SOP, rule, memory, role, code, or another authoritative source requires human approval of that change. Pending proposals are evidence for review, not active instructions for later tasks. The runtime checks human approval and its scope before a source write, across every write path; a model-written status alone is not approval.
 
 ```text
-Discover a problem or useful method → record evidence and proposed change in self-feedback index
+Discover an improvement or memory candidate → record evidence, kind, target, and scope
 → Await human approval
-   ├─ Approved → apply within approved scope → verify → link the changed source and result
+   ├─ Approved → route to human feedback or memory → apply → verify → link the result
    ├─ Rejected → record the decision; source unchanged
    └─ Pending → retain the proposal; source unchanged
 ```
+
+Approval must identify the proposal and scope. An approved feedback proposal enters the human-feedback record and updates its owning source; an approved memory candidate enters the memory source and index. Link the original proposal, human approval, changed source, and verification instead of creating another active copy. Mark it applied only after successful verification; approval alone is not completion. Pending or rejected candidates remain review records, not active guidance or memory.
 
 Task-result checking is a related runtime operation. Its evaluation criteria belong in the existing SOP, skill, or validation code. The runtime ensures that the check is executed and its result recorded.
 
@@ -458,6 +466,10 @@ Successful completion requires a recorded check result. Use task-appropriate ter
 Correcting the current output within the assigned task is distinct from changing standing guidance. Complete and check the current task, then record reusable lessons as proposals. Even a recurring, verified improvement needs human approval before it changes an authoritative source. After an approved change, check its effect in subsequent work.
 
 ## Verification
+
+Revision, 2026-09-14: human feedback and memory commands authorize their requested scope; self-feedback and memory candidates use the existing proposal store and require human approval before application. The changed source holds the effective content; feedback history records disposition and is read on demand. The current memory index remains mandatory at start and resume. This revision updates the design only; command names, runtime implementation, and deployment remain separate work.
+
+Verified for this revision: 20 internal anchor references resolve, code fences are balanced, the four mandatory principles remain intact, and the memory/feedback loading and proposal-promotion rules agree. Runtime behavior was not changed or tested.
 
 Revision, 2026-09-12 (memory): the owner requested that basic memory be available at the start of work and confirmed indexed memory and human-requested updates. Initial and resumed context now explicitly includes the current personal memory index; details remain on demand. The Memory section connects updates to the existing human-feedback and self-feedback policies. Checked the affected startup descriptions, index example, and verification criteria for consistency. This design change does not deploy an agent or grant a runtime memory-write capability.
 
@@ -486,11 +498,14 @@ When implementing this design, verify:
 - A task can resolve the required guidance through working index links and read permissions.
 - Initial and resumed context includes the entry point, current personal memory index, role, and minimal principles rather than every linked document.
 - Memory details remain readable on demand; a missing required memory index is reported rather than silently omitted.
-- An authorized human memory update changes the saved source and needed index entries, is verified, and is visible to later sessions; a pending self-feedback proposal does not change memory.
+- A human memory command changes the saved source and needed index entries within its authorized scope, is verified, and is visible to later sessions; ordinary conversation and pending memory candidates do not open or apply durable changes.
 - Skills, tools, and commands come from shared registrations; individual settings select allowed entries and code checks every invocation.
 - Team organization includes assignment and reporting relationships; role descriptions and individual work records remain at their original sources.
 - The user confirmed the proposed agent structure and implementation scope before files or runtime changes were made.
 - Human feedback is indexed with its original request, affected source, and application result.
+- Formal feedback and memory changes require the registered command or approval of an identified proposal; the runtime checks authorization and duplicates on every write path.
+- Later work uses the changed source; feedback history is read on demand and does not become a second set of instructions.
 - Self-feedback is indexed with evidence, proposed target, and approval/application status.
+- Approved feedback proposals and memory candidates link to their human approval and verified target; failed application remains unresolved rather than being reported as applied.
 - A pending or rejected self-feedback proposal cannot change authoritative sources through any write path; approval permits only its recorded scope.
 - Completion records include the task check, with bounded correction and explicit unresolved results.
