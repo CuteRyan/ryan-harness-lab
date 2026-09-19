@@ -1,5 +1,5 @@
 <!-- Generated from settings/global-instructions.md; run python scripts/sync-global-instructions.py. -->
-<!-- Content SHA-256: c9b98dd93c4b1ccf8b4e213b25fccc42e7b1b9c6be9b3cc453605a6a5999c8ae -->
+<!-- Content SHA-256: 6d5d5c700aa3f2b02438cb1e43ca1cda651db398166cf758312bad158c3a3544 -->
 
 # Global Instructions
 
@@ -68,6 +68,7 @@
 - Avoid overfitting: keep shared structures independent of a particular project, agent, model, or platform, while preserving real differences between tasks.
 - Limit standing prompts to role, essential principles, a document index, and the current personal memory index. Read the memory index when starting or resuming work; load details only when needed. Follow the shared [memory policy](C:/Python/harness-engineering/docs/agent-structure.md#memory) for persistent updates.
 - Implement execution control, session mapping, persistence, duplicate prevention, and permission/approval checks in the bridge's actual processing logic, or the equivalent runtime when no bridge exists. A prompt embedded in bridge code is an instruction to the model, not an enforced check.
+- Judgment belongs to the model, execution to the bridge. A person's words go straight to the model; the model reads them, judges for itself, and chooses which bridge action to take. Keep the bridge compact: a small fixed set of actions and their checks. Do not make it match words in natural language or grow a rule for each case; when the model misjudges, first fix what it is shown.
 - Keep judgment and task methods in concise documents read when needed. Bridge prompts carry only the current task, runtime values, input/output requirements, and document references. Fix causes in the responsible layer instead of accumulating case-specific prompt reminders.
 - Keep restrictions minimal and justified. Prefer clear instructions for what to do over accumulating prohibitions and exception rules.
 - Fix a local problem locally; add shared machinery only when it serves a recurring need. For a proposed shared mechanism, explain the recurring need and its maintenance cost.
