@@ -9,6 +9,7 @@
 - Bash `PreToolUse` 진입점을 `hooks/pretooluse-guard.ps1` 하나로 통합했다.
 - `git reset --hard`, 강제 `git clean`, 작업 파일을 버리는 `git restore`·`git checkout --`, `git rm`, 일반 강제 push와 강제 refspec을 차단한다.
 - `git push --force-with-lease`는 차단하지 않고 경고한다.
+- 파일 삭제 명령에는 확인 요청을 띄우지 않는다. 훅의 확인 요청은 권한 건너뛰기 모드에서도 뜨기 때문이다. 삭제 전 확인은 모델이 판단한다([2026-09-20 기록](history/2026-09-20.md)).
 - 대문자 명령, 명령 체인, `git -C`와 `--git-dir` 같은 전역 옵션을 같은 기준으로 판정한다.
 - 기존 문서 Write와 Bash 문서 수정을 막던 전역 훅을 제거했다.
 - 특정 서버 IP, 버전 파일, 변경 기록, GitHub CI를 결합한 배포 훅을 전역에서 제거했다.

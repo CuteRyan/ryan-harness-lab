@@ -54,52 +54,55 @@ foreach ($Case in $Cases) {
   Assert-Decision -Name $Case.Name -Command $Case.Command -Expected $Case.Expected
 }
 
-$Payload = @{
-  tool_name = "Bash"
-  tool_input = @{ command = "git -C . reset --hard HEAD~1" }
-} | ConvertTo-Json -Compress -Depth 4
-
 $PowerShell = (Get-Process -Id $PID).Path
-$PreviousErrorActionPreference = $ErrorActionPreference
-$ErrorActionPreference = "Continue"
-try {
-  $Output = $Payload | & $PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$HookPath'" 2>&1
-  $ExitCode = $LASTEXITCODE
-} finally {
-  $ErrorActionPreference = $PreviousErrorActionPreference
-}
 
-if ($ExitCode -ne 1) {
-  throw "[stdin integration] expected exit code 1, got $ExitCode`n$($Output -join "`n")"
-}
-if (($Output -join "`n") -notlike "*Blocked destructive Git command*") {
-  throw "[stdin integration] block message was not emitted"
-}
-Write-Host "PASS stdin integration"
+function Invoke-HookProcess {
+  param([Parameter(Mandatory = $true)][string]$Command)
 
-foreach ($WhitespaceCommand in @(
-  "echo one`n   `necho two",
-  "echo one;   ;echo two"
-)) {
-  $WhitespacePayload = @{
+  $Payload = @{
     tool_name = "Bash"
-    tool_input = @{ command = $WhitespaceCommand }
+    tool_input = @{ command = $Command }
   } | ConvertTo-Json -Compress -Depth 4
 
   $PreviousErrorActionPreference = $ErrorActionPreference
   $ErrorActionPreference = "Continue"
   try {
-    $WhitespaceOutput = $WhitespacePayload | & $PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '$HookPath'" 2>&1
-    $WhitespaceExitCode = $LASTEXITCODE
+    $Output = $Payload | & $PowerShell -NoProfile -ExecutionPolicy Bypass -File $HookPath 2>&1
+    [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = ($Output -join "`n").Trim() }
   } finally {
     $ErrorActionPreference = $PreviousErrorActionPreference
   }
+}
 
-  if ($WhitespaceExitCode -ne 0) {
-    throw "[whitespace integration] expected exit code 0, got $WhitespaceExitCode`n$($WhitespaceOutput -join "`n")"
+$Result = Invoke-HookProcess "git -C . reset --hard HEAD~1"
+if ($Result.ExitCode -ne 2) {
+  throw "[stdin integration] expected exit code 2, got $($Result.ExitCode)`n$($Result.Output)"
+}
+if ($Result.Output -notlike "*Blocked destructive Git command*") {
+  throw "[stdin integration] block message was not emitted"
+}
+Write-Host "PASS stdin integration"
+
+foreach ($Command in @("echo one`n   `necho two", "echo one;   ;echo two")) {
+  $Result = Invoke-HookProcess $Command
+  if ($Result.ExitCode -ne 0) {
+    throw "[whitespace integration] expected exit code 0, got $($Result.ExitCode)`n$($Result.Output)"
   }
 }
 Write-Host "PASS whitespace-only shell segments"
+
+foreach ($Command in @(
+  "rm -rf build",
+  "rm -f notes.txt",
+  "find . -name '*.pyc' -delete",
+  "Remove-Item -Recurse -Force build"
+)) {
+  $Result = Invoke-HookProcess $Command
+  if ($Result.ExitCode -ne 0 -or $Result.Output) {
+    throw "[deletion outside policy] expected silent exit 0 for '$Command', got $($Result.ExitCode)`n$($Result.Output)"
+  }
+}
+Write-Host "PASS deletion outside policy"
 
 foreach ($SettingsName in @("settings.json", "settings.template.json")) {
   $SettingsPath = Join-Path $RepoRoot "settings\$SettingsName"

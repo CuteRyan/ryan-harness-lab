@@ -216,84 +216,6 @@ function Get-HarnessGitDecision {
   return [pscustomobject]@{ Action = "allow"; Reason = "" }
 }
 
-function Test-HarnessDeleteRiskToken {
-  param([Parameter(Mandatory = $true)][string]$Token)
-
-  $Lower = $Token.ToLowerInvariant()
-
-  # Explicit recursive or force switches, POSIX and Windows spellings.
-  if ($Lower -in @("--recursive", "--force", "-recurse", "-force", "/s", "/q")) {
-    return $true
-  }
-  # Bundled POSIX short flags such as -r, -f, -rf, -fr.
-  if ($Lower -match '^-[a-z]+$' -and $Lower -match '[rf]') {
-    return $true
-  }
-  # Glob operands delete an unknown number of files.
-  if (-not $Lower.StartsWith("-") -and -not $Lower.StartsWith("/") -and $Token -match '[*?]') {
-    return $true
-  }
-
-  return $false
-}
-
-function Get-HarnessDeleteDecision {
-  param([Parameter(Mandatory = $true)][string]$Command)
-
-  # Single-target deletion is reversible enough to run unattended; only bulk
-  # deletion (recursive, forced, or glob) needs the user in the loop.
-  $DeleteExecutables = @("rm", "rm.exe", "rmdir", "rd", "del", "erase", "unlink", "trash", "remove-item", "ri")
-  $AlwaysAskExecutables = @("shred", "shred.exe")
-
-  foreach ($Segment in Split-HarnessShellSegments $Command) {
-    $Tokens = @(ConvertTo-HarnessTokens ($Segment.Trim().TrimStart("(", "{")))
-    if ($Tokens.Count -eq 0) {
-      continue
-    }
-
-    $Index = 0
-    while ($Index -lt $Tokens.Count -and $Tokens[$Index] -match '^[A-Za-z_][A-Za-z0-9_]*=') {
-      $Index++
-    }
-    if ($Index -lt $Tokens.Count -and $Tokens[$Index].ToLowerInvariant() -eq "command") {
-      $Index++
-    }
-    if ($Index -ge $Tokens.Count) {
-      continue
-    }
-
-    $ExecutableName = ($Tokens[$Index].Replace("\", "/") -split "/")[-1].ToLowerInvariant()
-    $LowerTokens = @($Tokens | ForEach-Object { $_.ToLowerInvariant() })
-
-    # shred overwrites contents irrecoverably regardless of target count.
-    if ($AlwaysAskExecutables -contains $ExecutableName) {
-      return [pscustomobject]@{ Action = "ask"; Reason = "'$ExecutableName' overwrites file contents irrecoverably" }
-    }
-
-    # find -delete applies to every match, so it is bulk by construction.
-    if ($LowerTokens -contains "-delete") {
-      return [pscustomobject]@{ Action = "ask"; Reason = "'-delete' removes every matched path" }
-    }
-
-    if ($DeleteExecutables -notcontains $ExecutableName) {
-      continue
-    }
-
-    $Operands = @()
-    if (($Index + 1) -lt $Tokens.Count) {
-      $Operands = @($Tokens[($Index + 1)..($Tokens.Count - 1)])
-    }
-
-    foreach ($Operand in $Operands) {
-      if (Test-HarnessDeleteRiskToken $Operand) {
-        return [pscustomobject]@{ Action = "ask"; Reason = "bulk deletion '$ExecutableName $Operand' requires explicit user confirmation" }
-      }
-    }
-  }
-
-  return [pscustomobject]@{ Action = "allow"; Reason = "" }
-}
-
 function Read-HarnessHookCommand {
   $InputStream = [Console]::OpenStandardInput()
   $Reader = [System.IO.StreamReader]::new($InputStream, [System.Text.UTF8Encoding]::new($false), $true)
@@ -326,18 +248,6 @@ function Invoke-HarnessPreToolUseGuard {
     "warn" {
       [Console]::Error.WriteLine("[hook] Warning: $($Decision.Reason)")
     }
-  }
-
-  $DeleteDecision = Get-HarnessDeleteDecision $Command
-  if ($DeleteDecision.Action -eq "ask") {
-    $Response = @{
-      hookSpecificOutput = @{
-        hookEventName            = "PreToolUse"
-        permissionDecision       = "ask"
-        permissionDecisionReason = "pretooluse-guard: $($DeleteDecision.Reason)"
-      }
-    }
-    [Console]::Out.WriteLine(($Response | ConvertTo-Json -Compress -Depth 4))
   }
 
   return 0

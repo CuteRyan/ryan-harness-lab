@@ -109,6 +109,21 @@ try {
     throw "managed Bash entry was not installed exactly once"
   }
   Write-Host "PASS apply preserves settings and archives legacy hooks"
+
+  $InstalledCommand = [string]$Managed[0].hooks[0].command
+  $Payload = @{ tool_input = @{ command = "git reset --hard HEAD~1" } } | ConvertTo-Json -Compress -Depth 4
+  $PreviousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $BlockOutput = $Payload | cmd /c $InstalledCommand 2>&1
+    $BlockExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $PreviousErrorActionPreference
+  }
+  if ($BlockExitCode -ne 2) {
+    throw "installed hook command must block with exit code 2, got $BlockExitCode`n$InstalledCommand`n$($BlockOutput -join "`n")"
+  }
+  Write-Host "PASS installed hook command blocks with exit code 2"
 } finally {
   $ResolvedTempParent = [System.IO.Path]::GetFullPath($TempParent)
   $ResolvedSystemTemp = [System.IO.Path]::GetFullPath($env:TEMP)

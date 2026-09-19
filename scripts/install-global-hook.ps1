@@ -49,8 +49,8 @@ if ($null -eq $TemplateEntry) {
 
 $NewEntry = $TemplateEntry | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 $RuntimeHookPath = Join-Path $HooksRoot "pretooluse-guard.ps1"
-$EscapedRuntimeHookPath = $RuntimeHookPath.Replace("'", "''")
-$NewEntry.hooks[0].command = "powershell -NoProfile -ExecutionPolicy Bypass -Command `"& '$EscapedRuntimeHookPath'`""
+# -File keeps exit code 2 (block); -Command "& '...'" turns it into 1, which does not block.
+$NewEntry.hooks[0].command = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$RuntimeHookPath`""
 
 if ($null -eq $RuntimeSettings.hooks) {
   $RuntimeSettings | Add-Member -NotePropertyName hooks -NotePropertyValue ([pscustomobject]@{})
