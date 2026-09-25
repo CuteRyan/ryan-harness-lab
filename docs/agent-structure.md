@@ -130,11 +130,13 @@ Every category file above is a level-2 index; its linked content is level 3. Sha
 |---|---|---|
 | Shared | Rules, skills, tools, commands | Shared maintainer; capabilities selected through agent settings |
 | Team | Organization, goals, decisions, history, handoff | Team owner; members reference the same sources |
-| Personal | Memory, SOP, history, handoff, human feedback, self-feedback | Individual agent within its authority |
+| Personal | Memory, SOP, and indexes to the applicable history, handoff, human feedback, and self-feedback sources | Individual agent within its authority; agreed team records may be shared |
 
 The team organization describes members, responsibilities, direction, delegation, review, and final reporting. Link to each member's role rather than copying its description. Runtime permissions implement the agreed authority; the organization chart alone grants none.
 
-Team history records shared outcomes and decisions and links to individual work. Team handoff records coordination and remaining owners; personal handoff records the agent's own unfinished work. A feedback request or discovery is recorded once at its receiving source. If it affects shared or team material, link that target and the application result rather than copying the feedback record into every scope.
+Team history records shared outcomes and decisions and links to individual work. Team handoff records coordination and remaining owners; personal handoff records the agent's own unfinished work. A team may assign an author and a final reviewer to maintain one shared history and handoff for their joint work. Members reference that source instead of writing the same record again; personal roles, memory, workspaces, and execution state remain independent. The project's workflow specifies which records and reviews are required before completion, and the runtime verifies their acceptance.
+
+A feedback request or discovery is recorded once at its designated personal or team source. If it affects another scope, link that target and the application result rather than copying the feedback record. Add a team feedback index when joint work needs one; its members use the same source.
 
 Add team-specific SOPs, memory, or other category indexes when actual work needs them, using the same three levels and user-confirmed scope. Do not prebuild identical category sets for shared, team, and personal. Standalone agents omit only the Team connection; their common and personal structure stays the same.
 
@@ -433,7 +435,9 @@ Record the changed source and verification before reporting a durable request as
 
 Self-feedback covers problems encountered while working, their causes, useful methods, proposed improvements, and memory candidates. Use the existing proposal store and `self-feedback.md` category index, with Date / Topic / Status / Details; distinguish feedback proposals from memory candidates in the record rather than adding a separate self-memory document hierarchy. The shared rules index links to `rules/self-feedback.md` for the common recording and approval policy. The linked record contains the kind, observation, task or evidence reference, proposed target and scope, and human approval/application references. Distinguish a verified method from an untested hypothesis.
 
-The agent may record its findings and proposals. Applying them to an SOP, rule, memory, role, code, or another authoritative source requires human approval of that change. Pending proposals are evidence for review, not active instructions for later tasks. The runtime checks human approval and its scope before a source write, across every write path; a model-written status alone is not approval.
+Record a finding or proposal when there is useful evidence; no proposal is required for every task, and its absence does not prevent completion. Keep it at the designated personal or team source. Supply an index or its location regardless of engine or model, and read relevant details on demand rather than loading the history into every turn.
+
+Applying findings to an SOP, rule, memory, role, code, or another authoritative source requires human approval of that change. Pending proposals are evidence for review, not active instructions for later tasks. The runtime checks human approval and its scope before a source write, across every write path; a model-written status alone is not approval.
 
 ```text
 Discover an improvement or memory candidate → record evidence, kind, target, and scope
